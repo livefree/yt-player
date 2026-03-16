@@ -1,5 +1,17 @@
 # Development Log
 
+## 2026-03-16 — 进度条与控制按钮之间增加间距
+
+**Task:** 避免操作进度条时误触下方按钮。
+
+### 调整：`.ytpChromeControls` 添加 `margin-top: 4px`
+
+- **File:** `src/player/Player.module.css`
+- **Fix:** 在 `.ytpChromeControls` 添加 `margin-top: 4px`，在进度条区域与控制按钮行之间制造 4px 的视觉与交互间隙。
+- 选择 `margin-top` 而非修改 `padding-bottom`，是因为后者会扩大进度条的命中区域，可能反而增加误操作概率。
+
+---
+
 ## 2026-03-16 — Cursor + Autohide Consistency Fixes
 
 **Task:** Two follow-up detail adjustments.
