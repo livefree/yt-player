@@ -140,6 +140,7 @@ export function YTPlayer({
   );
   const touchGestureRef = useRef<"seek" | "volume" | "none" | null>(null);
   const [touchSeekDelta, setTouchSeekDelta] = useState<number | null>(null);
+  const [showRemaining, setShowRemaining] = useState(false);
 
   const sliderId = useId();
 
@@ -162,7 +163,6 @@ export function YTPlayer({
     setChromeVisible(true);
     setCursorHidden(false);
     if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
-    if (!isPlaying) return;
     chromeTimerRef.current = window.setTimeout(
       () => {
         if (openPanel) return;
@@ -171,7 +171,7 @@ export function YTPlayer({
       },
       isImmersive ? IMMERSIVE_HIDE_DELAY : CHROME_HIDE_DELAY,
     );
-  }, [isPlaying, isImmersive, openPanel]);
+  }, [isImmersive, openPanel]);
 
   // Reset timer when panel opens/closes
   useEffect(() => {
@@ -1103,7 +1103,7 @@ export function YTPlayer({
             {/* Scrubber thumb */}
             <div
               className={s.ytpScrubberContainer}
-              style={{ transform: `translateX(${progressPct}%)` }}
+              style={{ left: `${progressPct}%` }}
             >
               <div className={s.ytpScrubberButton} />
             </div>
@@ -1200,12 +1200,18 @@ export function YTPlayer({
               </div>
             </span>
 
-            {/* Time display */}
-            <div className={s.ytpTimeDisplay}>
+            {/* Time display — click to toggle elapsed / remaining */}
+            <div
+              className={s.ytpTimeDisplay}
+              onClick={() => setShowRemaining((v) => !v)}
+              title={showRemaining ? "Show elapsed time" : "Show remaining time"}
+            >
               <div className={s.ytpTimeWrapper}>
                 <div className={s.ytpTimeContents}>
                   <span className={s.ytpTimeCurrent}>
-                    {formatTime(currentTime)}
+                    {showRemaining
+                      ? `-${formatTime(duration - currentTime)}`
+                      : formatTime(currentTime)}
                   </span>
                   <span className={s.ytpTimeSeparator}> / </span>
                   <span className={s.ytpTimeDuration}>
