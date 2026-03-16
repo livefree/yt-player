@@ -1,0 +1,1020 @@
+/**
+ * YTPlayer.module.css
+ * Mirrors YT's ytp-* class system
+ * Uses data-layer="N" for z-index clarity (same as YT)
+ *
+ * Layer map:
+ *  [0]  video
+ *  [1]  gradient-top, chrome-top
+ *  [2]  (unmute popup – reserved)
+ *  [3]  gesture layer
+ *  [4]  overlays (spinner, seek-anim, bezel, error, subtitles)
+ *  [5]  popup panels
+ *  [9]  gradient-bottom, chrome-bottom
+ */
+
+/* ─── Root player container ─────────────────────────────────────────────────── */
+
+.moviePlayer {
+  position: relative;
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: "YT Sans", "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+
+  /* 16:9 by default */
+  aspect-ratio: 16 / 9;
+
+  /* Layer stacking via data-layer */
+  container-type: inline-size;
+}
+
+.moviePlayer [data-layer="0"] {
+  z-index: 0;
+}
+.moviePlayer [data-layer="1"] {
+  z-index: 10;
+}
+.moviePlayer [data-layer="2"] {
+  z-index: 20;
+}
+.moviePlayer [data-layer="3"] {
+  z-index: 30;
+}
+.moviePlayer [data-layer="4"] {
+  z-index: 40;
+}
+.moviePlayer [data-layer="5"] {
+  z-index: 50;
+}
+.moviePlayer [data-layer="9"] {
+  z-index: 90;
+}
+
+/* Modes */
+.ytpTheater {
+  aspect-ratio: unset;
+  height: 100vh;
+  max-height: calc(100vh - 56px);
+}
+
+.ytpFullscreen {
+  position: fixed !important;
+  inset: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  aspect-ratio: unset;
+  z-index: 9999;
+  border-radius: 0;
+}
+
+.ytpCursorHidden {
+  cursor: none;
+}
+
+.ytpTransparent {
+  background: #000;
+}
+
+/* ─── Layer 0: Video ────────────────────────────────────────────────────────── */
+
+.html5VideoContainer {
+  position: absolute;
+  inset: 0;
+}
+
+.html5MainVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* ─── Layer 1: Gradient top ─────────────────────────────────────────────────── */
+
+.ytpGradientTop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 98px;
+  pointer-events: none;
+
+  /* YT's exact gradient */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+
+  /* Fade in/out with chrome */
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.moviePlayer:not(.ytpAutohide) .ytpGradientTop {
+  opacity: 1;
+}
+
+/* ─── Layer 1: Chrome top (title) ───────────────────────────────────────────── */
+
+.ytpChromeTop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 12px 8px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.moviePlayer:not(.ytpAutohide) .ytpChromeTop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ytpTitle {
+}
+
+.ytpTitleText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ytpTitleLink {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ytpTitleSubtext {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* ─── Layer 3: Gesture layer ────────────────────────────────────────────────── */
+
+.ytpGestureLayer {
+  position: absolute;
+  inset: 0;
+  /* Covers video, below chrome */
+  z-index: 30;
+  cursor: pointer;
+}
+
+/* ─── Layer 4: Spinner ──────────────────────────────────────────────────────── */
+
+.ytpSpinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+}
+
+.ytpSpinnerContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.ytpSpinnerRotator {
+  width: 100%;
+  height: 100%;
+  animation: ytpSpinnerRotate 1.4s linear infinite;
+}
+
+.ytpSpinnerLeft,
+.ytpSpinnerRight {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ytpSpinnerLeft {
+  left: 0;
+}
+.ytpSpinnerRight {
+  right: 0;
+}
+
+.ytpSpinnerCircle {
+  width: 200%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ytpSpinnerLeft 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ytpSpinnerRight .ytpSpinnerCircle {
+  left: -100%;
+  animation-name: ytpSpinnerRight;
+}
+
+@keyframes ytpSpinnerRotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ytpSpinnerLeft {
+  0% {
+    transform: rotate(130deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(130deg);
+  }
+}
+
+@keyframes ytpSpinnerRight {
+  0% {
+    transform: rotate(-130deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+  100% {
+    transform: rotate(-130deg);
+  }
+}
+
+/* ─── Layer 4: Seek overlay animation ──────────────────────────────────────── */
+
+.ytpSeekOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.ytpSeekOverlayAnimation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 20px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity 0.12s,
+    transform 0.12s;
+}
+
+.ytpSeekBack {
+  flex-direction: row-reverse;
+}
+.ytpSeekForward {
+}
+
+.ytpSeekVisible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.ytpSeekOverlayArrow svg {
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.8));
+}
+
+.ytpSeekDuration {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ─── Layer 4: Bezel (center play/pause flash) ──────────────────────────────── */
+
+.ytpBezel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition:
+    opacity 0.1s,
+    transform 0.1s;
+  pointer-events: none;
+}
+
+.ytpBezelVisible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  animation: ytpBezelFade 0.5s ease-out forwards 0.1s;
+}
+
+@keyframes ytpBezelFade {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+}
+
+/* ─── Layer 4: Touch seek indicator ─────────────────────────────────────────── */
+
+.ytpTouchSeekIndicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 8px;
+  padding: 12px 20px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.ytpTouchSeekDelta {
+  display: block;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.ytpTouchSeekTarget {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* ─── Layer 4: Subtitles ────────────────────────────────────────────────────── */
+
+.ytpCaptionsWindow {
+  position: absolute;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  max-width: 80%;
+  transition: bottom 0.2s ease;
+}
+
+.ytpCaptionsWindowAbove {
+  bottom: 80px;
+}
+
+.ytpCaptionSegment {
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: clamp(14px, 2.5cqi, 22px);
+  line-height: 1.5;
+  padding: 4px 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* ─── Layer 4: Error display ─────────────────────────────────────────────────── */
+
+.ytpErrorDisplay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.ytpErrorContent {
+  text-align: center;
+  color: #fff;
+  max-width: 300px;
+}
+
+.ytpErrorContent svg {
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.ytpErrorContent p {
+  font-size: 14px;
+  margin: 0 0 16px;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+.ytpErrorRetry {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s;
+}
+
+.ytpErrorRetry:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Layer 5: Settings panel ───────────────────────────────────────────────── */
+
+.ytpPopup {
+  position: absolute;
+}
+
+.ytpSettingsMenu {
+  bottom: 54px;
+  right: 12px;
+  background: rgba(28, 28, 28, 0.95);
+  border-radius: 2px;
+  min-width: 220px;
+  max-width: 300px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  animation: ytpPanelIn 0.12s ease;
+}
+
+@keyframes ytpPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ytpFocusTrap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.ytpPanelMenu {
+  padding: 8px 0;
+}
+
+.ytpMenuHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 4px;
+}
+
+.ytpMenuHeader:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ytpMenuBack {
+  opacity: 0.8;
+}
+
+.ytpMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 10px 16px;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s;
+  min-height: 40px;
+}
+
+.ytpMenuItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ytpMenuItemActive {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ytpMenuItemLabel {
+  flex: 1;
+  color: #fff;
+}
+
+.ytpMenuItemValue {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.ytpMenuChevron {
+  opacity: 0.6;
+}
+
+.ytpMenuCheck {
+  margin-right: 8px;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+/* ─── Layer 9: Gradient bottom ──────────────────────────────────────────────── */
+
+.ytpGradientBottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 98px;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.moviePlayer:not(.ytpAutohide) .ytpGradientBottom {
+  opacity: 1;
+}
+
+/* ─── Layer 9: Chrome bottom ────────────────────────────────────────────────── */
+
+.ytpChromeBottom {
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  /* Pointer events only when visible */
+  pointer-events: none;
+}
+
+.moviePlayer:not(.ytpAutohide) .ytpChromeBottom {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── Progress bar container ────────────────────────────────────────────────── */
+
+.ytpProgressBarContainer {
+  position: relative;
+  padding: 8px 0 4px;
+  cursor: pointer;
+  /* Grow hit target */
+}
+
+.ytpProgressBar {
+  position: relative;
+  height: 3px;
+  margin: 0;
+  outline: none;
+}
+
+/* Expand on hover */
+.ytpProgressBarContainer:hover .ytpProgressBar {
+  height: 5px;
+  margin-top: -1px;
+}
+
+.ytpProgressBarContainer:hover .ytpScrubberButton {
+  transform: scale(1);
+}
+
+.ytpChaptersContainer {
+  position: relative;
+  height: 100%;
+}
+
+.ytpChapterHoverContainer {
+  position: relative;
+  height: 100%;
+}
+
+.ytpProgressBarPadding {
+  position: absolute;
+  inset: -6px 0;
+}
+
+.ytpProgressList {
+  position: relative;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* Buffered */
+.ytpLoadProgress {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.4);
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.1s linear;
+}
+
+/* Played */
+.ytpPlayProgress {
+  position: absolute;
+  inset: 0;
+  background: #f00; /* YT red */
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+/* Hover ghost */
+.ytpHoverProgress {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.5);
+  transform-origin: left;
+}
+
+/* Chapter markers */
+.ytpChapterMarker {
+  position: absolute;
+  top: -1px;
+  width: 2px;
+  height: calc(100% + 2px);
+  background: #000;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Scrubber thumb */
+.ytpScrubberContainer {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(0, -50%);
+  transform-origin: center left;
+  pointer-events: none;
+}
+
+.ytpScrubberButton {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #f00;
+  transform: scale(0);
+  transition: transform 0.1s;
+  margin-left: -6px;
+  margin-top: -6px;
+}
+
+/* Progress hover tooltip */
+.ytpTooltipProgressBar {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  transform: translateX(-50%);
+  background: rgba(28, 28, 28, 0.9);
+  border-radius: 2px;
+  padding: 4px 8px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.ytpTooltipProgressText {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.ytpTooltipChapterTitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  margin-top: 2px;
+  text-align: center;
+}
+
+/* ─── Controls bar ──────────────────────────────────────────────────────────── */
+
+.ytpChromeControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding-bottom: 6px;
+}
+
+/* Left controls */
+.ytpLeftControls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Right controls wrapper */
+.ytpRightControls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+/* Right sub-groups */
+.ytpRightControlsLeft,
+.ytpRightControlsRight {
+  display: flex;
+  align-items: center;
+}
+
+/* ─── Button base (ytp-button) ──────────────────────────────────────────────── */
+
+.ytpButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.1s;
+  position: relative;
+  flex-shrink: 0;
+
+  /* Tooltip via data-attribute — shown via ::after */
+  --tooltip-offset: 8px;
+}
+
+.ytpButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ytpButton:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Global tooltip — shown on hover via data-tooltip attribute */
+.ytpButton::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + var(--tooltip-offset));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(28, 28, 28, 0.9);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  padding: 5px 9px;
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s 0.4s;
+  z-index: 100;
+}
+
+.ytpButton:hover::after {
+  opacity: 1;
+}
+
+/* Active/pressed state for toggle buttons */
+.ytpSettingsButtonActive {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ─── Volume area ────────────────────────────────────────────────────────────── */
+
+.ytpVolumeArea {
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
+.ytpMuteButton {
+}
+
+.ytpVolumePanel {
+  width: 0;
+  overflow: hidden;
+  transition: width 0.15s ease;
+}
+
+.ytpVolumeAreaExpanded .ytpVolumePanel {
+  width: 60px;
+}
+
+.ytpVolumeSlider {
+  position: relative;
+  width: 52px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  margin: 0 4px;
+}
+
+.ytpVolumeInput {
+  position: absolute;
+  inset: -8px 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+  margin: 0;
+}
+
+.ytpVolumeSliderFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #fff;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.ytpVolumeSliderHandle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  margin-left: -6px;
+  pointer-events: none;
+  transition: transform 0.1s;
+}
+
+.ytpVolumeSlider:hover .ytpVolumeSliderHandle {
+  transform: translateY(-50%) scale(1.2);
+}
+
+/* ─── Time display ──────────────────────────────────────────────────────────── */
+
+.ytpTimeDisplay {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+.ytpTimeWrapper {
+}
+
+.ytpTimeContents {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.ytpTimeCurrent,
+.ytpTimeSeparator,
+.ytpTimeDuration {
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.ytpTimeSeparator {
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 2px;
+}
+
+.ytpTimeDuration {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ─── Chapter title ─────────────────────────────────────────────────────────── */
+
+.ytpChapterContainer {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.ytpChapterTitle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 6px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ytpChapterTitlePrefix {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ytpChapterTitleContent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Tooltip singleton (used for component-level, not button ::after) ──────── */
+
+.ytpTooltip {
+  position: absolute;
+  z-index: 100;
+  background: rgba(28, 28, 28, 0.9);
+  border-radius: 2px;
+  padding: 5px 9px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  white-space: nowrap;
+}
+
+.ytpTooltipVisible {
+  opacity: 1;
+}
+
+.ytpTooltipText {
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ─── Autohide — when playing and idle ──────────────────────────────────────── */
+
+/* Controls fade when ytpAutohide class is present */
+.ytpAutohide .ytpChromeBottom,
+.ytpAutohide .ytpChromeTop,
+.ytpAutohide .ytpGradientTop,
+.ytpAutohide .ytpGradientBottom {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* In fullscreen/theater, cursor hides too */
+.ytpCursorHidden * {
+  cursor: none !important;
+}
+
+/* ─── Responsive – small player ─────────────────────────────────────────────── */
+
+@container (max-width: 480px) {
+  .ytpTimeDuration {
+    display: none;
+  }
+  .ytpTimeSeparator {
+    display: none;
+  }
+  .ytpChapterContainer {
+    display: none;
+  }
+  .ytpRightControlsLeft .ytpButton:not(:last-child) {
+    display: none;
+  }
+}
+
+@container (max-width: 320px) {
+  .ytpTimeDisplay {
+    display: none;
+  }
+}
+
+/* ─── Keyboard focus ring (accessibility) ────────────────────────────────────── */
+
+.moviePlayer:focus-within .ytpProgressBar:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
