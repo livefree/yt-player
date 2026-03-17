@@ -639,7 +639,12 @@ export function YTPlayer({
   useEffect(() => {
     if (!isEpisodesOpen) return;
     const onDown = (e: MouseEvent) => {
-      if (!episodesPanelRef.current?.contains(e.target as Node))
+      const target = e.target as HTMLElement;
+      // Exclude the Episodes button itself — its onClick handles the toggle
+      if (
+        !episodesPanelRef.current?.contains(target) &&
+        !target.closest('[data-ytp-component="episodes-btn"]')
+      )
         setIsEpisodesOpen(false);
     };
     window.addEventListener("mousedown", onDown);
