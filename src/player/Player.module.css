@@ -1275,6 +1275,17 @@
   .ytpVolumeArea {
     touch-action: manipulation;
   }
+
+  /* System hardware buttons handle volume on all mobile platforms;
+     hide the in-player slider to reduce crowding on portrait screens. */
+  .ytpVolumeArea {
+    display: none;
+  }
+
+  /* Theater mode is a desktop-layout concept; not useful on phones/tablets. */
+  .ytpTheaterButton {
+    display: none;
+  }
 }
 
 /* ─── Fullscreen – safe area insets (iPhone Home Bar) ───────────────────────── */

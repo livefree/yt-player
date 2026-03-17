@@ -128,10 +128,6 @@ export function YTPlayer({
   const [bezelPaused, setBezelPaused] = useState(true);
   const bezelTimerRef = useRef<number | null>(null);
 
-  // ── iOS volume API availability ────────────────────────────────────────────
-  // iOS Safari silently ignores programmatic volume changes; detect once at mount.
-  const [volumeApiAvailable, setVolumeApiAvailable] = useState(true);
-
   // ── Muted-autoplay state (shown when autoplay+sound was blocked) ───────────
   const [showUnmute, setShowUnmute] = useState(false);
 
@@ -293,20 +289,6 @@ export function YTPlayer({
     if (!v) return;
     v.playbackRate = playbackRate;
   }, [playbackRate]);
-
-  // ─── iOS volume API detection (once, after first render) ─────────────────
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    // On iOS Safari, setting video.volume has no effect; the value stays at 1.
-    // We probe by setting to a distinct value and checking if it changed.
-    const prev = v.volume;
-    v.volume = prev > 0.5 ? 0.499 : 0.501;
-    const changed = v.volume !== prev;
-    // Restore original value immediately
-    v.volume = prev;
-    setVolumeApiAvailable(changed);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Subtitles ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1306,8 +1288,8 @@ export function YTPlayer({
               </YtpButton>
             )}
 
-            {/* Volume area — hidden on iOS where volume API is unavailable */}
-            {volumeApiAvailable && <span
+            {/* Volume area — CSS hides on pointer:coarse (mobile system handles volume) */}
+            <span
               className={`${s.ytpVolumeArea} ${volumeVisible ? s.ytpVolumeAreaExpanded : ""}`}
               data-ytp-component="volume-area"
             >
@@ -1358,7 +1340,7 @@ export function YTPlayer({
                   />
                 </div>
               </div>
-            </span>}
+            </span>
 
             {/* Time display — click to toggle elapsed / remaining */}
             <div
@@ -1427,12 +1409,13 @@ export function YTPlayer({
             </div>
 
             <div className={s.ytpRightControlsRight}>
-              {/* Theater mode — hidden in fullscreen */}
+              {/* Theater mode — hidden in fullscreen and on touch devices (CSS) */}
               {!isFullscreen && (
                 <YtpButton
                   tooltip={isTheater ? "Default view (T)" : "Theater mode (T)"}
                   onClick={toggleTheater}
                   ariaPressed={isTheater}
+                  className={s.ytpTheaterButton}
                 >
                   <TheaterIcon active={isTheater} />
                 </YtpButton>
