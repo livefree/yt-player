@@ -36,7 +36,14 @@
    * never leak into the host page's global namespace.
    * ──────────────────────────────────────────────────────────────────────── */
   --ytp-brand-color:          #f00;               /* progress fill, scrubber dot */
-  --ytp-btn-size:             32px;               /* button width & height */
+  --ytp-btn-size:             32px;               /* hitbox size (clickable area) */
+  --ytp-btn-gap:              0px;                /* gap between left-side controls */
+  --ytp-btn-height:           var(--ytp-btn-size); /* visual pill height (bg & hover) */
+  --ytp-btn-hover-height:     var(--ytp-btn-size); /* visual hover pill height */
+  --ytp-play-btn-width:       var(--ytp-btn-height); /* play bg width (= height → circle) */
+  --ytp-play-btn-hover-width: var(--ytp-btn-hover-height); /* play hover width */
+  --ytp-next-btn-width:       var(--ytp-btn-height); /* next bg width */
+  --ytp-next-btn-hover-width: var(--ytp-btn-hover-height); /* next hover width */
   --ytp-pill-bg:              rgba(0, 0, 0, 0.15); /* shared background: standalone buttons & pill groups */
   --ytp-pill-btn-hover-bg:    rgba(255, 255, 255, 0.12); /* button hover within pill */
   --ytp-progress-track-bg:    rgba(255, 255, 255, 0.20); /* unplayed track */
@@ -755,7 +762,7 @@
 .ytpLeftControls {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: var(--ytp-btn-gap);
   flex: 1;
   min-width: 0;
 }
@@ -770,12 +777,16 @@
   border-radius: 20px;
 }
 
-/* Buttons inside right controls: transparent bg; hover = lighter circle within pill */
+/* Buttons inside right controls: pill bg from container; ::before used for hover only */
 .ytpRightControls .ytpButton {
-  background: transparent;
   box-shadow: none;
 }
-.ytpRightControls .ytpButton:hover {
+.ytpRightControls .ytpButton::before {
+  background: transparent;
+  width: var(--ytp-btn-hover-height);
+  height: var(--ytp-btn-hover-height);
+}
+.ytpRightControls .ytpButton:hover::before {
   background: var(--ytp-pill-btn-hover-bg);
 }
 
@@ -792,16 +803,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--ytp-pill-bg);
+  background: transparent; /* hitbox: no visual bg — visual handled by ::before */
   border: none;
   padding: 0;
   width: var(--ytp-btn-size);
   height: var(--ytp-btn-size);
   cursor: pointer;
   border-radius: 50%;
-  transition:
-    background 0.1s,
-    box-shadow 0.1s;
   position: relative;
   flex-shrink: 0;
 
@@ -809,7 +817,24 @@
   --tooltip-offset: 8px;
 }
 
-.ytpButton:hover {
+/* Visual pill/circle background — decoupled from hitbox size */
+.ytpButton::before {
+  content: '';
+  position: absolute; /* out of flex flow; icon centering unaffected */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--_bg-w, var(--ytp-btn-height));
+  height: var(--ytp-btn-height);
+  background: var(--ytp-pill-bg);
+  border-radius: calc(var(--ytp-btn-height) / 2); /* always pill/circle */
+  transition: width 0.15s ease, height 0.15s ease, background 0.1s ease;
+  pointer-events: none;
+}
+
+.ytpButton:hover::before {
+  width: var(--_hover-w, var(--ytp-btn-hover-height));
+  height: var(--ytp-btn-hover-height);
   background: var(--ytp-pill-btn-hover-bg);
 }
 
@@ -859,13 +884,29 @@
   transition: background 0.1s;
 }
 
-/* Button inside volume area: no individual circle (the area itself is the pill) */
+/* Button inside volume area: pill bg from container; ::before for hover only */
 .ytpVolumeArea .ytpButton {
-  background: transparent;
   box-shadow: none;
 }
-.ytpVolumeArea .ytpButton:hover {
+.ytpVolumeArea .ytpButton::before {
+  background: transparent;
+  width: var(--ytp-btn-hover-height);
+  height: var(--ytp-btn-hover-height);
+}
+.ytpVolumeArea .ytpButton:hover::before {
   background: var(--ytp-pill-btn-hover-bg);
+}
+
+/* Per-button local overrides — inject --_bg-w and --_hover-w so ::before
+   picks up the right width without touching the shared hitbox size */
+.ytpPlayButton {
+  --_bg-w: var(--ytp-play-btn-width);
+  --_hover-w: var(--ytp-play-btn-hover-width);
+}
+
+.ytpNextButton {
+  --_bg-w: var(--ytp-next-btn-width);
+  --_hover-w: var(--ytp-next-btn-hover-width);
 }
 
 .ytpMuteButton {

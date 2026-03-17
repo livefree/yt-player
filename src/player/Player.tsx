@@ -1142,13 +1142,14 @@ export function YTPlayer({
               tooltip={isPlaying ? "Pause (k)" : "Play (k)"}
               onClick={togglePlay}
               ariaLabel={isPlaying ? "Pause" : "Play"}
+              className={s.ytpPlayButton}
               data-ytp-component="play-btn"
             >
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </YtpButton>
 
             {/* Next */}
-            <YtpButton tooltip="Next (SHIFT+N)" ariaLabel="Next" data-ytp-component="next-btn">
+            <YtpButton tooltip="Next (SHIFT+N)" ariaLabel="Next" className={s.ytpNextButton} data-ytp-component="next-btn">
               <NextIcon />
             </YtpButton>
 
