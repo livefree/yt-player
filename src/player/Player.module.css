@@ -1050,6 +1050,84 @@
   --_hover-w: var(--ytp-next-hover-width);
 }
 
+/* ─── Next + Episodes group ─────────────────────────────────────────────────── */
+
+.ytpNextEpisodesGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--ytp-btn-gap);
+}
+
+/* Desktop: Episodes button hidden by default when Next exists; revealed on hover */
+@media (pointer: fine) {
+  .ytpEpisodesReveal {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .ytpNextEpisodesGroup:hover .ytpEpisodesReveal {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ─── Episodes panel ─────────────────────────────────────────────────────────── */
+
+.ytpEpisodesPanel {
+  position: absolute;
+  bottom: 54px;
+  left: 0;
+  background: rgba(28, 28, 28, 0.95);
+  border-radius: 4px;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  max-height: 260px;
+  overflow-y: auto;
+  animation: ytpPanelIn 0.12s ease; /* reuse existing panel-in animation */
+}
+
+.ytpEpisodesGrid {
+  display: grid;
+  grid-template-columns: repeat(var(--_ep-cols, 6), 1fr);
+  gap: 4px;
+}
+
+.ytpEpisodeItem {
+  width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.ytpEpisodeItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* Currently playing episode — brand colour + bold */
+.ytpEpisodeActive {
+  color: var(--ytp-brand-color);
+  font-weight: 700;
+}
+
+/* Keyboard-focused episode (also synced to mouse hover via onMouseEnter) */
+.ytpEpisodeFocused {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  outline: 1px solid rgba(255, 255, 255, 0.35);
+  outline-offset: -1px;
+}
+
 .ytpMuteButton {
 }
 
@@ -1294,6 +1372,11 @@
 
   /* Theater mode is a desktop-layout concept; not useful on phones/tablets. */
   .ytpTheaterButton {
+    display: none;
+  }
+
+  /* Episodes button is desktop-only; hover-reveal pattern has no equivalent on touch. */
+  .ytpEpisodesButton {
     display: none;
   }
 }

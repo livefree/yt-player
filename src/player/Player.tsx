@@ -19,6 +19,7 @@
  */
 
 import {
+  type CSSProperties,
   useCallback,
   useEffect,
   useId,
@@ -40,6 +41,9 @@ import {
   IMMERSIVE_HIDE_DELAY,
   SEEK_OVERLAY_DURATION,
   DOUBLE_TAP_THRESHOLD,
+  EPISODES_COLS_SMALL,
+  EPISODES_COLS_LARGE,
+  EPISODES_COLS_THRESHOLD,
 } from "./utils/format";
 import { Spinner } from "./components/Spinner";
 import { SeekOverlay } from "./components/SeekOverlay";
@@ -57,6 +61,7 @@ import {
   PipIcon,
   NextIcon,
   AirPlayIcon,
+  EpisodesIcon,
 } from "./components/icons";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -78,6 +83,9 @@ export function YTPlayer({
   initialVolume = 1,
   defaultTheaterMode = false,
   onNext,
+  episodes,
+  activeEpisodeIndex = 0,
+  onEpisodeChange,
   onTheaterChange,
   style,
   keepControlsVisible = false,
@@ -154,6 +162,12 @@ export function YTPlayer({
   // ── AirPlay ───────────────────────────────────────────────────────────────
   const [airPlayAvailable, setAirPlayAvailable] = useState(false);
 
+  // ── Episodes panel ────────────────────────────────────────────────────────
+  const [isEpisodesOpen, setIsEpisodesOpen] = useState(false);
+  const [focusedEpisodeIndex, setFocusedEpisodeIndex] =
+    useState(activeEpisodeIndex);
+  const episodesPanelRef = useRef<HTMLDivElement>(null);
+
   // ── Touch gesture state ────────────────────────────────────────────────────
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(
     null,
@@ -177,6 +191,13 @@ export function YTPlayer({
   }, [chapters, currentTime]);
 
   const isImmersive = isTheater || isFullscreen;
+
+  // Episodes: adaptive column count (≤12 → 4 cols, >12 → 6 cols)
+  const hasEpisodes = (episodes?.length ?? 0) > 0;
+  const episodesCols =
+    (episodes?.length ?? 0) > EPISODES_COLS_THRESHOLD
+      ? EPISODES_COLS_LARGE
+      : EPISODES_COLS_SMALL;
 
   // ─── Chrome auto-hide ──────────────────────────────────────────────────────
   const revealChrome = useCallback(() => {
@@ -488,6 +509,45 @@ export function YTPlayer({
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
+      // ── Episodes panel keyboard intercept (captures all keys when open) ──────
+      if (isEpisodesOpen && episodes?.length) {
+        const total = episodes.length;
+        switch (e.key) {
+          case "ArrowRight":
+            e.preventDefault();
+            setFocusedEpisodeIndex((i) => Math.min(i + 1, total - 1));
+            return;
+          case "ArrowLeft":
+            e.preventDefault();
+            setFocusedEpisodeIndex((i) => Math.max(i - 1, 0));
+            return;
+          case "ArrowDown":
+            e.preventDefault();
+            setFocusedEpisodeIndex((i) =>
+              Math.min(i + episodesCols, total - 1),
+            );
+            return;
+          case "ArrowUp":
+            e.preventDefault();
+            setFocusedEpisodeIndex((i) => Math.max(i - episodesCols, 0));
+            return;
+          case "Enter":
+            e.preventDefault();
+            onEpisodeChange?.(focusedEpisodeIndex);
+            setIsEpisodesOpen(false);
+            return;
+          case "Escape":
+          case "e":
+          case "E":
+            e.preventDefault();
+            setIsEpisodesOpen(false);
+            return;
+          default:
+            e.preventDefault(); // block all other shortcuts while panel is open
+            return;
+        }
+      }
+
       switch (e.key) {
         case " ":
         case "k":
@@ -537,6 +597,16 @@ export function YTPlayer({
             onNext();
           }
           break;
+        case "e":
+        case "E":
+          if (hasEpisodes) {
+            e.preventDefault();
+            setIsEpisodesOpen((v) => {
+              if (!v) setFocusedEpisodeIndex(activeEpisodeIndex);
+              return !v;
+            });
+          }
+          break;
         case "[":
           e.preventDefault();
           setPlaybackRate((r) => clamp(r - SPEED_STEP, 0.25, 2));
@@ -551,7 +621,7 @@ export function YTPlayer({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [volume, isMuted, prevVolume, subtitles, activeSubId, onNext]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [volume, isMuted, prevVolume, subtitles, activeSubId, onNext, isEpisodesOpen, focusedEpisodeIndex, episodes, activeEpisodeIndex, onEpisodeChange, hasEpisodes, episodesCols]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Outside-click to close panels ────────────────────────────────────────
   useEffect(() => {
@@ -564,6 +634,25 @@ export function YTPlayer({
     window.addEventListener("mousedown", onDown);
     return () => window.removeEventListener("mousedown", onDown);
   }, [openPanel]);
+
+  // ─── Outside-click to close episodes panel ─────────────────────────────────
+  useEffect(() => {
+    if (!isEpisodesOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!episodesPanelRef.current?.contains(e.target as Node))
+        setIsEpisodesOpen(false);
+    };
+    window.addEventListener("mousedown", onDown);
+    return () => window.removeEventListener("mousedown", onDown);
+  }, [isEpisodesOpen]);
+
+  // ─── Scroll focused episode cell into view ─────────────────────────────────
+  useEffect(() => {
+    if (!isEpisodesOpen) return;
+    episodesPanelRef.current
+      ?.querySelector<HTMLElement>("[data-ep-focused]")
+      ?.scrollIntoView({ block: "nearest" });
+  }, [focusedEpisodeIndex, isEpisodesOpen]);
 
   // ─── Actions ───────────────────────────────────────────────────────────────
   function togglePlay() {
@@ -1066,6 +1155,43 @@ export function YTPlayer({
         </div>
       )}
 
+      {/* ── Layer 5: episodes panel (bottom-left, desktop only) ───────────── */}
+      {isEpisodesOpen && hasEpisodes && (
+        <div
+          ref={episodesPanelRef}
+          className={s.ytpEpisodesPanel}
+          data-layer="5"
+          role="dialog"
+          aria-label="Episodes"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <div
+            className={s.ytpEpisodesGrid}
+            role="listbox"
+            style={
+              { "--_ep-cols": episodesCols } as CSSProperties
+            }
+          >
+            {episodes!.map((_, i) => (
+              <button
+                key={i}
+                role="option"
+                aria-selected={i === activeEpisodeIndex}
+                className={`${s.ytpEpisodeItem}${i === activeEpisodeIndex ? ` ${s.ytpEpisodeActive}` : ""}${i === focusedEpisodeIndex ? ` ${s.ytpEpisodeFocused}` : ""}`}
+                data-ep-focused={i === focusedEpisodeIndex ? "" : undefined}
+                onClick={() => {
+                  onEpisodeChange?.(i);
+                  setIsEpisodesOpen(false);
+                }}
+                onMouseEnter={() => setFocusedEpisodeIndex(i)}
+              >
+                {String(i + 1).padStart(2, "0")}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Layer 5: settings panel ───────────────────────────────────────── */}
       {openPanel && (
         <div
@@ -1517,11 +1643,39 @@ export function YTPlayer({
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </YtpButton>
 
-            {/* Next — only shown when caller provides onNext */}
-            {onNext && (
-              <YtpButton tooltip="Next (SHIFT+N)" ariaLabel="Next" onClick={onNext} className={s.ytpNextButton} data-ytp-component="next-btn">
-                <NextIcon />
-              </YtpButton>
+            {/* ── Next + Episodes group ─────────────────────────────────── */}
+            {(onNext || hasEpisodes) && (
+              <div className={s.ytpNextEpisodesGroup}>
+                {/* Next — only shown when caller provides onNext */}
+                {onNext && (
+                  <YtpButton
+                    tooltip="Next (SHIFT+N)"
+                    ariaLabel="Next"
+                    onClick={onNext}
+                    className={s.ytpNextButton}
+                    data-ytp-component="next-btn"
+                  >
+                    <NextIcon />
+                  </YtpButton>
+                )}
+                {/* Episodes — always visible on last ep, reveal-on-hover otherwise */}
+                {hasEpisodes && (
+                  <YtpButton
+                    tooltip="Episodes (E)"
+                    ariaLabel="Episodes"
+                    onClick={() =>
+                      setIsEpisodesOpen((v) => {
+                        if (!v) setFocusedEpisodeIndex(activeEpisodeIndex);
+                        return !v;
+                      })
+                    }
+                    className={`${s.ytpEpisodesButton}${onNext && !isEpisodesOpen ? ` ${s.ytpEpisodesReveal}` : ""}`}
+                    data-ytp-component="episodes-btn"
+                  >
+                    <EpisodesIcon />
+                  </YtpButton>
+                )}
+              </div>
             )}
 
             {/* Volume area — CSS hides on pointer:coarse (mobile system handles volume) */}

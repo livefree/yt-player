@@ -45,6 +45,12 @@ export interface PlayerProps {
   onEnded?: () => void;
   /** Called when user clicks Next or presses Shift+N. When omitted the Next button is hidden. */
   onNext?: () => void;
+  /** Episode list; presence enables the Episodes button (desktop) and keyboard shortcut E */
+  episodes?: Array<{ title?: string }>;
+  /** 0-based index of the currently playing episode (default: 0) */
+  activeEpisodeIndex?: number;
+  /** Called when the user selects an episode from the panel */
+  onEpisodeChange?: (index: number) => void;
   /** Called whenever theater mode is toggled, with the new state */
   onTheaterChange?: (isTheater: boolean) => void;
   /** Called when current time changes, throttled to ~250ms */

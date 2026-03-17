@@ -182,6 +182,22 @@ export function AirPlayIcon() {
   );
 }
 
+export function EpisodesIcon() {
+  return (
+    <svg height="24" viewBox="0 0 24 24" width="24" aria-hidden="true">
+      {/* 3×2 grid of tiles representing an episode list */}
+      <rect x="3"  y="4" width="5" height="4" rx="1" fill="white" />
+      <rect x="10" y="4" width="5" height="4" rx="1" fill="white" />
+      <rect x="17" y="4" width="4" height="4" rx="1" fill="white" />
+      <rect x="3"  y="11" width="5" height="4" rx="1" fill="white" />
+      <rect x="10" y="11" width="5" height="4" rx="1" fill="white" />
+      <rect x="17" y="11" width="4" height="4" rx="1" fill="white" />
+      {/* Thin bar at bottom — hint of more content below */}
+      <rect x="3" y="18" width="18" height="2" rx="1" fill="white" opacity="0.4" />
+    </svg>
+  );
+}
+
 export function NextIcon() {
   return (
     <svg
