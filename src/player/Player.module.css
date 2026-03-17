@@ -588,23 +588,16 @@
 
 .ytpProgressBarContainer {
   position: relative;
-  padding: 8px 0 4px;
+  padding: 7px 0 3px;
   cursor: pointer;
   /* Grow hit target */
 }
 
 .ytpProgressBar {
   position: relative;
-  height: 3px;
+  height: 5px; /* Fixed at expanded size; track uses scaleY for visual thickness */
   margin: 0;
   outline: none;
-  transition: height 0.15s ease, margin-top 0.15s ease;
-}
-
-/* Expand on hover */
-.ytpProgressBarContainer:hover .ytpProgressBar {
-  height: 5px;
-  margin-top: -1px;
 }
 
 .ytpProgressBarContainer:hover .ytpScrubberButton {
@@ -632,6 +625,14 @@
   background: rgba(255, 255, 255, 0.2);
   border-radius: 2px;
   overflow: hidden;
+  /* scaleY from center = symmetric expand; 5px × 0.6 = 3px visual at rest */
+  transform: scaleY(0.6);
+  transform-origin: center;
+  transition: transform 0.15s ease;
+}
+
+.ytpProgressBarContainer:hover .ytpProgressList {
+  transform: scaleY(1);
 }
 
 /* Buffered */
@@ -686,11 +687,11 @@
   height: 13px;
   border-radius: 50%;
   background: #f00;
-  /* scale(0.6) matches bar 3px→5px ratio (1/0.6 ≈ 5/3); always visible */
+  /* scale(0.6) matches track 3px→5px ratio (1/0.6 ≈ 5/3); always visible */
   transform: scale(0.6);
   transition: transform 0.15s ease;
-  margin-left: -6px;
-  margin-top: -6px;
+  margin-left: -6.5px; /* exact half of 13px — centers dot on playhead */
+  margin-top: -6.5px;  /* exact half of 13px — centers dot on bar axis */
 }
 
 /* Progress hover tooltip */
@@ -1017,7 +1018,7 @@
 
 /* ─── Keyboard focus ring (accessibility) ────────────────────────────────────── */
 
-.moviePlayer:focus-within .ytpProgressBar:focus {
+.moviePlayer:focus-within .ytpProgressBar:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
   border-radius: 2px;

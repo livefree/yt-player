@@ -1,5 +1,34 @@
 # Development Log
 
+## 2026-03-16 — 进度条焦点边框、对称扩展与红点居中修复
+
+**Task:** 修复进度条点击白色边框、扩展方向偏斜、红点轴线偏移三个问题。
+
+### Fix 1: 点击进度条出现白色 outline
+
+- **File:** `src/player/Player.module.css`
+- **Root cause:** `.ytpProgressBar` 有 `role="slider"` 和 `tabIndex=0`，鼠标点击后获得 focus，触发 `:focus` 规则显示白色轮廓。
+- **Fix:** 将 `.ytpProgressBar:focus` 改为 `.ytpProgressBar:focus-visible`。键盘 Tab 聚焦时仍显示轮廓，鼠标点击不显示。
+
+### Fix 2: 进度条非对称扩展（YouTube 方案重构）
+
+- **File:** `src/player/Player.module.css`
+- **Root cause:** 原方案用 `height: 3px → 5px` + `margin-top: -1px` 补偿，依赖 block 布局计算，动画中两侧扩展量不精确对称。
+- **Fix:** YouTube 标准做法：
+  - `.ytpProgressBar` 固定 `height: 5px`（最终展开尺寸，不再变化）
+  - `.ytpProgressList` 默认 `transform: scaleY(0.6)`（视觉 3px）+ `transform-origin: center`
+  - 悬停时 `scaleY(1)`（视觉 5px）
+  - `transform` 从中心点扩展，天然双向对称，无需 margin 补偿
+  - 容器 `padding: 7px 0 3px`（原 8+4px）维持总高度 15px 不变
+
+### Fix 3: 红点中心偏离进度条中轴
+
+- **File:** `src/player/Player.module.css`
+- **Root cause:** 原方案 `.ytpProgressBar` 高度 3px，`top: 50% = 1.5px`；`margin-top: -6px` 使按钮中心在 2px，偏离中轴 0.5px。
+- **Fix:** 固定 5px 高度后 `top: 50% = 2.5px`；`margin-top: -6.5px`（精确半径 13px/2）使按钮中心精确在 2.5px。`margin-left` 同改为 `-6.5px` 修复水平居中。CSS 支持小数 px，两轴均精确对齐。
+
+---
+
 ## 2026-03-16 — 进度条悬停颜色、红点同步与尺寸比例修复
 
 **Task:** 修复进度条悬停时三个视觉问题。

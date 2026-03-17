@@ -1,20 +1,20 @@
-# Task: 修复进度条悬停时颜色、红点同步和尺寸比例三个问题
+# Task: 修复进度条焦点边框、对称扩展与红点居中三个问题
 
 ## Status
 done
 
 ## Description
 
-1. **悬停时已播放部分变浅红** — 悬停时 hover ghost（半透明白色）叠在红色已播放层之上，使其变成粉红色。根本原因：DOM 顺序导致 `.ytpHoverProgress` 渲染在 `.ytpPlayProgress` 之上。修复：给 `.ytpPlayProgress` 加 `z-index: 1`，使其始终在 hover ghost 之上。
+1. **点击进度条出现白色边框** — `.ytpProgressBar` 有 `role="slider"` 和 `tabIndex=0`，点击后获得 focus，触发 `.moviePlayer:focus-within .ytpProgressBar:focus` 规则显示白色 outline。修复：将 `:focus` 改为 `:focus-visible`，仅在键盘导航时显示，鼠标点击不显示。
 
-2. **红点仅在悬停时出现，不跟随播放位置** — `.ytpScrubberButton` 默认 `transform: scale(0)` 完全隐藏。需改为默认可见（`scale(0.6)`），悬停时放大（`scale(1)`）。
+2. **进度条只向一侧扩展** — 当前用 `height: 3px → 5px` + `margin-top: -1px` 实现对称扩展，但 margin-top 补偿依赖 block 布局计算，在动画中可能出现不对称。YouTube 的正确做法：让 `.ytpProgressBar` 始终保持最终高度（5px），对内层 `.ytpProgressList` 用 `transform: scaleY(0.6)` 收缩至视觉 3px，悬停时 `scaleY(1)`。`transform` 从 `transform-origin: center` 扩展，天然对称，无需 margin 补偿。
 
-3. **进度条变宽时红点不等比例增大** — 进度条从 3px → 5px（×5/3），红点应从 `scale(0.6)` → `scale(1)`（比例一致，`1 / 0.6 ≈ 1.67 ≈ 5/3`）。问题 2 和 3 同一修复解决。
+3. **红点与进度条中轴未对齐** — 当前 `.ytpProgressBar` 高度为 3px，`top: 50%` = 1.5px；按钮 13px，`margin-top: -6px` 使按钮中心在 2px，偏离中轴 0.5px。改用固定 5px 高度后，`top: 50%` = 2.5px；`margin-top: -6.5px` 使按钮中心精确在 2.5px，完美居中。`margin-left` 同理改为 `-6.5px`。
 
 ## Acceptance Criteria
-- [ ] 悬停时已播放区域保持纯红色，不变浅
-- [ ] 红点在控制栏可见时始终显示（不只在悬停时出现）
-- [ ] 悬停时红点尺寸增大，与进度条加粗比例一致
+- [ ] 鼠标点击进度条后无白色边框；键盘 Tab 聚焦时仍显示 outline
+- [ ] 悬停时进度条向两侧均匀扩展（对称动画）
+- [ ] 红点中心与进度条视觉中轴精确对齐（静止和悬停状态均一致）
 - [ ] `npm run typecheck` 退出码为 0
 - [ ] `npm test` 退出码为 0
 
@@ -22,4 +22,7 @@ done
 - 仅修改 `src/player/Player.module.css`，不改动 JSX
 
 ## Notes
-- 进度条高度比：5/3 ≈ 1.667；红点 scale 比：1/0.6 ≈ 1.667 — 完全一致
+- 容器总高度维持不变：`padding: 7px 0 3px` + 5px bar = 15px（原来 8px+3px+4px=15px）
+- `scaleY(0.6)` 视觉高度 = 5px × 0.6 = 3px，与原始外观一致
+- `scaleY` 使用 `transform-origin: center`，从中心扩展，天然对称
+- scrubber 中心偏移：13px / 2 = 6.5px，CSS 支持小数 px
