@@ -259,6 +259,12 @@ export function App() {
           {/* Controls */}
           <div style={styles.controls}>
             <div style={styles.sectionTitle}>{activeDef.label}</div>
+            {activeDef.vars.length === 0 && (
+              <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 12, lineHeight: 1.6, padding: "8px 0" }}>
+                This component uses only shared tokens.<br />
+                Edit them in the <strong style={{ color: "rgba(255,255,255,0.7)" }}>Global</strong> tab.
+              </div>
+            )}
             {activeDef.vars.map((spec) => {
               const current = overrides[spec.variable] ?? "";
               const onChange = (v: string) => setVar(spec.variable, v);

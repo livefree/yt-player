@@ -913,22 +913,43 @@
 
 /* ─── Volume area ────────────────────────────────────────────────────────────── */
 
-/* Volume area — shared background layer from container (not per-button ::before) */
+/* Volume area — shared background layer from container (not per-button ::before).
+   Hover covers the ENTIRE area (button + slider panel) via container ::after. */
 .ytpVolumeArea {
   display: flex;
   align-items: center;
   height: var(--ytp-bg-height);
   background: var(--ytp-bg-color);
   border-radius: calc(var(--ytp-bg-height) / 2);
+  position: relative; /* needed for ::after overlay */
 }
 
-/* Button inside volume area: background from container; ::before hidden */
+/* Container-level hover layer: covers full area including slider panel */
+.ytpVolumeArea::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: transparent;
+  pointer-events: none;
+  transition: background 0.1s ease;
+}
+.ytpVolumeArea:hover::after {
+  background: var(--ytp-hover-color);
+}
+.ytpVolumeArea:active::after {
+  background: var(--ytp-active-color);
+}
+
+/* Suppress per-button hover within volume area (container handles it instead) */
 .ytpVolumeArea .ytpButton::before {
   background: transparent;
   width: var(--ytp-hover-height);
   height: var(--ytp-hover-height);
 }
-/* Hover layer (::after) already applied globally — no override needed */
+.ytpVolumeArea .ytpButton::after {
+  display: none;
+}
 
 /* Per-button local overrides — inject --_bg-w / --_hover-w for ::before / ::after */
 .ytpPlayButton {
@@ -1013,6 +1034,24 @@
   color: var(--ytp-icon-color);
   background: var(--ytp-bg-color);
   border-radius: calc(var(--ytp-bg-height) / 2);
+  position: relative; /* needed for ::after hover overlay */
+}
+
+/* Hover layer — same model as buttons but applied to the pill container */
+.ytpTimeDisplay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: transparent;
+  pointer-events: none;
+  transition: background 0.1s ease;
+}
+.ytpTimeDisplay:hover::after {
+  background: var(--ytp-hover-color);
+}
+.ytpTimeDisplay:active::after {
+  background: var(--ytp-active-color);
 }
 
 .ytpTimeWrapper {
