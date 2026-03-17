@@ -555,7 +555,7 @@ export function YTPlayer({
     s.moviePlayer,
     s.ytpTransparent,
     isPlaying ? s.playingMode : s.pausedMode,
-    chromeVisible ? "" : s.ytpAutohide,
+    chromeVisible || keepControlsVisible ? "" : s.ytpAutohide,
     isTheater ? s.ytpTheater : "",
     isFullscreen ? s.ytpFullscreen : "",
     cursorHidden ? s.ytpCursorHidden : "",

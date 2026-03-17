@@ -1,7 +1,5 @@
 import {
   useCallback,
-  useEffect,
-  useRef,
   useState,
 } from "react";
 import { YTPlayer } from "../../src/player/Player";
@@ -106,7 +104,6 @@ export function App() {
   const [activeComponentId, setActiveComponentId] = useState<string>(
     REGISTRY[0].id
   );
-  const interceptRef = useRef<HTMLDivElement>(null);
 
   // Build inline style object for the player
   const playerStyle = Object.fromEntries(
@@ -228,20 +225,15 @@ export function App() {
       </div>
 
       {/* ── Player Preview ───────────────────────────────────────────────── */}
-      <div style={styles.previewArea}>
+      {/* onClick on the wrapper uses event delegation — clicks bubble from
+          data-ytp-component elements inside the player without blocking hover */}
+      <div style={styles.previewArea} onClick={handleInterceptClick}>
         <YTPlayer
           src={SAMPLE_SRC}
           title="Big Buck Bunny"
           author="Blender Foundation"
           style={playerStyle as never}
           keepControlsVisible
-        />
-        {/* Transparent intercept layer over the player */}
-        <div
-          ref={interceptRef}
-          style={styles.intercept}
-          onClick={handleInterceptClick}
-          title="Click any component to edit its settings"
         />
       </div>
 
@@ -357,12 +349,6 @@ const styles = {
     background: "#000",
     display: "flex",
     alignItems: "stretch",
-  },
-  intercept: {
-    position: "absolute" as const,
-    inset: 0,
-    cursor: "crosshair",
-    zIndex: 9999,
   },
   settingsPanel: {
     flex: 1,
