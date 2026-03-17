@@ -128,6 +128,13 @@ export function YTPlayer({
   const [bezelPaused, setBezelPaused] = useState(true);
   const bezelTimerRef = useRef<number | null>(null);
 
+  // ── iOS volume API availability ────────────────────────────────────────────
+  // iOS Safari silently ignores programmatic volume changes; detect once at mount.
+  const [volumeApiAvailable, setVolumeApiAvailable] = useState(true);
+
+  // ── Muted-autoplay state (shown when autoplay+sound was blocked) ───────────
+  const [showUnmute, setShowUnmute] = useState(false);
+
   // ── Double-tap detection (mobile) ─────────────────────────────────────────
   const tapTimerRef = useRef<number | null>(null);
   const tapCountRef = useRef(0);
@@ -190,9 +197,54 @@ export function YTPlayer({
 
   // ─── Fullscreen sync ───────────────────────────────────────────────────────
   useEffect(() => {
-    const handler = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", handler);
-    return () => document.removeEventListener("fullscreenchange", handler);
+    const handleFullscreenChange = () => {
+      // Standard API + webkit prefix (iOS uses webkitfullscreenchange on <video>)
+      const isFull =
+        !!document.fullscreenElement ||
+        !!(document as unknown as { webkitFullscreenElement: Element | null })
+          .webkitFullscreenElement;
+      setIsFullscreen(isFull);
+
+      // Attempt landscape lock / unlock on supported browsers (Android Chrome, etc.)
+      // screen.orientation.lock is not in all TS lib targets; use type assertion.
+      type OrientationExt = ScreenOrientation & {
+        lock?: (o: string) => Promise<void>;
+      };
+      const orient = screen.orientation as OrientationExt | undefined;
+      if (orient && typeof orient.lock === "function") {
+        if (isFull) {
+          orient.lock("landscape").catch(() => {
+            // Gracefully ignore: browser may not allow orientation lock
+          });
+        } else {
+          orient.unlock();
+        }
+      }
+    };
+
+    // iOS-specific: webkitEnterFullscreen fires events on the <video> element
+    const handleVideoFullBegin = () => setIsFullscreen(true);
+    const handleVideoFullEnd = () => {
+      setIsFullscreen(false);
+      (screen.orientation as ScreenOrientation | undefined)?.unlock();
+
+    };
+
+    const vid = videoRef.current;
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    vid?.addEventListener("webkitbeginfullscreen", handleVideoFullBegin);
+    vid?.addEventListener("webkitendfullscreen", handleVideoFullEnd);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange,
+      );
+      vid?.removeEventListener("webkitbeginfullscreen", handleVideoFullBegin);
+      vid?.removeEventListener("webkitendfullscreen", handleVideoFullEnd);
+    };
   }, []);
 
   // ─── Video source loading ──────────────────────────────────────────────────
@@ -213,7 +265,18 @@ export function YTPlayer({
       video
         .play()
         .then(() => setIsPlaying(true))
-        .catch(() => {});
+        .catch(() => {
+          // Autoplay with sound blocked — retry muted (both iOS and desktop)
+          video.muted = true;
+          setIsMuted(true);
+          video
+            .play()
+            .then(() => {
+              setIsPlaying(true);
+              setShowUnmute(true); // prompt user to unmute
+            })
+            .catch(() => {}); // still blocked (low-power mode etc.); ignore
+        });
     }
   }, [src]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -230,6 +293,20 @@ export function YTPlayer({
     if (!v) return;
     v.playbackRate = playbackRate;
   }, [playbackRate]);
+
+  // ─── iOS volume API detection (once, after first render) ─────────────────
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    // On iOS Safari, setting video.volume has no effect; the value stays at 1.
+    // We probe by setting to a distinct value and checking if it changed.
+    const prev = v.volume;
+    v.volume = prev > 0.5 ? 0.499 : 0.501;
+    const changed = v.volume !== prev;
+    // Restore original value immediately
+    v.volume = prev;
+    setVolumeApiAvailable(changed);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Subtitles ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -417,11 +494,46 @@ export function YTPlayer({
 
   function toggleFullscreen() {
     const el = playerRef.current;
+    const vid = videoRef.current;
     if (!el) return;
-    if (document.fullscreenElement === el) {
-      document.exitFullscreen();
+
+    const isCurrentlyFull =
+      document.fullscreenElement === el ||
+      (document as unknown as { webkitFullscreenElement: Element | null })
+        .webkitFullscreenElement === el ||
+      (vid as unknown as { webkitDisplayingFullscreen?: boolean })
+        ?.webkitDisplayingFullscreen;
+
+    if (isCurrentlyFull) {
+      // Exit: standard → webkit prefix fallback
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else {
+        (
+          document as unknown as {
+            webkitExitFullscreen?: () => void;
+          }
+        ).webkitExitFullscreen?.();
+      }
     } else {
-      el.requestFullscreen();
+      // Enter: standard API first; on iOS Safari it throws, so fall back to
+      // video.webkitEnterFullscreen() which triggers the native iOS player.
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {
+          // Likely iOS Safari — fall back to native video fullscreen
+          (
+            vid as unknown as {
+              webkitEnterFullscreen?: () => void;
+            }
+          )?.webkitEnterFullscreen?.();
+        });
+      } else {
+        (
+          vid as unknown as {
+            webkitEnterFullscreen?: () => void;
+          }
+        )?.webkitEnterFullscreen?.();
+      }
     }
     revealChrome();
   }
@@ -523,6 +635,14 @@ export function YTPlayer({
 
   // ─── Gesture layer click (single/double tap) ───────────────────────────────
   function handleGestureClick(e: React.MouseEvent) {
+    // On touch devices: if controls are hidden, the first tap should only
+    // reveal chrome without toggling play. This prevents accidental play/pause
+    // when the user is simply trying to see the controls.
+    if (!chromeVisible && !keepControlsVisible) {
+      revealChrome();
+      return;
+    }
+
     tapCountRef.current += 1;
     tapXRef.current = e.clientX;
 
@@ -645,6 +765,26 @@ export function YTPlayer({
               {author && <div className={s.ytpTitleSubtext}>{author}</div>}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Layer 2: muted-autoplay unmute prompt ─────────────────────────── */}
+      {showUnmute && (
+        <div className={s.ytpUnmutePrompt} data-layer="2">
+          <button
+            className={s.ytpUnmuteButton}
+            aria-label="Unmute"
+            onClick={() => {
+              const v = videoRef.current;
+              if (!v) return;
+              v.muted = false;
+              setIsMuted(false);
+              setShowUnmute(false);
+            }}
+          >
+            <MuteIcon />
+            <span className={s.ytpUnmuteLabel}>Tap to unmute</span>
+          </button>
         </div>
       )}
 
@@ -1166,8 +1306,8 @@ export function YTPlayer({
               </YtpButton>
             )}
 
-            {/* Volume area */}
-            <span
+            {/* Volume area — hidden on iOS where volume API is unavailable */}
+            {volumeApiAvailable && <span
               className={`${s.ytpVolumeArea} ${volumeVisible ? s.ytpVolumeAreaExpanded : ""}`}
               data-ytp-component="volume-area"
             >
@@ -1218,7 +1358,7 @@ export function YTPlayer({
                   />
                 </div>
               </div>
-            </span>
+            </span>}
 
             {/* Time display — click to toggle elapsed / remaining */}
             <div
