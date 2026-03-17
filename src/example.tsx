@@ -293,6 +293,9 @@ export function FullExample() {
           onEnded={() => { if (hasNext) goTo(index + 1); }}
           onTheaterChange={setIsTheater}
           onTimeUpdate={() => { /* throttled 4Hz */ }}
+          episodes={PLAYLIST.map((item) => ({ title: item.title }))}
+          activeEpisodeIndex={index}
+          onEpisodeChange={goTo}
         />
       </div>
 
