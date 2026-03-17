@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run build:preview",
+  "outputDirectory": "dist-preview",
+  "framework": null,
+  "rewrites": [
+    { "source": "/settings", "destination": "/settings.html" }
+  ]
+}

@@ -17,12 +17,13 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
+    "build:preview": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/ --ext .ts,.tsx --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "vite",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist dist-preview"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
