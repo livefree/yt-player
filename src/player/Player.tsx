@@ -979,6 +979,22 @@ export function YTPlayer({
         </div>
       )}
 
+      {/* ── Layer 1: chrome top right (AirPlay + PiP) ───────────────────── */}
+      {(airPlayAvailable || "pictureInPictureEnabled" in document) && (
+        <div className={s.ytpChromeTopRight} data-layer="1">
+          {airPlayAvailable && (
+            <YtpButton tooltip="AirPlay" onClick={triggerAirPlay}>
+              <AirPlayIcon />
+            </YtpButton>
+          )}
+          {"pictureInPictureEnabled" in document && (
+            <YtpButton tooltip="Picture-in-picture" onClick={togglePip}>
+              <PipIcon />
+            </YtpButton>
+          )}
+        </div>
+      )}
+
       {/* ── Layer 2: muted-autoplay unmute prompt ─────────────────────────── */}
       {showUnmute && (
         <div className={s.ytpUnmutePrompt} data-layer="2">
@@ -1654,20 +1670,6 @@ export function YTPlayer({
                   className={s.ytpTheaterButton}
                 >
                   <TheaterIcon active={isTheater} />
-                </YtpButton>
-              )}
-
-              {/* AirPlay — iOS Safari only */}
-              {airPlayAvailable && (
-                <YtpButton tooltip="AirPlay" onClick={triggerAirPlay}>
-                  <AirPlayIcon />
-                </YtpButton>
-              )}
-
-              {/* PiP */}
-              {"pictureInPictureEnabled" in document && (
-                <YtpButton tooltip="Picture-in-picture" onClick={togglePip}>
-                  <PipIcon />
                 </YtpButton>
               )}
 
