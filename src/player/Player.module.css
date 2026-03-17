@@ -47,6 +47,7 @@
   --ytp-volume-panel-width:   72px;               /* expanded volume panel width */
   --ytp-volume-track-bg:      rgba(255, 255, 255, 0.30); /* volume track */
   --ytp-volume-handle-size:   8px;                /* volume handle dot diameter */
+  --ytp-volume-fill-bg:       #fff;               /* volume fill bar & handle color */
   --ytp-tooltip-bg:           rgba(28, 28, 28, 0.90); /* tooltip background */
   --ytp-tooltip-color:        #fff;               /* tooltip text */
 }
@@ -872,7 +873,10 @@
 
 .ytpVolumePanel {
   width: 0;
+  height: var(--ytp-btn-size); /* must match area height so handle isn't clipped */
   overflow: hidden;
+  display: flex;
+  align-items: center;
   transition: width 0.15s ease;
 }
 
@@ -904,7 +908,7 @@
   left: 0;
   top: 0;
   height: 100%;
-  background: #fff;
+  background: var(--ytp-volume-fill-bg);
   border-radius: 2px;
   pointer-events: none;
 }
@@ -919,7 +923,7 @@
   width: var(--ytp-volume-handle-size);
   height: var(--ytp-volume-handle-size);
   border-radius: 50%;
-  background: #fff;
+  background: var(--ytp-volume-fill-bg);
   pointer-events: none;
 }
 
