@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-03-16 — 控制栏按钮组合 pill 与音量展开效果
+
+**Task:** 细化按钮视觉分组：右侧共用 pill、时间显示 pill、音量展开 pill。
+
+### Fix 1: 右侧按钮组 pill 背景
+
+- **File:** `src/player/Player.module.css`
+- **Fix:** 给 `.ytpRightControls` 添加 `background: rgba(0,0,0,0.15); border-radius: 20px;`，所有右侧按钮组合为一个长条 pill。
+- 按钮内部 background 改为 `transparent`，悬停时显示 `rgba(255,255,255,0.12)`（浅色圆形，视觉上半径略小于 pill 端部），实现「pill 内单按钮悬浮」效果。
+
+### Fix 2: 时间显示 pill 背景
+
+- **File:** `src/player/Player.module.css`
+- **Fix:** 给 `.ytpTimeDisplay` 添加 `background: rgba(0,0,0,0.15); border-radius: 16px; height: 32px; padding: 0 10px;`，将可点击的时间显示区域视觉化为独立 pill。
+
+### Fix 3: 音量区域动态 pill
+
+- **File:** `src/player/Player.module.css`
+- **Fix:** 给 `.ytpVolumeArea` 添加 `background: rgba(0,0,0,0.15); border-radius: 20px;`，音量按钮背景移至容器层。
+- 折叠时容器宽度 ≈ 40px，外观与圆形按钮相同；展开时随 `.ytpVolumePanel` 宽度增长（0→60px），背景自然延伸为包含水平条的 pill。
+- `.ytpVolumeArea .ytpButton` 改为 `transparent`，避免双重圆形叠加。
+
+---
+
 ## 2026-03-16 — 按钮配色调整：适配亮色与暗色背景
 
 **Task:** 参考截图分析，将按钮背景改为深色半透明，在亮色背景下呈灰色圆形，在暗色背景下几乎不可见。

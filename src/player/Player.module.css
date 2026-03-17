@@ -740,12 +740,22 @@
   min-width: 0;
 }
 
-/* Right controls wrapper */
+/* Right controls wrapper — single pill background for all right-side buttons */
 .ytpRightControls {
   display: flex;
   align-items: center;
   gap: 0;
   flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+}
+
+/* Buttons inside right controls: transparent bg; hover = lighter circle within pill */
+.ytpRightControls .ytpButton {
+  background: transparent;
+}
+.ytpRightControls .ytpButton:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* Right sub-groups */
@@ -816,10 +826,22 @@
 
 /* ─── Volume area ────────────────────────────────────────────────────────────── */
 
+/* Volume area: always shows as a pill/circle; background expands with the slider */
 .ytpVolumeArea {
   display: flex;
   align-items: center;
   height: 40px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+  transition: background 0.1s;
+}
+
+/* Button inside volume area: no individual circle (the area itself is the pill) */
+.ytpVolumeArea .ytpButton {
+  background: transparent;
+}
+.ytpVolumeArea .ytpButton:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .ytpMuteButton {
@@ -886,10 +908,13 @@
 .ytpTimeDisplay {
   display: flex;
   align-items: center;
-  padding: 0 4px;
+  padding: 0 10px;
+  height: 32px;
   white-space: nowrap;
   user-select: none;
   cursor: pointer;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
 }
 
 .ytpTimeWrapper {
