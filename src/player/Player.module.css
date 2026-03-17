@@ -687,8 +687,13 @@
   outline: none;
 }
 
-.ytpProgressBarContainer:hover .ytpScrubberButton {
+.ytpProgressBarContainer:hover .ytpScrubberButton,
+.ytpProgressBarContainer.ytpProgressBarScrubbing .ytpScrubberButton {
   transform: scale(1);
+}
+
+.ytpProgressBarContainer.ytpProgressBarScrubbing .ytpProgressList {
+  transform: scaleY(1);
 }
 
 .ytpChaptersContainer {
@@ -1270,10 +1275,15 @@
   /* Prevent double-tap browser zoom on interactive elements */
   .ytpGestureLayer,
   .ytpButton,
-  .ytpProgressBarContainer,
   .ytpTimeDisplay,
   .ytpVolumeArea {
     touch-action: manipulation;
+  }
+
+  /* Progress bar needs full touch control for drag-to-scrub; disable browser
+     scroll/zoom handling so touchmove fires freely on this element. */
+  .ytpProgressBarContainer {
+    touch-action: none;
   }
 
   /* System hardware buttons handle volume on all mobile platforms;
