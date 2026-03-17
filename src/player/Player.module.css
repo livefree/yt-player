@@ -43,19 +43,23 @@
 
   /* ── Global / Layout ──────────────────────────────────────────────────── */
   --ytp-btn-size:          32px;                /* hitbox = clickable area (w = h) */
-  --ytp-btn-gap:           0px;                 /* spacing between left-side controls */
+  --ytp-btn-gap:           12px;                /* spacing between controls (left-side and right pill) */
+  --ytp-right-bg-px:       6px;                 /* right controls pill: horizontal padding on each side */
 
   /* ── Icon layer ───────────────────────────────────────────────────────── */
   --ytp-icon-color:        #ffffff;             /* all button icons + time text */
 
   /* ── Background layer (Layer 1) ───────────────────────────────────────── */
-  --ytp-bg-height:         var(--ytp-btn-size); /* backdrop height — same for all controls */
+  --ytp-bg-height:         36px;                /* backdrop height — slightly taller than hitbox */
   --ytp-bg-color:          rgba(0, 0, 0, 0.15); /* backdrop fill */
   --ytp-play-bg-width:     var(--ytp-bg-height); /* play bg width (= height → circle) */
   --ytp-next-bg-width:     var(--ytp-bg-height); /* next bg width */
+  /* Container bg horizontal extension (extends ::before beyond element edge) */
+  --ytp-vol-bg-px:         4px;                /* volume area bg extends this far on each side */
+  --ytp-time-bg-px:        4px;                /* time display bg extends this far on each side */
 
   /* ── Hover layer (Layer 2) ────────────────────────────────────────────── */
-  --ytp-hover-height:      var(--ytp-btn-size); /* hover pill height — same for all */
+  --ytp-hover-height:      28px;               /* hover height — smaller than bg, sits inside it */
   --ytp-hover-color:       rgba(255, 255, 255, 0.12); /* hover fill */
   --ytp-active-color:      rgba(255, 255, 255, 0.22); /* click / :active fill */
   --ytp-play-hover-width:  var(--ytp-hover-height); /* play hover width */
@@ -76,8 +80,9 @@
   --ytp-vol-handle-size:   8px;                /* handle dot diameter */
 
   /* ── Tooltip ──────────────────────────────────────────────────────────── */
-  --ytp-tooltip-bg:        rgba(28, 28, 28, 0.90);
-  --ytp-tooltip-color:     #ffffff;
+  --ytp-tooltip-bg:           #1c1c1c; /* solid color; opacity controlled separately */
+  --ytp-tooltip-bg-opacity:   0.90;    /* background-only opacity (0–1) */
+  --ytp-tooltip-color:        #ffffff;
 }
 
 .moviePlayer [data-layer="0"] {
@@ -774,7 +779,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 36px;
+  height: var(--ytp-bg-height); /* scales with bg layer so nothing overflows */
   padding-bottom: 6px;
   margin-top: 4px;
 }
@@ -792,11 +797,12 @@
 .ytpRightControls {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: var(--ytp-btn-gap);
   flex-shrink: 0;
   background: var(--ytp-bg-color);
   height: var(--ytp-bg-height);
   border-radius: calc(var(--ytp-bg-height) / 2);
+  padding: 0 var(--ytp-right-bg-px); /* breathing room at pill edges */
 }
 
 /* Buttons inside right controls: background from container; ::before hidden */
@@ -812,6 +818,7 @@
 .ytpRightControlsRight {
   display: flex;
   align-items: center;
+  gap: var(--ytp-btn-gap);
 }
 
 /* ─── Button base (ytp-button) ──────────────────────────────────────────────── */
@@ -887,7 +894,7 @@
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
-  background: var(--ytp-tooltip-bg);
+  background: transparent; /* bg rendered by ::before so opacity only affects backdrop */
   color: var(--ytp-tooltip-color);
   font-size: 12px;
   line-height: 1.4;
@@ -898,12 +905,36 @@
   opacity: 0;
   transition: opacity 0.1s 0.4s;
   z-index: 100;
-  /* Ensure tooltip renders above hover ::after layer */
-  isolation: isolate;
+  isolation: isolate; /* confines ::before z-index: -1 so it stays behind text */
+}
+
+/* Tooltip background layer: independent opacity so text stays fully opaque */
+.ytpTooltip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--ytp-tooltip-bg);
+  opacity: var(--ytp-tooltip-bg-opacity);
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .ytpButton:hover .ytpTooltip {
   opacity: 1;
+}
+
+/* ── Tooltip edge-pinning: prevent clipping by player overflow:hidden ─────── */
+/* Left-edge button (play): align tooltip left edge with button left edge */
+.ytpPlayButton .ytpTooltip {
+  left: 0;
+  transform: none;
+}
+/* Right-edge button (last in right-controls-right, always fullscreen): right-align */
+.ytpRightControlsRight > :last-child .ytpTooltip {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 /* Active/pressed state for toggle buttons */
@@ -913,23 +944,42 @@
 
 /* ─── Volume area ────────────────────────────────────────────────────────────── */
 
-/* Volume area — shared background layer from container (not per-button ::before).
-   Hover covers the ENTIRE area (button + slider panel) via container ::after. */
+/* Volume area — three-layer model on a container element:
+   ::before  = background pill  (extends --ytp-vol-bg-px beyond element on each side)
+   ::after   = hover overlay    (left:0/right:0 = element edge, naturally inside bg)
+   children  = mute button + slider panel (unaffected by pseudo-elements)          */
 .ytpVolumeArea {
   display: flex;
   align-items: center;
   height: var(--ytp-bg-height);
-  background: var(--ytp-bg-color);
-  border-radius: calc(var(--ytp-bg-height) / 2);
-  position: relative; /* needed for ::after overlay */
+  position: relative; /* stacking context for ::before / ::after */
+  /* No direct background — handled by ::before so width can extend independently */
 }
 
-/* Container-level hover layer: covers full area including slider panel */
+/* Layer 1: Background — extends beyond content edge, same height as standalone buttons */
+.ytpVolumeArea::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--ytp-vol-bg-px));
+  right: calc(-1 * var(--ytp-vol-bg-px));
+  top: 50%;
+  height: var(--ytp-bg-height);
+  transform: translateY(-50%);
+  background: var(--ytp-bg-color);
+  border-radius: calc(var(--ytp-bg-height) / 2);
+  pointer-events: none;
+}
+
+/* Layer 2: Hover — left:0/right:0 matches element edge → sits inside the extended bg */
 .ytpVolumeArea::after {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--ytp-hover-height);
+  transform: translateY(-50%);
+  border-radius: calc(var(--ytp-hover-height) / 2);
   background: transparent;
   pointer-events: none;
   transition: background 0.1s ease;
@@ -967,7 +1017,7 @@
 
 .ytpVolumePanel {
   width: 0;
-  height: var(--ytp-btn-size); /* must match area height so handle isn't clipped */
+  height: var(--ytp-btn-size); /* slider UI is sized from btn-size; bg-height covers it via flex centering */
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1023,6 +1073,10 @@
 
 /* ─── Time display ──────────────────────────────────────────────────────────── */
 
+/* Time display — three-layer model matching volume area approach:
+   ::before  = background pill  (extends --ytp-time-bg-px beyond element on each side)
+   ::after   = hover overlay    (left:0/right:0 = element edge, naturally inside bg)
+   padding   = 0 10px gives breathing room for text inside the element            */
 .ytpTimeDisplay {
   display: flex;
   align-items: center;
@@ -1032,17 +1086,34 @@
   user-select: none;
   cursor: pointer;
   color: var(--ytp-icon-color);
-  background: var(--ytp-bg-color);
-  border-radius: calc(var(--ytp-bg-height) / 2);
-  position: relative; /* needed for ::after hover overlay */
+  position: relative; /* stacking context for ::before / ::after */
+  /* No direct background — handled by ::before so width can extend independently */
 }
 
-/* Hover layer — same model as buttons but applied to the pill container */
+/* Layer 1: Background — extends beyond padded element edge */
+.ytpTimeDisplay::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--ytp-time-bg-px));
+  right: calc(-1 * var(--ytp-time-bg-px));
+  top: 50%;
+  height: var(--ytp-bg-height);
+  transform: translateY(-50%);
+  background: var(--ytp-bg-color);
+  border-radius: calc(var(--ytp-bg-height) / 2);
+  pointer-events: none;
+}
+
+/* Layer 2: Hover — left:0/right:0 matches element edge → sits inside the extended bg */
 .ytpTimeDisplay::after {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--ytp-hover-height);
+  transform: translateY(-50%);
+  border-radius: calc(var(--ytp-hover-height) / 2);
   background: transparent;
   pointer-events: none;
   transition: background 0.1s ease;

@@ -43,6 +43,10 @@ export interface PlayerProps {
   chapters?: Chapter[];
   /** Called when playback ends */
   onEnded?: () => void;
+  /** Called when user clicks Next or presses Shift+N. When omitted the Next button is hidden. */
+  onNext?: () => void;
+  /** Called whenever theater mode is toggled, with the new state */
+  onTheaterChange?: (isTheater: boolean) => void;
   /** Called when current time changes, throttled to ~250ms */
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   /** Resume from this timestamp (seconds) */

@@ -95,6 +95,35 @@ function PxControl({
   );
 }
 
+function OpacityControl({
+  spec,
+  current,
+  onChange,
+}: {
+  spec: VarSpec;
+  current: string;
+  onChange: (v: string) => void;
+}) {
+  const val = parseFloat(current || spec.default) || 0;
+  return (
+    <div style={styles.controlRow}>
+      <label style={styles.controlLabel}>{spec.label}</label>
+      <div style={styles.controlRight}>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={val}
+          onChange={(e) => onChange(e.currentTarget.value)}
+          style={styles.rangeInput}
+        />
+        <span style={styles.controlValue}>{current || spec.default}</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export function App() {
@@ -259,18 +288,22 @@ export function App() {
           {/* Controls */}
           <div style={styles.controls}>
             <div style={styles.sectionTitle}>{activeDef.label}</div>
-            {activeDef.vars.length === 0 && (
-              <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 12, lineHeight: 1.6, padding: "8px 0" }}>
-                This component uses only shared tokens.<br />
-                Edit them in the <strong style={{ color: "rgba(255,255,255,0.7)" }}>Global</strong> tab.
-              </div>
-            )}
             {activeDef.vars.map((spec) => {
               const current = overrides[spec.variable] ?? "";
               const onChange = (v: string) => setVar(spec.variable, v);
               if (spec.type === "color") {
                 return (
                   <ColorControl
+                    key={spec.variable}
+                    spec={spec}
+                    current={current}
+                    onChange={onChange}
+                  />
+                );
+              }
+              if (spec.type === "opacity") {
+                return (
+                  <OpacityControl
                     key={spec.variable}
                     spec={spec}
                     current={current}

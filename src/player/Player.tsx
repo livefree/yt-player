@@ -76,6 +76,8 @@ export function YTPlayer({
   autoplay = false,
   initialVolume = 1,
   defaultTheaterMode = false,
+  onNext,
+  onTheaterChange,
   style,
   keepControlsVisible = false,
 }: PlayerProps) {
@@ -301,6 +303,12 @@ export function YTPlayer({
           e.preventDefault();
           cycleSubtitles();
           break;
+        case "N":
+          if (e.shiftKey && onNext) {
+            e.preventDefault();
+            onNext();
+          }
+          break;
         case "[":
           e.preventDefault();
           setPlaybackRate((r) => clamp(r - SPEED_STEP, 0.25, 2));
@@ -315,7 +323,7 @@ export function YTPlayer({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [volume, isMuted, prevVolume, subtitles, activeSubId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [volume, isMuted, prevVolume, subtitles, activeSubId, onNext]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Outside-click to close panels ────────────────────────────────────────
   useEffect(() => {
@@ -419,7 +427,10 @@ export function YTPlayer({
   }
 
   function toggleTheater() {
-    setIsTheater((v) => !v);
+    setIsTheater((v) => {
+      onTheaterChange?.(!v);
+      return !v;
+    });
     setOpenPanel(null);
     revealChrome();
   }
@@ -1139,7 +1150,7 @@ export function YTPlayer({
           <div className={s.ytpLeftControls}>
             {/* Play/Pause */}
             <YtpButton
-              tooltip={isPlaying ? "Pause (k)" : "Play (k)"}
+              tooltip={isPlaying ? "Pause (K)" : "Play (K)"}
               onClick={togglePlay}
               ariaLabel={isPlaying ? "Pause" : "Play"}
               className={s.ytpPlayButton}
@@ -1148,10 +1159,12 @@ export function YTPlayer({
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </YtpButton>
 
-            {/* Next */}
-            <YtpButton tooltip="Next (SHIFT+N)" ariaLabel="Next" className={s.ytpNextButton} data-ytp-component="next-btn">
-              <NextIcon />
-            </YtpButton>
+            {/* Next — only shown when caller provides onNext */}
+            {onNext && (
+              <YtpButton tooltip="Next (SHIFT+N)" ariaLabel="Next" onClick={onNext} className={s.ytpNextButton} data-ytp-component="next-btn">
+                <NextIcon />
+              </YtpButton>
+            )}
 
             {/* Volume area */}
             <span
@@ -1160,7 +1173,7 @@ export function YTPlayer({
             >
               <div className={s.ytpMuteButton}>
                 <YtpButton
-                  tooltip={isMuted ? "Unmute (m)" : "Mute (m)"}
+                  tooltip={isMuted ? "Unmute (M)" : "Mute (M)"}
                   onClick={toggleMute}
                   onMouseEnter={revealVolumeSlider}
                 >
@@ -1254,7 +1267,7 @@ export function YTPlayer({
               {/* Subtitles */}
               {subtitles.length > 0 && (
                 <YtpButton
-                  tooltip="Subtitles/closed captions (c)"
+                  tooltip="Subtitles/closed captions (C)"
                   onClick={cycleSubtitles}
                   ariaPressed={!!activeSubId}
                 >
@@ -1274,14 +1287,16 @@ export function YTPlayer({
             </div>
 
             <div className={s.ytpRightControlsRight}>
-              {/* Theater mode */}
-              <YtpButton
-                tooltip={isTheater ? "Default view (t)" : "Theater mode (t)"}
-                onClick={toggleTheater}
-                ariaPressed={isTheater}
-              >
-                <TheaterIcon active={isTheater} />
-              </YtpButton>
+              {/* Theater mode — hidden in fullscreen */}
+              {!isFullscreen && (
+                <YtpButton
+                  tooltip={isTheater ? "Default view (T)" : "Theater mode (T)"}
+                  onClick={toggleTheater}
+                  ariaPressed={isTheater}
+                >
+                  <TheaterIcon active={isTheater} />
+                </YtpButton>
+              )}
 
               {/* PiP */}
               {"pictureInPictureEnabled" in document && (
@@ -1293,7 +1308,7 @@ export function YTPlayer({
               {/* Fullscreen */}
               <YtpButton
                 tooltip={
-                  isFullscreen ? "Exit full screen (f)" : "Full screen (f)"
+                  isFullscreen ? "Exit full screen (F)" : "Full screen (F)"
                 }
                 onClick={toggleFullscreen}
                 ariaPressed={isFullscreen}
