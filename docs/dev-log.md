@@ -1,5 +1,24 @@
 # Development Log
 
+## 2026-03-16 — 进度条悬停颜色、红点同步与尺寸比例修复
+
+**Task:** 修复进度条悬停时三个视觉问题。
+
+### Fix 1: 悬停时已播放区域变浅红
+
+- **File:** `src/player/Player.module.css`
+- **Root cause:** `.ytpHoverProgress`（半透明白色）在 DOM 中位于 `.ytpPlayProgress` 之后，因此渲染在红色层之上，叠加后呈粉红色。
+- **Fix:** 给 `.ytpPlayProgress` 添加 `z-index: 1`，使红色已播放层始终渲染在 hover ghost 之上。
+
+### Fix 2 & 3: 红点仅悬停时出现 + 尺寸不随进度条等比增大
+
+- **File:** `src/player/Player.module.css`
+- **Root cause:** `.ytpScrubberButton` 默认 `transform: scale(0)` 完全隐藏，且悬停时直接跳至 `scale(1)`，与进度条从 3px → 5px（比例 5/3 ≈ 1.667）不匹配。
+- **Fix:** 将默认值改为 `transform: scale(0.6)`（与 3px 基准匹配），悬停时改为 `scale(1)`（与 5px 粗细匹配）。比例 `1 / 0.6 ≈ 1.667 = 5/3`，完全对齐。同时添加 `transition: transform 0.15s ease` 使缩放平滑。
+- 红点现在在控制栏可见时始终显示，仅尺寸随悬停状态变化。
+
+---
+
 ## 2026-03-16 — 进度条与控制按钮之间增加间距
 
 **Task:** 避免操作进度条时误触下方按钮。

@@ -1,24 +1,25 @@
-# Task: 进度条与控制按钮之间增加间距
+# Task: 修复进度条悬停时颜色、红点同步和尺寸比例三个问题
 
 ## Status
 done
 
 ## Description
 
-进度条（`.ytpProgressBarContainer`）与下方控制按钮栏（`.ytpChromeControls`）当前紧靠在一起，鼠标容易在拖动进度条时误触控制按钮。
+1. **悬停时已播放部分变浅红** — 悬停时 hover ghost（半透明白色）叠在红色已播放层之上，使其变成粉红色。根本原因：DOM 顺序导致 `.ytpHoverProgress` 渲染在 `.ytpPlayProgress` 之上。修复：给 `.ytpPlayProgress` 加 `z-index: 1`，使其始终在 hover ghost 之上。
 
-在两者之间增加少量间距（约 4px），提升操作精准度，避免误操作。
+2. **红点仅在悬停时出现，不跟随播放位置** — `.ytpScrubberButton` 默认 `transform: scale(0)` 完全隐藏。需改为默认可见（`scale(0.6)`），悬停时放大（`scale(1)`）。
+
+3. **进度条变宽时红点不等比例增大** — 进度条从 3px → 5px（×5/3），红点应从 `scale(0.6)` → `scale(1)`（比例一致，`1 / 0.6 ≈ 1.67 ≈ 5/3`）。问题 2 和 3 同一修复解决。
 
 ## Acceptance Criteria
-- [ ] 进度条底部与控制按钮之间有可见的小间隙
-- [ ] 控制栏整体外观不破坏（对齐、高度合理）
+- [ ] 悬停时已播放区域保持纯红色，不变浅
+- [ ] 红点在控制栏可见时始终显示（不只在悬停时出现）
+- [ ] 悬停时红点尺寸增大，与进度条加粗比例一致
 - [ ] `npm run typecheck` 退出码为 0
 - [ ] `npm test` 退出码为 0
 
 ## Constraints
 - 仅修改 `src/player/Player.module.css`，不改动 JSX
-- 不增加新依赖
 
 ## Notes
-- 修改 `.ytpProgressBarContainer` 的 `padding-bottom`，或在 `.ytpChromeControls` 添加 `margin-top`
-- 间距不宜过大，4px 为宜（控制栏空间有限）
+- 进度条高度比：5/3 ≈ 1.667；红点 scale 比：1/0.6 ≈ 1.667 — 完全一致

@@ -644,13 +644,14 @@
   transition: transform 0.1s linear;
 }
 
-/* Played */
+/* Played — z-index: 1 keeps it above the hover ghost */
 .ytpPlayProgress {
   position: absolute;
   inset: 0;
   background: #f00; /* YT red */
   transform-origin: left;
   transform: scaleX(0);
+  z-index: 1;
 }
 
 /* Hover ghost */
@@ -685,8 +686,9 @@
   height: 13px;
   border-radius: 50%;
   background: #f00;
-  transform: scale(0);
-  transition: transform 0.1s;
+  /* scale(0.6) matches bar 3px→5px ratio (1/0.6 ≈ 5/3); always visible */
+  transform: scale(0.6);
+  transition: transform 0.15s ease;
   margin-left: -6px;
   margin-top: -6px;
 }
