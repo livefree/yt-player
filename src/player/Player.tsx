@@ -56,6 +56,7 @@ import {
   FullscreenIcon,
   PipIcon,
   NextIcon,
+  AirPlayIcon,
 } from "./components/icons";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -140,6 +141,18 @@ export function YTPlayer({
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverX, setHoverX] = useState(0);
   const progressRailRef = useRef<HTMLDivElement>(null);
+  const progressContainerRef = useRef<HTMLDivElement>(null);
+
+  // ── Progress bar touch scrubbing ──────────────────────────────────────────
+  const progressScrubActiveRef = useRef(false);
+  const progressScrubTimeRef = useRef<number | null>(null);
+  const [isProgressScrubbing, setIsProgressScrubbing] = useState(false);
+
+  // ── Screen Wake Lock ──────────────────────────────────────────────────────
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  // ── AirPlay ───────────────────────────────────────────────────────────────
+  const [airPlayAvailable, setAirPlayAvailable] = useState(false);
 
   // ── Touch gesture state ────────────────────────────────────────────────────
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(
@@ -242,6 +255,162 @@ export function YTPlayer({
       vid?.removeEventListener("webkitendfullscreen", handleVideoFullEnd);
     };
   }, []);
+
+  // ─── AirPlay: detect support + set attribute ───────────────────────────────
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    // x-webkit-airplay="allow" opt-in for iOS Safari AirPlay routing
+    v.setAttribute("x-webkit-airplay", "allow");
+    // Check for webkitShowPlaybackTargetPicker (Safari-only AirPlay API)
+    setAirPlayAvailable(
+      typeof (
+        v as unknown as { webkitShowPlaybackTargetPicker?: unknown }
+      ).webkitShowPlaybackTargetPicker === "function",
+    );
+  }, []);
+
+  // ─── Media Session: metadata ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: title ?? "",
+      artist: author ?? "",
+      artwork: poster ? [{ src: poster }] : undefined,
+    });
+  }, [title, author, poster]);
+
+  // ─── Media Session: action handlers ───────────────────────────────────────
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    const handlers: [MediaSessionAction, MediaSessionActionHandler | null][] = [
+      [
+        "play",
+        () => {
+          videoRef.current
+            ?.play()
+            .then(() => setIsPlaying(true))
+            .catch(() => {});
+        },
+      ],
+      [
+        "pause",
+        () => {
+          videoRef.current?.pause();
+          setIsPlaying(false);
+        },
+      ],
+      [
+        "seekforward",
+        (d) => {
+          doSeek(d.seekOffset ?? SEEK_STEP, "forward");
+        },
+      ],
+      [
+        "seekbackward",
+        (d) => {
+          doSeek(-(d.seekOffset ?? SEEK_STEP), "back");
+        },
+      ],
+      [
+        "seekto",
+        (d) => {
+          const v = videoRef.current;
+          if (d.seekTime != null && v && isFinite(v.duration)) {
+            v.currentTime = d.seekTime;
+            setCurrentTime(d.seekTime);
+          }
+        },
+      ],
+      ...(onNext
+        ? ([["nexttrack", onNext]] as [
+            MediaSessionAction,
+            MediaSessionActionHandler,
+          ][])
+        : []),
+    ];
+    handlers.forEach(([action, handler]) => {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch {
+        // Action may not be supported in all browsers
+      }
+    });
+    return () => {
+      handlers.forEach(([action]) => {
+        try {
+          navigator.mediaSession.setActionHandler(action, null);
+        } catch (_e) {
+          // Action unsupported in this browser; ignore
+        }
+      });
+    };
+  }, [onNext]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Media Session: playback state sync ───────────────────────────────────
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+  }, [isPlaying]);
+
+  // ─── Media Session: position state sync ───────────────────────────────────
+  useEffect(() => {
+    if (!("mediaSession" in navigator) || !duration) return;
+    try {
+      navigator.mediaSession.setPositionState({
+        duration,
+        playbackRate,
+        // position must be ≤ duration; clamp to be safe
+        position: Math.min(currentTime, duration),
+      });
+    } catch {
+      // setPositionState not supported in all browsers
+    }
+  }, [currentTime, duration, playbackRate]);
+
+  // ─── Screen Wake Lock: acquire / release ──────────────────────────────────
+  useEffect(() => {
+    if (!("wakeLock" in navigator)) return;
+    if (isPlaying) {
+      navigator.wakeLock
+        .request("screen")
+        .then((sentinel) => {
+          wakeLockRef.current = sentinel;
+        })
+        .catch(() => {
+          // Permission denied or not supported
+        });
+    } else {
+      wakeLockRef.current?.release().catch(() => {});
+      wakeLockRef.current = null;
+    }
+    return () => {
+      wakeLockRef.current?.release().catch(() => {});
+      wakeLockRef.current = null;
+    };
+  }, [isPlaying]);
+
+  // ─── Screen Wake Lock: re-acquire after tab becomes visible ───────────────
+  useEffect(() => {
+    if (!("wakeLock" in navigator)) return;
+    const handleVisibility = () => {
+      if (
+        document.visibilityState === "visible" &&
+        isPlaying &&
+        !wakeLockRef.current
+      ) {
+        navigator.wakeLock
+          .request("screen")
+          .then((sentinel) => {
+            wakeLockRef.current = sentinel;
+          })
+          .catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
+  }, [isPlaying]);
 
   // ─── Video source loading ──────────────────────────────────────────────────
   useEffect(() => {
@@ -654,6 +823,58 @@ export function YTPlayer({
     setHoverX(e.clientX - rect.left);
   }
 
+  // ─── Progress bar touch scrubbing ─────────────────────────────────────────
+  function updateProgressScrub(clientX: number) {
+    const rail = progressRailRef.current;
+    if (!rail || !duration) return;
+    const rect = rail.getBoundingClientRect();
+    const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
+    const scrubTime = ratio * duration;
+    progressScrubTimeRef.current = scrubTime;
+    setHoverTime(scrubTime);
+    setHoverX(clientX - rect.left);
+  }
+
+  function handleProgressTouchStart(e: React.TouchEvent) {
+    const touch = e.touches[0];
+    if (!touch) return;
+    progressScrubActiveRef.current = true;
+    setIsProgressScrubbing(true);
+    revealChrome();
+    updateProgressScrub(touch.clientX);
+  }
+
+  function handleProgressTouchMove(e: React.TouchEvent) {
+    if (!progressScrubActiveRef.current) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    updateProgressScrub(touch.clientX);
+  }
+
+  function handleProgressTouchEnd() {
+    if (!progressScrubActiveRef.current) return;
+    progressScrubActiveRef.current = false;
+    setIsProgressScrubbing(false);
+    const scrubTime = progressScrubTimeRef.current;
+    progressScrubTimeRef.current = null;
+    const v = videoRef.current;
+    if (scrubTime !== null && v && isFinite(v.duration) && v.duration > 0) {
+      v.currentTime = scrubTime;
+      setCurrentTime(scrubTime);
+      revealChrome();
+    }
+    setHoverTime(null);
+  }
+
+  // ─── AirPlay ───────────────────────────────────────────────────────────────
+  function triggerAirPlay() {
+    const v = videoRef.current;
+    if (!v) return;
+    (
+      v as unknown as { webkitShowPlaybackTargetPicker?: () => void }
+    ).webkitShowPlaybackTargetPicker?.();
+  }
+
   // ─── Chapter markers ──────────────────────────────────────────────────────
   const chapterMarkers = useMemo(() => {
     if (!chapters.length || !duration) return [];
@@ -662,6 +883,14 @@ export function YTPlayer({
       pct: (ch.startTime / duration) * 100,
     }));
   }, [chapters, duration]);
+
+  // ─── Scrubber display position (preview during touch scrub) ──────────────
+  // During touch scrubbing hoverTime holds the preview position; use it so the
+  // scrubber thumb and played bar follow the finger, not the media clock.
+  const displayPct =
+    isProgressScrubbing && hoverTime !== null && duration > 0
+      ? (hoverTime / duration) * 100
+      : progressPct;
 
   // ─── Render ────────────────────────────────────────────────────────────────
   const playerClass = [
@@ -1177,7 +1406,14 @@ export function YTPlayer({
       {/* ── Layer 9: chrome bottom ────────────────────────────────────────── */}
       <div className={s.ytpChromeBottom} data-layer="9">
         {/* ── Progress bar container ──────────────────────────────────────── */}
-        <div className={s.ytpProgressBarContainer} data-ytp-component="progress-bar">
+        <div
+          ref={progressContainerRef}
+          className={`${s.ytpProgressBarContainer} ${isProgressScrubbing ? s.ytpProgressBarScrubbing : ""}`}
+          data-ytp-component="progress-bar"
+          onTouchStart={handleProgressTouchStart}
+          onTouchMove={handleProgressTouchMove}
+          onTouchEnd={handleProgressTouchEnd}
+        >
           <div
             ref={progressRailRef}
             className={s.ytpProgressBar}
@@ -1209,10 +1445,10 @@ export function YTPlayer({
                     className={s.ytpLoadProgress}
                     style={{ transform: `scaleX(${bufferedPct / 100})` }}
                   />
-                  {/* Played */}
+                  {/* Played — follows finger during touch scrubbing */}
                   <div
                     className={s.ytpPlayProgress}
-                    style={{ transform: `scaleX(${progressPct / 100})` }}
+                    style={{ transform: `scaleX(${displayPct / 100})` }}
                   />
                   {/* Hover ghost */}
                   {hoverTime !== null && (
@@ -1237,10 +1473,10 @@ export function YTPlayer({
               />
             ))}
 
-            {/* Scrubber thumb */}
+            {/* Scrubber thumb — follows finger during touch scrubbing */}
             <div
               className={s.ytpScrubberContainer}
-              style={{ left: `${progressPct}%` }}
+              style={{ left: `${displayPct}%` }}
             >
               <div className={s.ytpScrubberButton} />
             </div>
@@ -1418,6 +1654,13 @@ export function YTPlayer({
                   className={s.ytpTheaterButton}
                 >
                   <TheaterIcon active={isTheater} />
+                </YtpButton>
+              )}
+
+              {/* AirPlay — iOS Safari only */}
+              {airPlayAvailable && (
+                <YtpButton tooltip="AirPlay" onClick={triggerAirPlay}>
+                  <AirPlayIcon />
                 </YtpButton>
               )}
 

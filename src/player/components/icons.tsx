@@ -170,6 +170,18 @@ export function PipIcon() {
   );
 }
 
+export function AirPlayIcon() {
+  return (
+    <svg height="24" viewBox="0 0 24 24" width="24" aria-hidden="true">
+      {/* Screen outline + sending triangle — standard AirPlay symbol */}
+      <path
+        d="M6 22h12l-6-7zm15-19H3C1.9 3 1 3.9 1 5v12c0 1.1.9 2 2 2h5v-2H3V5h18v12h-5v2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+        fill="white"
+      />
+    </svg>
+  );
+}
+
 export function NextIcon() {
   return (
     <svg
