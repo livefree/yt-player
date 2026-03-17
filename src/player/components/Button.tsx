@@ -8,7 +8,11 @@ type YtpButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
 };
 
-/** YtpButton — control bar button with tooltip via data-attribute */
+/** YtpButton — control bar button with three-layer visual model:
+ *  Layer 1 (::before): background contrast backdrop
+ *  Layer 2 (::after):  hover / active overlay
+ *  Layer 3 (content):  SVG icon + tooltip span
+ */
 export function YtpButton({
   tooltip,
   onClick,
@@ -26,11 +30,11 @@ export function YtpButton({
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       aria-label={ariaLabel ?? tooltip}
-      data-tooltip={tooltip}
       aria-pressed={ariaPressed}
       {...rest}
     >
       {children}
+      <span className={s.ytpTooltip} aria-hidden="true">{tooltip}</span>
     </button>
   );
 }
