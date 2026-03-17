@@ -761,13 +761,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.15);
   border: none;
   padding: 0;
   width: 40px;
   height: 40px;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: 50%;
   transition: background 0.1s;
   position: relative;
   flex-shrink: 0;
@@ -777,7 +777,7 @@
 }
 
 .ytpButton:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .ytpButton:focus-visible {
