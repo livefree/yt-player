@@ -1,5 +1,12 @@
-import { ReactNode } from "react";
+import { ButtonHTMLAttributes, ReactNode } from "react";
 import s from "../Player.module.css";
+
+type YtpButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  tooltip: string;
+  ariaLabel?: string;
+  ariaPressed?: boolean;
+  children: ReactNode;
+};
 
 /** YtpButton — control bar button with tooltip via data-attribute */
 export function YtpButton({
@@ -10,15 +17,8 @@ export function YtpButton({
   className = "",
   ariaPressed,
   children,
-}: {
-  tooltip: string;
-  onClick?: () => void;
-  onMouseEnter?: () => void;
-  ariaLabel?: string;
-  className?: string;
-  ariaPressed?: boolean;
-  children: ReactNode;
-}) {
+  ...rest
+}: YtpButtonProps) {
   return (
     <button
       type="button"
@@ -28,6 +28,7 @@ export function YtpButton({
       aria-label={ariaLabel ?? tooltip}
       data-tooltip={tooltip}
       aria-pressed={ariaPressed}
+      {...rest}
     >
       {children}
     </button>

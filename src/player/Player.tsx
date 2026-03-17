@@ -76,6 +76,7 @@ export function YTPlayer({
   autoplay = false,
   initialVolume = 1,
   defaultTheaterMode = false,
+  style,
 }: PlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -566,6 +567,7 @@ export function YTPlayer({
     <div
       ref={playerRef}
       className={playerClass}
+      style={style}
       onPointerMove={revealChrome}
       onPointerEnter={revealChrome}
     >
@@ -1040,7 +1042,7 @@ export function YTPlayer({
       {/* ── Layer 9: chrome bottom ────────────────────────────────────────── */}
       <div className={s.ytpChromeBottom} data-layer="9">
         {/* ── Progress bar container ──────────────────────────────────────── */}
-        <div className={s.ytpProgressBarContainer}>
+        <div className={s.ytpProgressBarContainer} data-ytp-component="progress-bar">
           <div
             ref={progressRailRef}
             className={s.ytpProgressBar}
@@ -1138,18 +1140,20 @@ export function YTPlayer({
               tooltip={isPlaying ? "Pause (k)" : "Play (k)"}
               onClick={togglePlay}
               ariaLabel={isPlaying ? "Pause" : "Play"}
+              data-ytp-component="play-btn"
             >
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </YtpButton>
 
             {/* Next */}
-            <YtpButton tooltip="Next (SHIFT+N)" ariaLabel="Next">
+            <YtpButton tooltip="Next (SHIFT+N)" ariaLabel="Next" data-ytp-component="next-btn">
               <NextIcon />
             </YtpButton>
 
             {/* Volume area */}
             <span
               className={`${s.ytpVolumeArea} ${volumeVisible ? s.ytpVolumeAreaExpanded : ""}`}
+              data-ytp-component="volume-area"
             >
               <div className={s.ytpMuteButton}>
                 <YtpButton
@@ -1205,6 +1209,7 @@ export function YTPlayer({
               className={s.ytpTimeDisplay}
               onClick={() => setShowRemaining((v) => !v)}
               title={showRemaining ? "Show elapsed time" : "Show remaining time"}
+              data-ytp-component="time-display"
             >
               <div className={s.ytpTimeWrapper}>
                 <div className={s.ytpTimeContents}>
@@ -1241,7 +1246,7 @@ export function YTPlayer({
           </div>
 
           {/* Right controls */}
-          <div className={s.ytpRightControls}>
+          <div className={s.ytpRightControls} data-ytp-component="right-controls">
             <div className={s.ytpRightControlsLeft}>
               {/* Subtitles */}
               {subtitles.length > 0 && (

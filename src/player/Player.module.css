@@ -29,6 +29,30 @@
 
   /* Layer stacking via data-layer */
   container-type: inline-size;
+
+  /* ── Design tokens (CSS custom properties) ─────────────────────────────────
+   * Override any of these on the player root (or an ancestor) to theme the
+   * player without touching source. All --ytp-* vars are scoped here so they
+   * never leak into the host page's global namespace.
+   * ──────────────────────────────────────────────────────────────────────── */
+  --ytp-brand-color:          #f00;               /* progress fill, scrubber dot */
+  --ytp-btn-size:             32px;               /* button width & height */
+  --ytp-btn-bg:               rgba(0, 0, 0, 0.15); /* standalone button background */
+  --ytp-btn-hover-bg:         rgba(0, 0, 0, 0.30); /* standalone button hover */
+  --ytp-btn-ring-color:       rgba(0, 0, 0, 0.10); /* outer ambient ring */
+  --ytp-btn-ring-size:        4px;                /* ring spread radius */
+  --ytp-pill-bg:              rgba(0, 0, 0, 0.15); /* pill group background */
+  --ytp-pill-btn-hover-bg:    rgba(255, 255, 255, 0.12); /* button hover within pill */
+  --ytp-progress-track-bg:    rgba(255, 255, 255, 0.20); /* unplayed track */
+  --ytp-progress-buffered-bg: rgba(255, 255, 255, 0.40); /* buffered section */
+  --ytp-progress-hover-bg:    rgba(255, 255, 255, 0.50); /* hover preview ghost */
+  --ytp-scrubber-size:        13px;               /* scrubber dot diameter */
+  --ytp-scrubber-scale:       0.6;                /* resting scale (= 3/5 bar ratio) */
+  --ytp-volume-panel-width:   72px;               /* expanded volume panel width */
+  --ytp-volume-track-bg:      rgba(255, 255, 255, 0.30); /* volume track */
+  --ytp-volume-handle-size:   8px;                /* volume handle dot diameter */
+  --ytp-tooltip-bg:           rgba(28, 28, 28, 0.90); /* tooltip background */
+  --ytp-tooltip-color:        #fff;               /* tooltip text */
 }
 
 .moviePlayer [data-layer="0"] {
@@ -622,7 +646,7 @@
 .ytpProgressList {
   position: relative;
   height: 100%;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--ytp-progress-track-bg);
   border-radius: 2px;
   overflow: hidden;
   /* scaleY from center = symmetric expand; 5px × 0.6 = 3px visual at rest */
@@ -639,7 +663,7 @@
 .ytpLoadProgress {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--ytp-progress-buffered-bg);
   transform-origin: left;
   transform: scaleX(0);
   transition: transform 0.1s linear;
@@ -649,7 +673,7 @@
 .ytpPlayProgress {
   position: absolute;
   inset: 0;
-  background: #f00; /* YT red */
+  background: var(--ytp-brand-color);
   transform-origin: left;
   transform: scaleX(0);
   z-index: 1;
@@ -659,7 +683,7 @@
 .ytpHoverProgress {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--ytp-progress-hover-bg);
   transform-origin: left;
 }
 
@@ -683,15 +707,14 @@
 }
 
 .ytpScrubberButton {
-  width: 13px;
-  height: 13px;
+  width: var(--ytp-scrubber-size);
+  height: var(--ytp-scrubber-size);
   border-radius: 50%;
-  background: #f00;
-  /* scale(0.6) matches track 3px→5px ratio (1/0.6 ≈ 5/3); always visible */
-  transform: scale(0.6);
+  background: var(--ytp-brand-color);
+  transform: scale(var(--ytp-scrubber-scale));
   transition: transform 0.15s ease;
-  margin-left: -6.5px; /* exact half of 13px — centers dot on playhead */
-  margin-top: -6.5px;  /* exact half of 13px — centers dot on bar axis */
+  margin-left: calc(var(--ytp-scrubber-size) / -2);
+  margin-top: calc(var(--ytp-scrubber-size) / -2);
 }
 
 /* Progress hover tooltip */
@@ -746,7 +769,7 @@
   align-items: center;
   gap: 0;
   flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--ytp-pill-bg);
   border-radius: 20px;
 }
 
@@ -756,7 +779,7 @@
   box-shadow: none;
 }
 .ytpRightControls .ytpButton:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--ytp-pill-btn-hover-bg);
 }
 
 /* Right sub-groups */
@@ -772,15 +795,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.15);
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.10); /* outer ring: larger ambient bg */
+  background: var(--ytp-btn-bg);
+  box-shadow: 0 0 0 var(--ytp-btn-ring-size) var(--ytp-btn-ring-color);
   border: none;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: var(--ytp-btn-size);
+  height: var(--ytp-btn-size);
   cursor: pointer;
   border-radius: 50%;
-  transition: background 0.1s, box-shadow 0.1s;
+  transition:
+    background 0.1s,
+    box-shadow 0.1s;
   position: relative;
   flex-shrink: 0;
 
@@ -789,8 +814,7 @@
 }
 
 .ytpButton:hover {
-  background: rgba(0, 0, 0, 0.30);
-  /* box-shadow unchanged: outer ring stays same color, only inner 32px darkens */
+  background: var(--ytp-btn-hover-bg);
 }
 
 .ytpButton:focus-visible {
@@ -805,8 +829,8 @@
   bottom: calc(100% + var(--tooltip-offset));
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(28, 28, 28, 0.9);
-  color: #fff;
+  background: var(--ytp-tooltip-bg);
+  color: var(--ytp-tooltip-color);
   font-size: 12px;
   line-height: 1.4;
   white-space: nowrap;
@@ -833,8 +857,8 @@
 .ytpVolumeArea {
   display: flex;
   align-items: center;
-  height: 32px;
-  background: rgba(0, 0, 0, 0.15);
+  height: var(--ytp-btn-size);
+  background: var(--ytp-pill-bg);
   border-radius: 20px;
   transition: background 0.1s;
 }
@@ -845,7 +869,7 @@
   box-shadow: none;
 }
 .ytpVolumeArea .ytpButton:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--ytp-pill-btn-hover-bg);
 }
 
 .ytpMuteButton {
@@ -858,16 +882,16 @@
 }
 
 .ytpVolumeAreaExpanded .ytpVolumePanel {
-  width: 72px; /* +20%: 5px margin × 2 + 62px track */
+  width: var(--ytp-volume-panel-width);
 }
 
 .ytpVolumeSlider {
   position: relative;
-  width: 62px; /* +20% from 52px */
+  width: calc(var(--ytp-volume-panel-width) - 10px); /* 10px = 5px margin × 2 */
   height: 4px;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--ytp-volume-track-bg);
   border-radius: 2px;
-  margin: 0 5px; /* 5px leaves room for 4px-radius handle at edges */
+  margin: 0 5px;
 }
 
 .ytpVolumeInput {
@@ -893,9 +917,12 @@
 .ytpVolumeSliderHandle {
   position: absolute;
   top: 50%;
-  transform: translate(-50%, -50%); /* centers handle at left% position; no margin-left needed */
-  width: 8px;  /* matches progress scrubber default: 13px × scale(0.6) ≈ 8px */
-  height: 8px;
+  transform: translate(
+    -50%,
+    -50%
+  ); /* centers handle at left% position; no margin-left needed */
+  width: var(--ytp-volume-handle-size);
+  height: var(--ytp-volume-handle-size);
   border-radius: 50%;
   background: #fff;
   pointer-events: none;
@@ -907,12 +934,12 @@
   display: flex;
   align-items: center;
   padding: 0 10px;
-  height: 32px;
+  height: var(--ytp-btn-size);
   white-space: nowrap;
   user-select: none;
   cursor: pointer;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 16px;
+  background: var(--ytp-pill-bg);
+  border-radius: calc(var(--ytp-btn-size) / 2);
 }
 
 .ytpTimeWrapper {

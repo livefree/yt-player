@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 // ─── Public interfaces ────────────────────────────────────────────────────────
 
 export interface SubtitleTrack {
@@ -51,6 +53,12 @@ export interface PlayerProps {
   initialVolume?: number;
   /** Enable theater mode by default */
   defaultTheaterMode?: boolean;
+  /**
+   * Inline styles applied to the player root element.
+   * Use to inject CSS custom property overrides for theming:
+   * @example style={{ '--ytp-brand-color': '#1a73e8' }}
+   */
+  style?: CSSProperties & { [key: `--${string}`]: string };
 }
 
 // ─── Internal types ───────────────────────────────────────────────────────────
