@@ -73,16 +73,16 @@ export const REGISTRY: ComponentDef[] = [
         step: 2,
       },
       {
-        variable: "--ytp-btn-bg",
+        variable: "--ytp-pill-bg",
         label: "Button Background",
         type: "color",
         default: "rgba(0,0,0,0.15)",
       },
       {
-        variable: "--ytp-btn-hover-bg",
+        variable: "--ytp-pill-btn-hover-bg",
         label: "Button Hover Background",
         type: "color",
-        default: "rgba(0,0,0,0.30)",
+        default: "rgba(255,255,255,0.12)",
       },
       {
         variable: "--ytp-btn-ring-color",
@@ -115,16 +115,16 @@ export const REGISTRY: ComponentDef[] = [
         step: 2,
       },
       {
-        variable: "--ytp-btn-bg",
+        variable: "--ytp-pill-bg",
         label: "Button Background",
         type: "color",
         default: "rgba(0,0,0,0.15)",
       },
       {
-        variable: "--ytp-btn-hover-bg",
+        variable: "--ytp-pill-btn-hover-bg",
         label: "Button Hover Background",
         type: "color",
-        default: "rgba(0,0,0,0.30)",
+        default: "rgba(255,255,255,0.12)",
       },
     ],
   },
@@ -242,8 +242,6 @@ export const REGISTRY: ComponentDef[] = [
 export const ALL_VARS: string[] = [
   "--ytp-brand-color",
   "--ytp-btn-size",
-  "--ytp-btn-bg",
-  "--ytp-btn-hover-bg",
   "--ytp-btn-ring-color",
   "--ytp-btn-ring-size",
   "--ytp-pill-bg",

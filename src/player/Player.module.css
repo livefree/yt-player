@@ -37,11 +37,9 @@
    * ──────────────────────────────────────────────────────────────────────── */
   --ytp-brand-color:          #f00;               /* progress fill, scrubber dot */
   --ytp-btn-size:             32px;               /* button width & height */
-  --ytp-btn-bg:               rgba(0, 0, 0, 0.15); /* standalone button background */
-  --ytp-btn-hover-bg:         rgba(0, 0, 0, 0.30); /* standalone button hover */
   --ytp-btn-ring-color:       rgba(0, 0, 0, 0.10); /* outer ambient ring */
   --ytp-btn-ring-size:        4px;                /* ring spread radius */
-  --ytp-pill-bg:              rgba(0, 0, 0, 0.15); /* pill group background */
+  --ytp-pill-bg:              rgba(0, 0, 0, 0.15); /* shared background: standalone buttons & pill groups */
   --ytp-pill-btn-hover-bg:    rgba(255, 255, 255, 0.12); /* button hover within pill */
   --ytp-progress-track-bg:    rgba(255, 255, 255, 0.20); /* unplayed track */
   --ytp-progress-buffered-bg: rgba(255, 255, 255, 0.40); /* buffered section */
@@ -795,7 +793,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--ytp-btn-bg);
+  background: var(--ytp-pill-bg);
   box-shadow: 0 0 0 var(--ytp-btn-ring-size) var(--ytp-btn-ring-color);
   border: none;
   padding: 0;
@@ -814,7 +812,7 @@
 }
 
 .ytpButton:hover {
-  background: var(--ytp-btn-hover-bg);
+  background: var(--ytp-pill-btn-hover-bg);
 }
 
 .ytpButton:focus-visible {
