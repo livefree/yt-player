@@ -37,8 +37,6 @@
    * ──────────────────────────────────────────────────────────────────────── */
   --ytp-brand-color:          #f00;               /* progress fill, scrubber dot */
   --ytp-btn-size:             32px;               /* button width & height */
-  --ytp-btn-ring-color:       rgba(0, 0, 0, 0.10); /* outer ambient ring */
-  --ytp-btn-ring-size:        4px;                /* ring spread radius */
   --ytp-pill-bg:              rgba(0, 0, 0, 0.15); /* shared background: standalone buttons & pill groups */
   --ytp-pill-btn-hover-bg:    rgba(255, 255, 255, 0.12); /* button hover within pill */
   --ytp-progress-track-bg:    rgba(255, 255, 255, 0.20); /* unplayed track */
@@ -794,7 +792,6 @@
   align-items: center;
   justify-content: center;
   background: var(--ytp-pill-bg);
-  box-shadow: 0 0 0 var(--ytp-btn-ring-size) var(--ytp-btn-ring-color);
   border: none;
   padding: 0;
   width: var(--ytp-btn-size);

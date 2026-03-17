@@ -84,21 +84,6 @@ export const REGISTRY: ComponentDef[] = [
         type: "color",
         default: "rgba(255,255,255,0.12)",
       },
-      {
-        variable: "--ytp-btn-ring-color",
-        label: "Button Ring Color",
-        type: "color",
-        default: "rgba(0,0,0,0.10)",
-      },
-      {
-        variable: "--ytp-btn-ring-size",
-        label: "Button Ring Size",
-        type: "px",
-        default: "4px",
-        min: 0,
-        max: 12,
-        step: 1,
-      },
     ],
   },
   {
@@ -242,8 +227,6 @@ export const REGISTRY: ComponentDef[] = [
 export const ALL_VARS: string[] = [
   "--ytp-brand-color",
   "--ytp-btn-size",
-  "--ytp-btn-ring-color",
-  "--ytp-btn-ring-size",
   "--ytp-pill-bg",
   "--ytp-pill-btn-hover-bg",
   "--ytp-progress-track-bg",
