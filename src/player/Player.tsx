@@ -312,7 +312,7 @@ export function YTPlayer({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [volume, subtitles, activeSubId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [volume, isMuted, prevVolume, subtitles, activeSubId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Outside-click to close panels ────────────────────────────────────────
   useEffect(() => {

@@ -1,5 +1,24 @@
 # Development Log
 
+## 2026-03-16 — 按钮高度对齐 + M 键静音修复
+
+**Task:** 按钮背景高度统一为 32px；修复键盘静音快捷键 stale closure 导致的取消静音失效问题。
+
+### Fix 1: 按钮背景高度对齐
+
+- **File:** `src/player/Player.module.css`
+- **Fix:** `.ytpButton` `width/height: 40px` → `32px`，与时间显示 pill（32px）高度一致。
+- **Fix:** `.ytpVolumeArea` `height: 40px` → `32px`，保持音量区域圆形/pill 与按钮等高。
+- `border-radius: 20px` 在 32px 高度下自动 cap 至 16px，仍呈完整圆形端部，视觉不变。
+
+### Fix 2: M 键取消静音无效（stale closure）
+
+- **File:** `src/player/Player.tsx`
+- **Root cause:** 键盘 `useEffect` 依赖数组 `[volume, subtitles, activeSubId]` 缺少 `isMuted` 和 `prevVolume`。按 M 键静音后 `isMuted` 变为 `true`，但 handler 不重新注册，下次按 M 时 `toggleMute` 仍捕获旧的 `isMuted = false`，导致再次执行静音分支而非取消静音。
+- **Fix:** 依赖数组改为 `[volume, isMuted, prevVolume, subtitles, activeSubId]`，确保静音状态变化时 handler 持有最新闭包，M 键可正确在静音/取消静音间切换。
+
+---
+
 ## 2026-03-16 — 控制栏按钮组合 pill 与音量展开效果
 
 **Task:** 细化按钮视觉分组：右侧共用 pill、时间显示 pill、音量展开 pill。
