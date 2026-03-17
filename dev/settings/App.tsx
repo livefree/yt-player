@@ -390,7 +390,7 @@ const styles = {
     transition: "color 0.15s, border-color 0.15s",
   },
   tabActive: {
-    borderBottomColor: "#f00",
+    borderBottom: "2px solid #f00",
     color: "#fff",
   },
   panelBody: {
