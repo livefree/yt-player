@@ -33,9 +33,51 @@
 4. 实现代码变更
 5. 逐一验证（见下方命令），全部 exit 0
 6. 在 task.md 中勾选所有 Acceptance Criteria
-7. Commit：`feat/fix/chore/test(<scope>): <描述>`
+7. **Commit（必须）**：`feat/fix/chore/test(<scope>): <描述>`
 8. 将 task.md 归档至 `tasks/done/YYYY-MM-DD-<slug>.md`
 9. 合并回 master，删除 feature branch
+
+---
+
+## Git Commit 规范（强制）
+
+**任何对项目文件的改动，完成后必须立即 commit，不得遗漏。**
+
+### 适用范围
+
+以下类型的改动均需独立 commit，不可跳过：
+
+| 改动类型 | scope 示例 | 示例 message |
+|---------|-----------|-------------|
+| 功能实现 | `player`、`hooks`、`css` | `feat(player): add touch scrub on progress bar` |
+| Bug 修复 | `player`、`css`、`build` | `fix(css): correct z-index for top-right chrome buttons` |
+| 重构 | `player`、`types` | `refactor(types): rename internal Panel type` |
+| 文档 | `readme`、`docs` | `docs(readme): add integration guide` |
+| 配置 / 工具 | `build`、`lint`、`test` | `chore(build): update tsup target to es2020` |
+| 测试 | `test` | `test(player): add seek behavior test cases` |
+| 任务归档 | *(无 scope)* | `chore: archive mobile-ux-enhancements task` |
+
+### Commit 时机
+
+- **任务流程中**：步骤 7（验证全部通过后立即 commit）
+- **任务流程外的临时改动**（如修复 bug、更新文档、调整配置）：改动完成后**当场 commit**，不积压到下一个任务
+
+### Commit Message 格式
+
+```
+<type>(<scope>): <简短描述（中英均可，50 字符内）>
+
+[可选正文：说明 why，不是 what]
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+```
+
+### 禁止行为
+
+- ❌ 改动文件后不 commit 就结束会话
+- ❌ 将多个无关改动堆进同一个 commit
+- ❌ 用 `--no-verify` 跳过 pre-commit hook
+- ❌ 在验证命令未全部通过时 commit 源码文件（文档类改动除外）
 
 ---
 
