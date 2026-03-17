@@ -77,6 +77,7 @@ export function YTPlayer({
   initialVolume = 1,
   defaultTheaterMode = false,
   style,
+  keepControlsVisible = false,
 }: PlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -163,6 +164,7 @@ export function YTPlayer({
   const revealChrome = useCallback(() => {
     setChromeVisible(true);
     setCursorHidden(false);
+    if (keepControlsVisible) return;
     if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
     chromeTimerRef.current = window.setTimeout(
       () => {
@@ -172,7 +174,7 @@ export function YTPlayer({
       },
       isImmersive ? IMMERSIVE_HIDE_DELAY : CHROME_HIDE_DELAY,
     );
-  }, [isImmersive, openPanel]);
+  }, [isImmersive, openPanel, keepControlsVisible]);
 
   // Reset timer when panel opens/closes
   useEffect(() => {

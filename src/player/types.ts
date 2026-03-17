@@ -59,6 +59,8 @@ export interface PlayerProps {
    * @example style={{ '--ytp-brand-color': '#1a73e8' }}
    */
   style?: CSSProperties & { [key: `--${string}`]: string };
+  /** Keep controls always visible; disables auto-hide timer */
+  keepControlsVisible?: boolean;
 }
 
 // ─── Internal types ───────────────────────────────────────────────────────────

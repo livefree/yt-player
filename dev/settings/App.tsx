@@ -234,6 +234,7 @@ export function App() {
           title="Big Buck Bunny"
           author="Blender Foundation"
           style={playerStyle as never}
+          keepControlsVisible
         />
         {/* Transparent intercept layer over the player */}
         <div
