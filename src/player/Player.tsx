@@ -1194,7 +1194,7 @@ export function YTPlayer({
                   />
                   <div
                     className={s.ytpVolumeSliderHandle}
-                    style={{ left: `${effectiveVolume * 52}px` }}
+                    style={{ left: `${effectiveVolume * 100}%` }}
                   />
                 </div>
               </div>

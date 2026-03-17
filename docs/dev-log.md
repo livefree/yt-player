@@ -1,5 +1,22 @@
 # Development Log
 
+## 2026-03-16 — 按钮悬浮分层 + 音量滑动条修复
+
+### Fix 1: Play/Next 按钮背景与悬浮分层
+
+- **File:** `src/player/Player.module.css`
+- 背景（32px）和悬浮变色原本同一图层。改用 `box-shadow: 0 0 0 4px rgba(0,0,0,0.10)` 创建外环（视觉 40px），内部 32px `background` 仍响应悬浮变深。外环在悬浮时不变色，视觉上形成「大背景 + 小悬浮」的层次。
+- 音量区 / 右侧组内按钮覆盖为 `box-shadow: none`（组 pill 提供环境背景，无需外环）。
+
+### Fix 2: 音量滑动条全面修复
+
+- **Files:** `src/player/Player.module.css`, `src/player/Player.tsx`
+- **长度增加 20%：** panel `60px → 72px`，track `52px → 62px`，margin `4px → 5px`（为 handle 边缘留出空间）
+- **定位 Bug 修复：** 旧方案 `left: ${effectiveVolume * 52}px + margin-left: -6px` 在 0% 溢出左侧 6px，100% 溢出 panel 右侧 2px。新方案 `left: ${effectiveVolume * 100}%` + CSS `transform: translate(-50%, -50%)`，handle 两端最多距 panel 边缘 1px，完全不溢出。
+- **Handle 尺寸：** `12px → 8px`（与进度条红点默认大小 13×0.6≈8px 一致），去掉 `margin-left: -6px`，去掉悬浮放大规则。
+
+---
+
 ## 2026-03-16 — 按钮高度对齐 + M 键静音修复
 
 **Task:** 按钮背景高度统一为 32px；修复键盘静音快捷键 stale closure 导致的取消静音失效问题。

@@ -753,6 +753,7 @@
 /* Buttons inside right controls: transparent bg; hover = lighter circle within pill */
 .ytpRightControls .ytpButton {
   background: transparent;
+  box-shadow: none;
 }
 .ytpRightControls .ytpButton:hover {
   background: rgba(255, 255, 255, 0.12);
@@ -772,13 +773,14 @@
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.10); /* outer ring: larger ambient bg */
   border: none;
   padding: 0;
   width: 32px;
   height: 32px;
   cursor: pointer;
   border-radius: 50%;
-  transition: background 0.1s;
+  transition: background 0.1s, box-shadow 0.1s;
   position: relative;
   flex-shrink: 0;
 
@@ -787,7 +789,8 @@
 }
 
 .ytpButton:hover {
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.30);
+  /* box-shadow unchanged: outer ring stays same color, only inner 32px darkens */
 }
 
 .ytpButton:focus-visible {
@@ -839,6 +842,7 @@
 /* Button inside volume area: no individual circle (the area itself is the pill) */
 .ytpVolumeArea .ytpButton {
   background: transparent;
+  box-shadow: none;
 }
 .ytpVolumeArea .ytpButton:hover {
   background: rgba(255, 255, 255, 0.12);
@@ -854,16 +858,16 @@
 }
 
 .ytpVolumeAreaExpanded .ytpVolumePanel {
-  width: 60px;
+  width: 72px; /* +20%: 5px margin × 2 + 62px track */
 }
 
 .ytpVolumeSlider {
   position: relative;
-  width: 52px;
+  width: 62px; /* +20% from 52px */
   height: 4px;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
-  margin: 0 4px;
+  margin: 0 5px; /* 5px leaves room for 4px-radius handle at edges */
 }
 
 .ytpVolumeInput {
@@ -889,18 +893,12 @@
 .ytpVolumeSliderHandle {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  width: 12px;
-  height: 12px;
+  transform: translate(-50%, -50%); /* centers handle at left% position; no margin-left needed */
+  width: 8px;  /* matches progress scrubber default: 13px × scale(0.6) ≈ 8px */
+  height: 8px;
   border-radius: 50%;
   background: #fff;
-  margin-left: -6px;
   pointer-events: none;
-  transition: transform 0.1s;
-}
-
-.ytpVolumeSlider:hover .ytpVolumeSliderHandle {
-  transform: translateY(-50%) scale(1.2);
 }
 
 /* ─── Time display ──────────────────────────────────────────────────────────── */
