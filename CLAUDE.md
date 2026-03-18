@@ -13,15 +13,15 @@
 **首要目标**：可移植的网络播放器，嵌入其他视频网站
 **次要目标**：独立网络播放器，提供视频链接或 API 即可播放
 
-| 文件 | 用途 |
-|------|------|
-| `src/player/Player.tsx` | 主组件（精简 JSX 组合层） |
-| `src/player/types.ts` | 所有导出接口 |
-| `src/player/Player.module.css` | 全部样式（CSS Modules） |
-| `src/player/utils/format.ts` | 纯工具函数 + 常量 |
-| `src/player/components/` | 子组件（图标、按钮等） |
-| `src/player/hooks/` | 自定义 hooks |
-| `src/index.ts` | 公开 API barrel export |
+| 文件                           | 用途                      |
+| ------------------------------ | ------------------------- |
+| `src/player/Player.tsx`        | 主组件（精简 JSX 组合层） |
+| `src/player/types.ts`          | 所有导出接口              |
+| `src/player/Player.module.css` | 全部样式（CSS Modules）   |
+| `src/player/utils/format.ts`   | 纯工具函数 + 常量         |
+| `src/player/components/`       | 子组件（图标、按钮等）    |
+| `src/player/hooks/`            | 自定义 hooks              |
+| `src/index.ts`                 | 公开 API barrel export    |
 
 ---
 
@@ -41,21 +41,21 @@
 
 ## Git Commit 规范（强制）
 
-**任何对项目文件的改动，完成后必须立即 commit，不得遗漏。**
+**任何任务对项目文件的改动，在任务完成后必须立即 commit，不得遗漏。**
 
 ### 适用范围
 
 以下类型的改动均需独立 commit，不可跳过：
 
-| 改动类型 | scope 示例 | 示例 message |
-|---------|-----------|-------------|
-| 功能实现 | `player`、`hooks`、`css` | `feat(player): add touch scrub on progress bar` |
-| Bug 修复 | `player`、`css`、`build` | `fix(css): correct z-index for top-right chrome buttons` |
-| 重构 | `player`、`types` | `refactor(types): rename internal Panel type` |
-| 文档 | `readme`、`docs` | `docs(readme): add integration guide` |
-| 配置 / 工具 | `build`、`lint`、`test` | `chore(build): update tsup target to es2020` |
-| 测试 | `test` | `test(player): add seek behavior test cases` |
-| 任务归档 | *(无 scope)* | `chore: archive mobile-ux-enhancements task` |
+| 改动类型    | scope 示例               | 示例 message                                             |
+| ----------- | ------------------------ | -------------------------------------------------------- |
+| 功能实现    | `player`、`hooks`、`css` | `feat(player): add touch scrub on progress bar`          |
+| Bug 修复    | `player`、`css`、`build` | `fix(css): correct z-index for top-right chrome buttons` |
+| 重构        | `player`、`types`        | `refactor(types): rename internal Panel type`            |
+| 文档        | `readme`、`docs`         | `docs(readme): add integration guide`                    |
+| 配置 / 工具 | `build`、`lint`、`test`  | `chore(build): update tsup target to es2020`             |
+| 测试        | `test`                   | `test(player): add seek behavior test cases`             |
+| 任务归档    | _(无 scope)_             | `chore: archive mobile-ux-enhancements task`             |
 
 ### Commit 时机
 
@@ -95,18 +95,21 @@ npm run build       # tsup，生成 dist/
 ## 文件规范
 
 ### TypeScript
+
 - 公开类型用 `export interface`（不用 `type`）
 - 内部类型用 `type`（如 `type Panel = ...`）
 - 禁止 `any`；类型断言须加注释说明原因
 - 函数组件返回类型由 TS 推断，无需标注
 
 ### React
+
 - 仅使用函数组件
 - Hooks 在组件体最顶部声明，先于所有派生值
 - 子组件定义在 `Player.tsx` 之外的各自文件
 - 内部子组件（Tooltip、Spinner 等）不从 `src/index.ts` 导出
 
 ### CSS Modules
+
 - 导入：`import s from "./Player.module.css"`（或 `"../Player.module.css"`）
 - 引用：`s.ytpSomething`（camelCase）
 - 多类：`` `${s.classA} ${condition ? s.classB : ""}` ``
@@ -114,6 +117,7 @@ npm run build       # tsup，生成 dist/
 - 新 CSS 变量遵循 `--ytp-*` 命名
 
 ### 常量
+
 - 所有魔法数字在文件顶部 `// ─── Constants ────` 块中命名
 - 不在 JSX 中内联数字
 
@@ -147,7 +151,12 @@ npm run dev
 
 ```typescript
 export { YTPlayer } from "./player/Player";
-export type { PlayerProps, SubtitleTrack, QualityLevel, Chapter } from "./player/types";
+export type {
+  PlayerProps,
+  SubtitleTrack,
+  QualityLevel,
+  Chapter,
+} from "./player/types";
 ```
 
 改变导出形状需要在 task.md 的 Constraints 中明确说明。
