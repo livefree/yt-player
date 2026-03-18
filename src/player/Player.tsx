@@ -178,6 +178,9 @@ export function YTPlayer({
   );
   const touchGestureRef = useRef<"seek" | "volume" | "none" | null>(null);
   const [touchSeekDelta, setTouchSeekDelta] = useState<number | null>(null);
+
+  // ── HLS.js instance (for non-native HLS browsers) ─────────────────────────
+  const hlsRef = useRef<import("hls.js").default | null>(null);
   const [showRemaining, setShowRemaining] = useState(false);
 
   const sliderId = useId();
@@ -460,27 +463,66 @@ export function YTPlayer({
     setBuffered(0);
     setIsPlaying(false);
     video.pause();
-    video.src = src;
-    video.load();
-    if (startTime) video.currentTime = startTime;
-    if (autoplay) {
-      video
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => {
-          // Autoplay with sound blocked — retry muted (both iOS and desktop)
-          video.muted = true;
-          setIsMuted(true);
-          video
-            .play()
-            .then(() => {
-              setIsPlaying(true);
-              setShowUnmute(true); // prompt user to unmute
-            })
-            .catch(() => {}); // still blocked (low-power mode etc.); ignore
+
+    // Destroy any previous HLS instance before switching source
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    const doPlay = () => {
+      if (startTime) video.currentTime = startTime;
+      if (autoplay) {
+        video
+          .play()
+          .then(() => setIsPlaying(true))
+          .catch(() => {
+            // Autoplay with sound blocked — retry muted (both iOS and desktop)
+            video.muted = true;
+            setIsMuted(true);
+            video
+              .play()
+              .then(() => {
+                setIsPlaying(true);
+                setShowUnmute(true); // prompt user to unmute
+              })
+              .catch(() => {}); // still blocked (low-power mode etc.); ignore
+          });
+      }
+    };
+
+    const isHls = src.includes(".m3u8");
+    const nativeHls = video.canPlayType("application/vnd.apple.mpegurl");
+
+    if (isHls && !nativeHls) {
+      // Non-Safari browser: use HLS.js for m3u8 streams
+      import("hls.js").then(({ default: Hls }) => {
+        if (!Hls.isSupported()) {
+          // Unlikely, but fall back to direct assignment
+          video.src = src;
+          video.load();
+          doPlay();
+          return;
+        }
+        const hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 90 });
+        hlsRef.current = hls;
+        hls.loadSource(src);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, doPlay);
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          if (data.fatal) setError("视频加载失败，请检查网络或刷新重试");
         });
+      });
+    } else {
+      // Safari (native HLS) or non-HLS source
+      video.src = src;
+      video.load();
+      doPlay();
     }
   }, [src]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── HLS cleanup on unmount ────────────────────────────────────────────────
+  useEffect(() => () => { hlsRef.current?.destroy(); }, []);
 
   // ─── Volume & rate sync ────────────────────────────────────────────────────
   useEffect(() => {
@@ -1186,8 +1228,13 @@ export function YTPlayer({
               onClick={() => {
                 setError(null);
                 if (videoRef.current && src) {
-                  videoRef.current.src = src;
-                  videoRef.current.load();
+                  if (hlsRef.current) {
+                    // HLS mode: restart loading from beginning
+                    hlsRef.current.startLoad(-1);
+                  } else {
+                    videoRef.current.src = src;
+                    videoRef.current.load();
+                  }
                 }
               }}
             >
