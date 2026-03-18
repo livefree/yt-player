@@ -190,6 +190,17 @@ export function YTPlayer({
     return null;
   }, [chapters, currentTime]);
 
+  // Chapter shown in the progress-bar hover tooltip — uses hoverTime (cursor
+  // position), not currentTime, so it reflects where the user is pointing.
+  const hoverChapter = useMemo(() => {
+    if (!chapters.length || hoverTime === null) return null;
+    for (let i = chapters.length - 1; i >= 0; i--) {
+      const ch = chapters[i];
+      if (ch && hoverTime >= ch.startTime) return ch;
+    }
+    return null;
+  }, [chapters, hoverTime]);
+
   const isImmersive = isTheater || isFullscreen;
 
   // Episodes: adaptive column count (≤12 → 4 cols, >12 → 6 cols)
@@ -1667,9 +1678,9 @@ export function YTPlayer({
                 <div className={s.ytpTooltipProgressText}>
                   {formatTime(hoverTime)}
                 </div>
-                {activeChapter && (
+                {hoverChapter && (
                   <div className={s.ytpTooltipChapterTitle}>
-                    {activeChapter.title}
+                    {hoverChapter.title}
                   </div>
                 )}
               </div>
