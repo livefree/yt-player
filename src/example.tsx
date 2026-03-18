@@ -35,6 +35,8 @@ interface VideoItem {
   author: string;
   poster?: string;
   chapters?: Chapter[];
+  /** WebVTT thumbnail track for progress bar preview */
+  thumbnailTrack?: string;
 }
 
 const PLAYLIST: VideoItem[] = [
@@ -43,6 +45,7 @@ const PLAYLIST: VideoItem[] = [
     title: "Big Buck Bunny",
     author: "Blender Foundation",
     poster: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
+    thumbnailTrack: "/thumbnails.vtt",
     chapters: [
       { title: "Opening", startTime: 0 },
       { title: "Forest Chase", startTime: 180 },
@@ -296,6 +299,7 @@ export function FullExample() {
           episodes={PLAYLIST.map((item) => ({ title: item.title }))}
           activeEpisodeIndex={index}
           onEpisodeChange={goTo}
+          thumbnailTrack={video.thumbnailTrack}
         />
       </div>
 

@@ -71,6 +71,13 @@ export interface PlayerProps {
   style?: CSSProperties & { [key: `--${string}`]: string };
   /** Keep controls always visible; disables auto-hide timer */
   keepControlsVisible?: boolean;
+  /**
+   * URL to a WebVTT file mapping time ranges to thumbnail images.
+   * Supports sprite sheets ("sprite.jpg#xywh=x,y,w,h") and individual frames.
+   * When provided, thumbnail previews appear above the time tooltip on hover/scrub.
+   * Loading is async and network-safe — degrades gracefully if unavailable.
+   */
+  thumbnailTrack?: string;
 }
 
 // ─── Internal types ───────────────────────────────────────────────────────────

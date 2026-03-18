@@ -12,6 +12,7 @@ export const RESUME_EXCLUSION = 30; // seconds — don't resume near start/end
 export const EPISODES_COLS_SMALL = 4; // grid columns when ≤ threshold episodes
 export const EPISODES_COLS_LARGE = 6; // grid columns when > threshold episodes
 export const EPISODES_COLS_THRESHOLD = 12; // episode count breakpoint
+export const THUMB_CLAMP_PX = 80; // px inset from rail edge for thumbnail tooltip
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 

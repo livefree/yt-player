@@ -44,7 +44,9 @@ import {
   EPISODES_COLS_SMALL,
   EPISODES_COLS_LARGE,
   EPISODES_COLS_THRESHOLD,
+  THUMB_CLAMP_PX,
 } from "./utils/format";
+import { useThumbnails } from "./hooks/useThumbnails";
 import { Spinner } from "./components/Spinner";
 import { SeekOverlay } from "./components/SeekOverlay";
 import { Bezel } from "./components/Bezel";
@@ -89,6 +91,7 @@ export function YTPlayer({
   onTheaterChange,
   style,
   keepControlsVisible = false,
+  thumbnailTrack,
 }: PlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -149,6 +152,7 @@ export function YTPlayer({
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverX, setHoverX] = useState(0);
   const progressRailRef = useRef<HTMLDivElement>(null);
+  const { getThumbnailAt } = useThumbnails(thumbnailTrack);
   const progressContainerRef = useRef<HTMLDivElement>(null);
 
   // ── Progress bar touch scrubbing ──────────────────────────────────────────
@@ -1667,24 +1671,58 @@ export function YTPlayer({
               <div className={s.ytpScrubberButton} />
             </div>
 
-            {/* Hover time tooltip */}
-            {hoverTime !== null && (
-              <div
-                className={s.ytpTooltipProgressBar}
-                style={{
-                  left: `${clamp(hoverX, 40, (progressRailRef.current?.clientWidth ?? 300) - 40)}px`,
-                }}
-              >
-                <div className={s.ytpTooltipProgressText}>
-                  {formatTime(hoverTime)}
-                </div>
-                {hoverChapter && (
-                  <div className={s.ytpTooltipChapterTitle}>
-                    {hoverChapter.title}
+            {/* Hover time tooltip (+ optional thumbnail) */}
+            {hoverTime !== null && (() => {
+              const thumb = getThumbnailAt(hoverTime);
+              const isSprite = thumb !== null && thumb.x !== undefined;
+              return (
+                <div
+                  className={s.ytpTooltipProgressBar}
+                  style={{
+                    left: `${clamp(
+                      hoverX,
+                      THUMB_CLAMP_PX,
+                      (progressRailRef.current?.clientWidth ?? 300) - THUMB_CLAMP_PX,
+                    )}px`,
+                  }}
+                >
+                  {/* Thumbnail preview — rendered only when VTT is loaded and a cue matches */}
+                  {thumb && (
+                    <div
+                      className={s.ytpThumbnailPreview}
+                      style={
+                        isSprite
+                          ? {
+                              width: thumb.w,
+                              height: thumb.h,
+                              backgroundImage: `url(${thumb.url})`,
+                              backgroundPosition: `-${thumb.x}px -${thumb.y}px`,
+                              backgroundRepeat: "no-repeat",
+                            }
+                          : undefined
+                      }
+                    >
+                      {!isSprite && (
+                        <img
+                          src={thumb.url}
+                          className={s.ytpThumbnailImg}
+                          alt=""
+                          draggable={false}
+                        />
+                      )}
+                    </div>
+                  )}
+                  <div className={s.ytpTooltipProgressText}>
+                    {formatTime(hoverTime)}
                   </div>
-                )}
-              </div>
-            )}
+                  {hoverChapter && (
+                    <div className={s.ytpTooltipChapterTitle}>
+                      {hoverChapter.title}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
 

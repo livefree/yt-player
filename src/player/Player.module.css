@@ -814,6 +814,37 @@
   text-align: center;
 }
 
+/* ── Thumbnail preview (inside progress hover tooltip) ──────────────────────── */
+
+/* Clip container — works for both sprite-bg and individual-img cases */
+.ytpThumbnailPreview {
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Individual image (non-sprite) */
+.ytpThumbnailImg {
+  display: block;
+  width: 160px;
+  height: 90px;
+  object-fit: cover;
+  user-select: none;
+}
+
+/* When a thumbnail is present, switch the tooltip from pill → card shape.
+   :has() is Chrome 105+, Safari 15.4+, Firefox 121+; older browsers fall back
+   to the existing pill shape which is still fully functional. */
+.ytpTooltipProgressBar:has(.ytpThumbnailPreview) {
+  border-radius: 6px;
+  padding: 6px 6px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* ─── Controls bar ──────────────────────────────────────────────────────────── */
 
 .ytpChromeControls {
