@@ -921,7 +921,7 @@ export function YTPlayer({
     setHoverX(e.clientX - rect.left);
   }
 
-  // ─── Progress bar touch scrubbing ─────────────────────────────────────────
+  // ─── Progress bar scrubbing (mouse + touch) ────────────────────────────────
   function updateProgressScrub(clientX: number) {
     const rail = progressRailRef.current;
     if (!rail || !duration) return;
@@ -962,6 +962,37 @@ export function YTPlayer({
       revealChrome();
     }
     setHoverTime(null);
+  }
+
+  // Mouse-drag scrubbing via Pointer Events API.
+  // setPointerCapture keeps events flowing to the rail even when the cursor
+  // moves outside the element, mirroring the touch handler behaviour above.
+  function handleProgressPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    progressScrubActiveRef.current = true;
+    setIsProgressScrubbing(true);
+    revealChrome();
+    updateProgressScrub(e.clientX);
+  }
+
+  function handleProgressPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "mouse" || !progressScrubActiveRef.current) return;
+    updateProgressScrub(e.clientX);
+  }
+
+  function handleProgressPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "mouse" || !progressScrubActiveRef.current) return;
+    progressScrubActiveRef.current = false;
+    setIsProgressScrubbing(false);
+    const scrubTime = progressScrubTimeRef.current;
+    progressScrubTimeRef.current = null;
+    const v = videoRef.current;
+    if (scrubTime !== null && v && isFinite(v.duration) && v.duration > 0) {
+      v.currentTime = scrubTime;
+      setCurrentTime(scrubTime);
+      revealChrome();
+    }
   }
 
   // ─── AirPlay ───────────────────────────────────────────────────────────────
@@ -1560,9 +1591,17 @@ export function YTPlayer({
             aria-valuemax={Math.floor(duration)}
             aria-valuenow={Math.floor(currentTime)}
             aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
+            onPointerDown={handleProgressPointerDown}
+            onPointerMove={handleProgressPointerMove}
+            onPointerUp={handleProgressPointerUp}
+            onPointerCancel={handleProgressPointerUp}
             onMouseMove={handleProgressHover}
-            onMouseLeave={() => setHoverTime(null)}
+            onMouseLeave={() => {
+              if (!progressScrubActiveRef.current) setHoverTime(null);
+            }}
             onClick={(e) => {
+              // Skip if a pointer-drag just ended (pointerUp already seeked)
+              if (progressScrubActiveRef.current) return;
               const rect = progressRailRef.current?.getBoundingClientRect();
               if (!rect) return;
               seekToPercent(clamp((e.clientX - rect.left) / rect.width, 0, 1));
