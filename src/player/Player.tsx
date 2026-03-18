@@ -207,23 +207,24 @@ export function YTPlayer({
     if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
     chromeTimerRef.current = window.setTimeout(
       () => {
-        if (openPanel) return;
+        // Keep chrome visible while any panel (settings or episodes) is open
+        if (openPanel || isEpisodesOpen) return;
         setChromeVisible(false);
         if (isImmersive) setCursorHidden(true);
       },
       isImmersive ? IMMERSIVE_HIDE_DELAY : CHROME_HIDE_DELAY,
     );
-  }, [isImmersive, openPanel, keepControlsVisible]);
+  }, [isImmersive, openPanel, isEpisodesOpen, keepControlsVisible]);
 
-  // Reset timer when panel opens/closes
+  // Keep chrome pinned while any panel is open; restart hide-timer when all panels close
   useEffect(() => {
-    if (openPanel) {
+    if (openPanel || isEpisodesOpen) {
       setChromeVisible(true);
       if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
     } else {
       revealChrome();
     }
-  }, [openPanel]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [openPanel, isEpisodesOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Fullscreen sync ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -1663,22 +1664,26 @@ export function YTPlayer({
                     <NextIcon />
                   </YtpButton>
                 )}
-                {/* Episodes — always visible on last ep, reveal-on-hover otherwise */}
+                {/* Episodes — slide wrapper mirrors the volume-slider reveal mechanism */}
                 {hasEpisodes && (
-                  <YtpButton
-                    tooltip="Episodes (E)"
-                    ariaLabel="Episodes"
-                    onClick={() =>
-                      setIsEpisodesOpen((v) => {
-                        if (!v) setFocusedEpisodeIndex(activeEpisodeIndex);
-                        return !v;
-                      })
-                    }
-                    className={`${s.ytpEpisodesButton}${onNext && !isEpisodesOpen ? ` ${s.ytpEpisodesReveal}` : ""}`}
-                    data-ytp-component="episodes-btn"
+                  <div
+                    className={`${s.ytpEpisodesSlide}${onNext && !isEpisodesOpen ? ` ${s.ytpEpisodesReveal}` : ""}`}
                   >
-                    <EpisodesIcon />
-                  </YtpButton>
+                    <YtpButton
+                      tooltip="Episodes (E)"
+                      ariaLabel="Episodes"
+                      onClick={() =>
+                        setIsEpisodesOpen((v) => {
+                          if (!v) setFocusedEpisodeIndex(activeEpisodeIndex);
+                          return !v;
+                        })
+                      }
+                      className={s.ytpEpisodesButton}
+                      data-ytp-component="episodes-btn"
+                    >
+                      <EpisodesIcon />
+                    </YtpButton>
+                  </div>
                 )}
               </div>
             )}

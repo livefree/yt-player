@@ -1058,15 +1058,37 @@
   gap: var(--ytp-btn-gap);
 }
 
-/* Desktop: Episodes button hidden by default when Next exists; revealed on hover */
+/*
+ * Slide wrapper for the Episodes button (same mechanism as the volume slider).
+ * When Next is present and panel is closed, the wrapper collapses to width:0
+ * and cancels the flex gap with a negative margin — so it occupies zero space.
+ * On hover the wrapper slides open to exactly the button's hitbox width.
+ * The transition lives on .ytpEpisodesSlide (always present) so it fires in
+ * both directions: hover-in animates open, hover-out / class-remove animates shut.
+ */
+.ytpEpisodesSlide {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
 @media (pointer: fine) {
-  .ytpEpisodesReveal {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s ease;
+  .ytpEpisodesSlide {
+    transition: width 0.15s ease, margin-left 0.15s ease, opacity 0.15s ease;
   }
 
+  /* Hidden state: zero width + negative margin to cancel the flex gap */
+  .ytpEpisodesReveal {
+    width: 0;
+    margin-left: calc(-1 * var(--ytp-btn-gap));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Revealed: hover over the group OR panel already open (class absent = visible) */
   .ytpNextEpisodesGroup:hover .ytpEpisodesReveal {
+    width: var(--ytp-btn-size);
+    margin-left: 0;
     opacity: 1;
     pointer-events: auto;
   }
@@ -1376,7 +1398,7 @@
   }
 
   /* Episodes button is desktop-only; hover-reveal pattern has no equivalent on touch. */
-  .ytpEpisodesButton {
+  .ytpEpisodesSlide {
     display: none;
   }
 }
