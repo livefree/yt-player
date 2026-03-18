@@ -81,8 +81,11 @@
 
   /* ── Tooltip ──────────────────────────────────────────────────────────── */
   --ytp-tooltip-bg:           #1c1c1c; /* solid color; opacity controlled separately */
-  --ytp-tooltip-bg-opacity:   0.90;    /* background-only opacity (0–1) */
+  --ytp-tooltip-bg-opacity:   0.75;    /* background-only opacity (0–1) */
   --ytp-tooltip-color:        #ffffff;
+  /* bottom of tooltip bubble aligned with panel bottom (panels: bottom 54px;
+     button sits ~8px above player bottom → 54 − 8 = 46px from button bottom) */
+  --ytp-tooltip-bottom:       46px;
 }
 
 .moviePlayer [data-layer="0"] {
@@ -790,9 +793,9 @@
   position: absolute;
   bottom: calc(100% + 12px);
   transform: translateX(-50%);
-  background: rgba(28, 28, 28, 0.9);
-  border-radius: 2px;
-  padding: 4px 8px;
+  background: rgba(28, 28, 28, var(--ytp-tooltip-bg-opacity));
+  border-radius: 999px;
+  padding: 4px 10px;
   pointer-events: none;
   white-space: nowrap;
 }
@@ -927,35 +930,24 @@
 }
 
 /* ── Tooltip — React <span> child, shown on button hover ────────────────── */
+/* bottom aligns tooltip's lower edge with the panel bottom (54px from player bottom).
+   Calculation: panel-bottom(54) − button-offset-from-player-bottom(8) = 46px */
 .ytpTooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
+  bottom: var(--ytp-tooltip-bottom);
   left: 50%;
   transform: translateX(-50%);
-  background: transparent; /* bg rendered by ::before so opacity only affects backdrop */
+  background: rgba(28, 28, 28, var(--ytp-tooltip-bg-opacity));
   color: var(--ytp-tooltip-color);
   font-size: 12px;
   line-height: 1.4;
   white-space: nowrap;
   padding: 5px 9px;
-  border-radius: 2px;
+  border-radius: 999px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.1s 0.4s;
   z-index: 100;
-  isolation: isolate; /* confines ::before z-index: -1 so it stays behind text */
-}
-
-/* Tooltip background layer: independent opacity so text stays fully opaque */
-.ytpTooltip::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--ytp-tooltip-bg);
-  opacity: var(--ytp-tooltip-bg-opacity);
-  border-radius: inherit;
-  z-index: -1;
-  pointer-events: none;
 }
 
 .ytpButton:hover .ytpTooltip {
@@ -1067,7 +1059,9 @@
  * both directions: hover-in animates open, hover-out / class-remove animates shut.
  */
 .ytpEpisodesSlide {
-  overflow: hidden;
+  /* No overflow clipping — the button is hidden via opacity:0 when collapsed,
+     so the tooltip (absolutely positioned inside the button) can freely escape
+     in all directions. The width transition still drives the layout shift. */
   display: flex;
   align-items: center;
 }
@@ -1123,7 +1117,7 @@
   justify-content: center;
   background: transparent;
   border: none;
-  border-radius: 3px;
+  border-radius: 999px;
   color: rgba(255, 255, 255, 0.65);
   font-size: 13px;
   letter-spacing: 0.3px;
@@ -1142,12 +1136,11 @@
   font-weight: 700;
 }
 
-/* Keyboard-focused episode (also synced to mouse hover via onMouseEnter) */
+/* Keyboard-focused episode (also synced to mouse hover via onMouseEnter).
+   Pill highlight: stronger fill replaces rectangular outline for consistency. */
 .ytpEpisodeFocused {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
-  outline: 1px solid rgba(255, 255, 255, 0.35);
-  outline-offset: -1px;
 }
 
 .ytpMuteButton {
@@ -1329,8 +1322,8 @@
 .ytpTooltip {
   position: absolute;
   z-index: 100;
-  background: rgba(28, 28, 28, 0.9);
-  border-radius: 2px;
+  background: rgba(28, 28, 28, var(--ytp-tooltip-bg-opacity));
+  border-radius: 999px;
   padding: 5px 9px;
   pointer-events: none;
   opacity: 0;
@@ -1346,6 +1339,15 @@
   color: #fff;
   font-size: 12px;
   line-height: 1.4;
+}
+
+/* ─── Panel open — hide all button tooltips ─────────────────────────────────── */
+
+/* When any panel (settings, episodes, …) is open, suppress tooltips so they
+   don't bleed over the open panel surface. The class is applied to the player
+   root by Player.tsx whenever openPanel || isEpisodesOpen is truthy. */
+.ytpAnyPanelOpen .ytpTooltip {
+  display: none;
 }
 
 /* ─── Autohide — when playing and idle ──────────────────────────────────────── */
