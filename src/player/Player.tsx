@@ -1674,52 +1674,43 @@ export function YTPlayer({
             {/* Hover time tooltip (+ optional thumbnail) */}
             {hoverTime !== null && (() => {
               const thumb = getThumbnailAt(hoverTime);
-              const isSprite = thumb !== null && thumb.x !== undefined;
+              const railW = progressRailRef.current?.clientWidth ?? 300;
+              const clampPx = thumb ? THUMB_CLAMP_PX : 40;
               return (
                 <div
-                  className={s.ytpTooltipProgressBar}
-                  style={{
-                    left: `${clamp(
-                      hoverX,
-                      THUMB_CLAMP_PX,
-                      (progressRailRef.current?.clientWidth ?? 300) - THUMB_CLAMP_PX,
-                    )}px`,
-                  }}
+                  className={s.ytpProgressTooltipWrap}
+                  style={{ left: `${clamp(hoverX, clampPx, railW - clampPx)}px` }}
                 >
-                  {/* Thumbnail preview — rendered only when VTT is loaded and a cue matches */}
                   {thumb && (
-                    <div
-                      className={s.ytpThumbnailPreview}
-                      style={
-                        isSprite
-                          ? {
-                              width: thumb.w,
-                              height: thumb.h,
-                              backgroundImage: `url(${thumb.url})`,
-                              backgroundPosition: `-${thumb.x}px -${thumb.y}px`,
-                              backgroundRepeat: "no-repeat",
-                            }
-                          : undefined
-                      }
-                    >
-                      {!isSprite && (
-                        <img
-                          src={thumb.url}
-                          className={s.ytpThumbnailImg}
-                          alt=""
-                          draggable={false}
-                        />
-                      )}
+                    <div className={s.ytpThumbnailPreview}>
+                      <img
+                        src={thumb.url}
+                        className={s.ytpThumbnailImg}
+                        alt=""
+                        draggable={false}
+                        style={
+                          thumb.x !== undefined
+                            ? {
+                                objectFit: "none",
+                                objectPosition: `-${thumb.x}px -${thumb.y}px`,
+                                width: thumb.w,
+                                height: thumb.h,
+                              }
+                            : undefined
+                        }
+                      />
                     </div>
                   )}
-                  <div className={s.ytpTooltipProgressText}>
-                    {formatTime(hoverTime)}
+                  <div className={s.ytpTooltipProgressBar}>
+                    <div className={s.ytpTooltipProgressText}>
+                      {formatTime(hoverTime)}
+                    </div>
+                    {hoverChapter && (
+                      <div className={s.ytpTooltipChapterTitle}>
+                        {hoverChapter.title}
+                      </div>
+                    )}
                   </div>
-                  {hoverChapter && (
-                    <div className={s.ytpTooltipChapterTitle}>
-                      {hoverChapter.title}
-                    </div>
-                  )}
                 </div>
               );
             })()}

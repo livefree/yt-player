@@ -788,16 +788,24 @@
   margin-top: calc(var(--ytp-scrubber-size) / -2);
 }
 
-/* Progress hover tooltip */
-.ytpTooltipProgressBar {
+/* Positioning wrapper: thumbnail card (optional) stacked above pill */
+.ytpProgressTooltipWrap {
   position: absolute;
   bottom: calc(100% + 12px);
   transform: translateX(-50%);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Progress hover tooltip — always pill */
+.ytpTooltipProgressBar {
   background: rgba(28, 28, 28, var(--ytp-tooltip-bg-opacity));
   border-radius: 999px;
   padding: 4px 10px;
-  pointer-events: none;
-  white-space: nowrap;
 }
 
 .ytpTooltipProgressText {
@@ -816,33 +824,21 @@
 
 /* ── Thumbnail preview (inside progress hover tooltip) ──────────────────────── */
 
-/* Clip container — works for both sprite-bg and individual-img cases */
+/* Clip container — floats above the pill via wrapper flex gap */
 .ytpThumbnailPreview {
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 6px;
   flex-shrink: 0;
   display: block;
 }
 
-/* Individual image (non-sprite) */
+/* Thumbnail image — always an <img>; sprite crops via object-fit/object-position */
 .ytpThumbnailImg {
   display: block;
   width: 160px;
   height: 90px;
   object-fit: cover;
   user-select: none;
-}
-
-/* When a thumbnail is present, switch the tooltip from pill → card shape.
-   :has() is Chrome 105+, Safari 15.4+, Firefox 121+; older browsers fall back
-   to the existing pill shape which is still fully functional. */
-.ytpTooltipProgressBar:has(.ytpThumbnailPreview) {
-  border-radius: 6px;
-  padding: 6px 6px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 /* ─── Controls bar ──────────────────────────────────────────────────────────── */
