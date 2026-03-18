@@ -506,8 +506,11 @@ export function YTPlayer({
   // ─── Keyboard shortcuts ────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (document.activeElement as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      const tag       = (document.activeElement as HTMLElement)?.tagName;
+      const inputType = (document.activeElement as HTMLInputElement)?.type;
+      // Block shortcuts when typing in text fields, but allow them when the
+      // volume slider (type="range") is focused so M / arrows keep working.
+      if (tag === "TEXTAREA" || (tag === "INPUT" && inputType !== "range")) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       // ── Episodes panel keyboard intercept (captures all keys when open) ──────
@@ -996,6 +999,7 @@ export function YTPlayer({
     isTheater ? s.ytpTheater : "",
     isFullscreen ? s.ytpFullscreen : "",
     cursorHidden ? s.ytpCursorHidden : "",
+    openPanel || isEpisodesOpen ? s.ytpAnyPanelOpen : "",
   ]
     .filter(Boolean)
     .join(" ");
