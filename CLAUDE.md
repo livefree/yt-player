@@ -1,5 +1,16 @@
 # CLAUDE.md — Project Instructions for Claude Code
 
+## 当前阶段：Phase 1 — HLS 支持 + IIFE 构建（为 LibreTV 集成）
+
+### Phase 1 约束
+- HLS 修改仅在 `Player.tsx` 的 `src` useEffect（第 ~454 行），不得改动其他播放逻辑
+- IIFE 构建为独立 `vite.iife.config.ts`，不修改现有 `tsup.config.ts`
+- 新增 `src/iife-entry.ts` 作为 IIFE 入口，暴露 `React`、`ReactDOM`、`YTPlayer`
+- 允许新增 `hls.js` 作为 runtime 依赖（仅此一项例外）
+- 每次有实质性改动，必须在 `DEVLOG.md` 末尾追加记录
+
+---
+
 ## 每次会话首先执行
 
 读取 `task.md`。若 Status 为 `done` 或文件不存在，停止并告知用户当前无活跃任务。
