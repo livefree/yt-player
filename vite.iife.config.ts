@@ -15,6 +15,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 export default defineConfig({
   plugins: [react()],
+  // Replace Node.js globals that React/HLS.js reference at runtime
+  define: {
+    "process.env.NODE_ENV": '"production"',
+  },
   build: {
     lib: {
       entry: resolve(__dirname, "src/iife-entry.ts"),
