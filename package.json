@@ -19,6 +19,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
+    "build:iife": "vite build --config vite.iife.config.ts",
     "build:preview": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/ --ext .ts,.tsx --max-warnings 0",
