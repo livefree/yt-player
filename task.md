@@ -1,35 +1,115 @@
-# Task: Mobile UX Enhancements (①②③④)
+# 统一规则（必须遵守）
 
-**Status**: done
-**Branch**: feat/mobile-ux-enhancements
+1. 任务序列命名
 
-## Description
+- 序列 ID 格式：`SEQ-YYYYMMDD-XX`（例：`SEQ-20260319-01`）
+- `XX` 从 `01` 递增，不复用、不回填
+- 一个序列包含一组有依赖关系的任务（可跨多个模块）
 
-Implement four mobile UX enhancements:
+2. 任务编号命名（沿用现有规范）
 
-1. **① Progress bar touch scrubbing** — touch drag on progress rail to seek
-2. **② Media Session API** — lock screen controls (play/pause/seek/next)
-3. **③ Screen Wake Lock** — keep screen on while playing
-4. **④ AirPlay support** — AirPlay button for iOS Safari
+- 任务 ID 格式：`<PREFIX>-NN`
+- `PREFIX` 必须使用既有前缀：`INFRA` / `AUTH` / `VIDEO` / `SEARCH` / `PLAYER` / `CRAWLER` / `ADMIN` / `USER` / `SOCIAL` / `LIST` / `CONTRIB` / `CHG` / `CHORE` / `DEC` / `UX`
+  - `DEC`：前后台解耦架构任务（来自 frontend_backend_decoupling_plan_20260401.md，2026-04-02 新增）
+  - `UX`：后台交互改造任务（来自 admin_console_decoupling_and_ux_plan_20260402.md，2026-04-02 新增）
+- `NN` 为两位数字，按同前缀内最大编号递增（例如当前最大 `CHG-335`，下一个必须是 `CHG-336`）
+- 禁止跳号占坑、禁止复用已存在编号
 
-## Acceptance Criteria
+3. 时间戳要求
 
-- [x] ① Touch scrub on progress bar: drag updates position, commits seek on touch end
-- [x] ① Progress bar visually expands (scrubbing state) during touch drag
-- [x] ② `navigator.mediaSession.metadata` set with title/artist/artwork from props
-- [x] ② Play/pause/seekforward/seekbackward/seekto action handlers registered
-- [x] ② `setPositionState` updated on timeupdate
-- [x] ③ `wakeLock.request("screen")` acquired when playing, released when paused/unmounted
-- [x] ③ Wake lock re-acquired on `visibilitychange` when playing
-- [x] ④ AirPlay button shown only on Safari with `webkitShowPlaybackTargetPicker` support
-- [x] ④ `x-webkit-airplay="allow"` attribute on video element
-- [x] All: `npm run typecheck` passes (0 errors)
-- [x] All: `npm run lint` passes (0 warnings)
-- [x] All: `npm test` passes
-- [x] All: `npm run build` succeeds
+- 每个序列必须包含：`创建时间`、`最后更新时间`
+- 每个任务必须包含：`创建时间`（必填），`计划开始时间`（建议），`实际开始时间`（启动后填），`完成时间`（完成后填）
+- 时间格式统一：`YYYY-MM-DD HH:mm`（本地时区）
 
-## Constraints
+4. 记录位置（统一，禁止混用）
 
-- No new runtime dependencies
-- CSS Modules only; no inline styles for static values
-- All new CSS variables follow `--ytp-*` prefix
+- 本文件：新序列与新任务一律**追加到文件尾部**
+- `docs/tasks.md`：新任务块一律**追加到文件尾部**；同一任务只更新其状态与时间字段
+- `docs/changelog.md`：新完成记录一律**追加到文件尾部**
+- 禁止“有时头插、有时尾插”
+
+5. 执行约束
+
+- `docs/tasks.md` 是单任务工作台：同时只允许 1 个任务为 `🔄 进行中`；任务完成后立即从 tasks.md 删除该卡片（历史存于 changelog.md）
+- 任务进入执行前，必须已在本文件序列中定义（除紧急 hotfix）
+- 每完成一个任务，立即更新本文件对应任务状态与时间戳，并更新所属序列的 `最后更新时间`
+- BLOCKER 和 PHASE COMPLETE 通知写入本文件尾部（不写入 tasks.md）
+
+---
+
+## 序列模板
+
+```markdown
+## [SEQ-YYYYMMDD-XX] 序列标题
+
+- **状态**：🟡 规划中 / 🔄 执行中 / ✅ 已完成 / ⛔ 已取消
+- **创建时间**：YYYY-MM-DD HH:mm
+- **最后更新时间**：YYYY-MM-DD HH:mm
+- **目标**：一句话描述目标
+- **范围**：涉及模块与边界
+- **依赖**：上游任务或环境前置
+
+### 任务列表（按执行顺序）
+
+1. TASK-ID — 标题（状态：⬜/🔄/✅/❌）
+   - 创建时间：YYYY-MM-DD HH:mm
+   - 计划开始：YYYY-MM-DD HH:mm
+   - 实际开始：YYYY-MM-DD HH:mm（未开始可留空）
+   - 完成时间：YYYY-MM-DD HH:mm（未完成可留空）
+   - 验收要点：...
+```
+
+---
+
+## [SEQ-20260406-01] YTPlayer 高移植治理与移动端稳定性修复
+
+- **状态**：🔄 执行中
+- **创建时间**：2026-04-06 15:45
+- **最后更新时间**：2026-04-06 01:44
+- **目标**：在保持即插即用和高移植性的前提下，建立播放器回归保护网，并逐步拆出高风险副作用与移动端交互逻辑
+- **范围**：`src/player/`、`src/test/`、`README.md`、`DEVLOG.md`
+- **依赖**：现有 `YTPlayer` 公开 API 保持不变；HLS/IIFE 能力保持可用；不引入新的宿主依赖
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-01 — 建立播放器治理基线文档（状态：✅）
+   - 创建时间：2026-04-06 15:20
+   - 计划开始：2026-04-06 15:20
+   - 实际开始：2026-04-06 15:20
+   - 完成时间：2026-04-06 15:35
+   - 验收要点：完成可移植优先的治理计划文档；明确阶段划分、边界、非目标和完成标准
+
+2. PLAYER-02 — 补齐关键用户流回归测试（状态：✅）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 16:00
+   - 实际开始：2026-04-06 01:38
+   - 完成时间：2026-04-06 01:44
+   - 验收要点：覆盖 source loading、HLS fallback、autoplay fallback、progress scrub、gesture、panel toggle、cleanup 等关键用户流
+
+3. PLAYER-03 — 抽离 source loading 与 HLS 生命周期（状态：⬜）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 17:00
+   - 实际开始：
+   - 完成时间：
+   - 验收要点：新增独立 hook 管理普通源/HLS/autoplay/retry/cleanup；`Player.tsx` 不再直接持有 HLS 初始化和销毁细节
+
+4. PLAYER-04 — 抽离 progress 与移动端 gesture 输入层（状态：⬜）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 18:00
+   - 实际开始：
+   - 完成时间：
+   - 验收要点：将 hover、pointer scrub、touch scrub、双击 seek、触摸音量等状态机从主组件中分离，形成可单独验证的输入层边界
+
+5. PLAYER-05 — 抽离系统集成与可移植适配层（状态：⬜）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 19:00
+   - 实际开始：
+   - 完成时间：
+   - 验收要点：集中收口 Fullscreen、Media Session、Wake Lock、AirPlay、keyboard shortcut、chrome visibility；所有平台能力保持 capability detection 和优雅降级
+
+6. PLAYER-06 — 完成薄组装层与移植性验收（状态：⬜）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 20:00
+   - 实际开始：
+   - 完成时间：
+   - 验收要点：`Player.tsx` 主要负责 props 解析、hook 组合和 JSX 组装；补充 README 集成说明；确认 `src/player/` 可整体复制到其他 React 18 项目使用

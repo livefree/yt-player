@@ -1,27 +1,156 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { YTPlayer } from "../player/Player";
 
-// HTMLMediaElement methods are not implemented in jsdom
+const mockPlay = vi.fn().mockResolvedValue(undefined);
+const mockPause = vi.fn();
+const mockLoad = vi.fn();
+const mockHlsDestroy = vi.fn();
+const mockHlsLoadSource = vi.fn();
+const mockHlsAttachMedia = vi.fn();
+const mockHlsOn = vi.fn();
+const mockSetActionHandler = vi.fn();
+const mockSetPositionState = vi.fn();
+const mockWakeLockRelease = vi.fn().mockResolvedValue(undefined);
+const mockWakeLockRequest = vi
+  .fn()
+  .mockResolvedValue({ release: mockWakeLockRelease });
+
+vi.mock("hls.js", () => {
+  class MockHls {
+    static isSupported = vi.fn(() => true);
+    static Events = {
+      MANIFEST_PARSED: "manifestParsed",
+      ERROR: "error",
+    };
+
+    destroy = mockHlsDestroy;
+    loadSource = mockHlsLoadSource;
+    attachMedia = mockHlsAttachMedia;
+    on = mockHlsOn;
+  }
+
+  return {
+    default: MockHls,
+  };
+});
+
 Object.defineProperty(HTMLMediaElement.prototype, "play", {
   writable: true,
-  value: vi.fn().mockResolvedValue(undefined),
+  value: mockPlay,
 });
 Object.defineProperty(HTMLMediaElement.prototype, "pause", {
   writable: true,
-  value: vi.fn(),
+  value: mockPause,
 });
 Object.defineProperty(HTMLMediaElement.prototype, "load", {
+  writable: true,
+  value: mockLoad,
+});
+
+Object.defineProperty(HTMLVideoElement.prototype, "canPlayType", {
+  writable: true,
+  value: vi.fn(() => ""),
+});
+
+Object.defineProperty(HTMLDivElement.prototype, "setPointerCapture", {
   writable: true,
   value: vi.fn(),
 });
 
-// scrollIntoView is not implemented in jsdom
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
 const TEST_SRC =
   "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+const TEST_HLS_SRC = "https://example.com/stream.m3u8";
+const EPISODES_3 = [
+  { title: "Episode 1" },
+  { title: "Episode 2" },
+  { title: "Episode 3" },
+];
+const EPISODES_15 = Array.from({ length: 15 }, (_, i) => ({
+  title: `Episode ${i + 1}`,
+}));
+
+function setVideoDuration(video: HTMLVideoElement, duration: number) {
+  Object.defineProperty(video, "duration", {
+    configurable: true,
+    writable: true,
+    value: duration,
+  });
+}
+
+function setVideoCurrentTime(video: HTMLVideoElement, currentTime: number) {
+  Object.defineProperty(video, "currentTime", {
+    configurable: true,
+    writable: true,
+    value: currentTime,
+  });
+}
+
+function setProgressRailGeometry(rail: HTMLElement, width: number) {
+  Object.defineProperty(rail, "clientWidth", {
+    configurable: true,
+    value: width,
+  });
+  rail.getBoundingClientRect = vi.fn(() => ({
+    x: 0,
+    y: 0,
+    top: 0,
+    left: 0,
+    right: width,
+    bottom: 10,
+    width,
+    height: 10,
+    toJSON: () => ({}),
+  }));
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockPlay.mockReset().mockResolvedValue(undefined);
+  mockPause.mockReset();
+  mockLoad.mockReset();
+  mockHlsDestroy.mockReset();
+  mockHlsLoadSource.mockReset();
+  mockHlsAttachMedia.mockReset();
+  mockHlsOn.mockReset();
+  mockSetActionHandler.mockReset();
+  mockSetPositionState.mockReset();
+  mockWakeLockRelease.mockReset().mockResolvedValue(undefined);
+  mockWakeLockRequest.mockReset().mockResolvedValue({
+    release: mockWakeLockRelease,
+  });
+
+  Object.defineProperty(navigator, "mediaSession", {
+    configurable: true,
+    value: {
+      setActionHandler: mockSetActionHandler,
+      setPositionState: mockSetPositionState,
+      playbackState: "paused",
+      metadata: null,
+    },
+  });
+
+  Object.defineProperty(globalThis, "MediaMetadata", {
+    configurable: true,
+    value: class MediaMetadata {
+      constructor(public init: unknown) {}
+    },
+  });
+
+  Object.defineProperty(navigator, "wakeLock", {
+    configurable: true,
+    value: {
+      request: mockWakeLockRequest,
+    },
+  });
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("YTPlayer", () => {
   it("renders without crashing", () => {
@@ -34,10 +163,11 @@ describe("YTPlayer", () => {
     expect(video).toBeInTheDocument();
   });
 
-  it("sets the video src prop", () => {
+  it("sets the video src prop for direct video sources", () => {
     const { container } = render(<YTPlayer src={TEST_SRC} />);
     const video = container.querySelector("video");
     expect(video).toHaveAttribute("src", TEST_SRC);
+    expect(mockLoad).toHaveBeenCalled();
   });
 
   it("renders title and author when provided", () => {
@@ -59,10 +189,146 @@ describe("YTPlayer", () => {
   });
 });
 
-// ─── Episodes panel ────────────────────────────────────────────────────────────
+describe("YTPlayer — source loading and fallback", () => {
+  it("initializes HLS.js for m3u8 sources on non-native HLS browsers", async () => {
+    const { container } = render(<YTPlayer src={TEST_HLS_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
 
-const EPISODES_3 = [{ title: "Episode 1" }, { title: "Episode 2" }, { title: "Episode 3" }];
-const EPISODES_15 = Array.from({ length: 15 }, (_, i) => ({ title: `Episode ${i + 1}` }));
+    await waitFor(() => {
+      expect(mockHlsLoadSource).toHaveBeenCalledWith(TEST_HLS_SRC);
+      expect(mockHlsAttachMedia).toHaveBeenCalledWith(video);
+    });
+  });
+
+  it("destroys the HLS instance when the player unmounts", async () => {
+    const { unmount } = render(<YTPlayer src={TEST_HLS_SRC} />);
+
+    await waitFor(() => {
+      expect(mockHlsLoadSource).toHaveBeenCalledWith(TEST_HLS_SRC);
+    });
+
+    unmount();
+
+    expect(mockHlsDestroy).toHaveBeenCalled();
+  });
+
+  it("retries autoplay in muted mode and shows the unmute prompt when sound autoplay is blocked", async () => {
+    mockPlay
+      .mockRejectedValueOnce(new Error("blocked"))
+      .mockResolvedValueOnce(undefined);
+
+    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    await waitFor(() => {
+      expect(mockPlay).toHaveBeenCalledTimes(2);
+    });
+
+    expect(video.muted).toBe(true);
+    expect(
+      screen.getByRole("button", { name: /^unmute$/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("clears the muted autoplay prompt after the user unmutes", async () => {
+    mockPlay
+      .mockRejectedValueOnce(new Error("blocked"))
+      .mockResolvedValueOnce(undefined);
+
+    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    await screen.findByRole("button", { name: /^unmute$/i });
+
+    await userEvent.click(screen.getByRole("button", { name: /^unmute$/i }));
+
+    expect(video.muted).toBe(false);
+    expect(
+      screen.queryByRole("button", { name: /unmute/i }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("YTPlayer — progress and gesture regressions", () => {
+  it("seeks on progress-bar click based on pointer position", () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+    const seekBar = screen.getByRole("slider", { name: "Seek" });
+
+    setVideoDuration(video, 200);
+    setVideoCurrentTime(video, 0);
+    setProgressRailGeometry(seekBar, 400);
+
+    fireEvent.click(seekBar, { clientX: 300 });
+
+    expect(video.currentTime).toBe(150);
+    expect(seekBar).toHaveAttribute("aria-valuenow", "150");
+  });
+
+  it("commits touch scrubbing on touch end", () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+    const progressBarContainer = container.querySelector(
+      '[data-ytp-component="progress-bar"]',
+    ) as HTMLDivElement;
+    const seekBar = screen.getByRole("slider", { name: "Seek" });
+
+    setVideoDuration(video, 90);
+    setVideoCurrentTime(video, 0);
+    setProgressRailGeometry(seekBar, 300);
+    fireEvent.durationChange(video);
+
+    fireEvent.touchStart(progressBarContainer, {
+      touches: [{ clientX: 30, clientY: 0 }],
+    });
+    fireEvent.touchMove(progressBarContainer, {
+      touches: [{ clientX: 210, clientY: 0 }],
+    });
+    fireEvent.touchEnd(progressBarContainer);
+
+    expect(video.currentTime).toBeCloseTo(63, 5);
+  });
+
+  it("double-clicking the right half of the gesture layer seeks forward", async () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+    const gestureLayer = container.querySelector(
+      '[data-layer="3"]',
+    ) as HTMLDivElement;
+    const root = container.firstElementChild as HTMLDivElement;
+
+    setVideoDuration(video, 120);
+    setVideoCurrentTime(video, 20);
+    root.getBoundingClientRect = vi.fn(() => ({
+      x: 0,
+      y: 0,
+      top: 0,
+      left: 0,
+      right: 400,
+      bottom: 200,
+      width: 400,
+      height: 200,
+      toJSON: () => ({}),
+    }));
+
+    fireEvent.click(gestureLayer, { clientX: 320 });
+    fireEvent.click(gestureLayer, { clientX: 320 });
+
+    expect(video.currentTime).toBe(30);
+  });
+});
+
+describe("YTPlayer — panel regressions", () => {
+  it("opens the settings panel and closes it on outside click", async () => {
+    render(<YTPlayer subtitles={[{ id: "en", label: "English", srclang: "en", src: "/en.vtt" }]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: /settings/i }));
+    expect(screen.getByRole("dialog", { name: /settings/i })).toBeInTheDocument();
+
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("dialog", { name: /settings/i })).not.toBeInTheDocument();
+  });
+});
 
 describe("YTPlayer — Episodes panel", () => {
   it("does NOT render Episodes button when episodes prop is omitted", () => {
@@ -106,7 +372,11 @@ describe("YTPlayer — Episodes panel", () => {
   it("calls onEpisodeChange with correct index when an episode is clicked", async () => {
     const onEpisodeChange = vi.fn();
     render(
-      <YTPlayer episodes={EPISODES_3} activeEpisodeIndex={0} onEpisodeChange={onEpisodeChange} />
+      <YTPlayer
+        episodes={EPISODES_3}
+        activeEpisodeIndex={0}
+        onEpisodeChange={onEpisodeChange}
+      />,
     );
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
     await userEvent.click(screen.getByRole("option", { name: "02" }));
@@ -130,14 +400,13 @@ describe("YTPlayer — Episodes panel", () => {
     expect(screen.queryByRole("dialog", { name: /episodes/i })).not.toBeInTheDocument();
   });
 
-  it("keyboard shortcut E opens the panel", async () => {
+  it("keyboard shortcut E opens the panel", () => {
     const { container } = render(<YTPlayer episodes={EPISODES_3} />);
-    // Focus the player wrapper so key events are captured
     fireEvent.keyDown(container.firstElementChild!, { key: "e" });
     expect(screen.getByRole("dialog", { name: /episodes/i })).toBeInTheDocument();
   });
 
-  it("keyboard shortcut Escape closes the panel", async () => {
+  it("keyboard shortcut Escape closes the panel", () => {
     const { container } = render(<YTPlayer episodes={EPISODES_3} />);
     fireEvent.keyDown(container.firstElementChild!, { key: "e" });
     expect(screen.getByRole("dialog", { name: /episodes/i })).toBeInTheDocument();

@@ -421,11 +421,13 @@ export function YTPlayer({
           // Permission denied or not supported
         });
     } else {
-      wakeLockRef.current?.release().catch(() => {});
+      const wakeLock = wakeLockRef.current;
+      wakeLock?.release()?.catch(() => {});
       wakeLockRef.current = null;
     }
     return () => {
-      wakeLockRef.current?.release().catch(() => {});
+      const wakeLock = wakeLockRef.current;
+      wakeLock?.release()?.catch(() => {});
       wakeLockRef.current = null;
     };
   }, [isPlaying]);
