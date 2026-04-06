@@ -1,5 +1,6 @@
 import type { KeyboardEvent, PointerEvent, ReactNode, RefObject } from "react";
 import s from "../Player.module.css";
+import type { PanelPlacement } from "../hooks/useLayoutDecision";
 import type { Panel, QualityLevel, SubtitleTrack } from "../types";
 import { SPEED_PRESETS, formatRate } from "../utils/format";
 import { MenuBackIcon, MenuCheckIcon, MenuChevronIcon } from "./icons";
@@ -13,6 +14,7 @@ type SettingsPanelProps = {
   onSubtitleChange: (subtitleId: string | null) => void;
   openPanel: Panel;
   panelRef: RefObject<HTMLDivElement>;
+  placement: PanelPlacement;
   playbackRate: number;
   qualities: QualityLevel[];
   subtitles: SubtitleTrack[];
@@ -85,6 +87,7 @@ export function SettingsPanel({
   onSubtitleChange,
   openPanel,
   panelRef,
+  placement,
   playbackRate,
   qualities,
   subtitles,
@@ -102,6 +105,7 @@ export function SettingsPanel({
       ref={panelRef}
       className={`${s.ytpSettingsMenu} ${s.ytpPopup}`}
       data-layer="5"
+      data-placement={placement}
       role="dialog"
       aria-label="Settings"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}

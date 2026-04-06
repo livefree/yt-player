@@ -17,6 +17,7 @@ const mockWakeLockRelease = vi.fn().mockResolvedValue(undefined);
 const mockWakeLockRequest = vi
   .fn()
   .mockResolvedValue({ release: mockWakeLockRelease });
+let coarsePointer = false;
 
 vi.mock("hls.js", () => {
   class MockHls {
@@ -61,6 +62,20 @@ Object.defineProperty(HTMLDivElement.prototype, "setPointerCapture", {
 });
 
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
+
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: vi.fn((query: string) => ({
+    matches: query === "(pointer: coarse)" ? coarsePointer : false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
 
 const TEST_SRC =
   "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
@@ -110,6 +125,7 @@ function setProgressRailGeometry(rail: HTMLElement, width: number) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  coarsePointer = false;
   mockPlay.mockReset().mockResolvedValue(undefined);
   mockPause.mockReset();
   mockLoad.mockReset();
@@ -146,6 +162,18 @@ beforeEach(() => {
     value: {
       request: mockWakeLockRequest,
     },
+  });
+
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    writable: true,
+    value: 1280,
+  });
+
+  Object.defineProperty(window, "innerHeight", {
+    configurable: true,
+    writable: true,
+    value: 720,
   });
 });
 
@@ -331,6 +359,80 @@ describe("YTPlayer — source loading and fallback", () => {
     fireEvent.error(video);
 
     expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+});
+
+describe("YTPlayer — layout decision contracts", () => {
+  it("defaults to desktop-default layout mode", async () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "desktop-default",
+      );
+    });
+  });
+
+  it("switches to desktop-compact layout and moves the episodes panel to top-right", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 560,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "desktop-compact",
+      );
+    });
+
+    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
+
+    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveAttribute(
+      "data-placement",
+      "top-right",
+    );
+  });
+
+  it("switches to mobile layout on coarse pointers and hides desktop-only controls", async () => {
+    coarsePointer = true;
+
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "mobile-portrait",
+      );
+    });
+
+    expect(
+      screen.queryByRole("button", { name: /episodes/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Volume")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /theater mode/i }),
+    ).not.toBeInTheDocument();
   });
 });
 

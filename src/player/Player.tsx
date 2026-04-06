@@ -44,6 +44,7 @@ import { useGestureControls } from "./hooks/useGestureControls";
 import { useChromeVisibility } from "./hooks/useChromeVisibility";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSystemIntegrations } from "./hooks/useSystemIntegrations";
+import { useLayoutDecision } from "./hooks/useLayoutDecision";
 import { Spinner } from "./components/Spinner";
 import { SeekOverlay } from "./components/SeekOverlay";
 import { Bezel } from "./components/Bezel";
@@ -171,10 +172,19 @@ export function YTPlayer({
 
   const isImmersive = isTheater || isFullscreen;
   const hasEpisodes = (episodes?.length ?? 0) > 0;
+  const hasNext = !!onNext;
   const episodesCols =
     (episodes?.length ?? 0) > EPISODES_COLS_THRESHOLD
       ? EPISODES_COLS_LARGE
       : EPISODES_COLS_SMALL;
+  const layoutDecision = useLayoutDecision({
+    playerRef,
+    isFullscreen,
+    isTheater,
+    hasEpisodes,
+    hasNext,
+  });
+  const hiddenControls = new Set(layoutDecision.hiddenControls);
 
   const { chromeVisible, cursorHidden, revealChrome } = useChromeVisibility({
     isImmersive,
@@ -596,6 +606,8 @@ export function YTPlayer({
     <div
       ref={playerRef}
       className={playerClass}
+      data-layout-mode={layoutDecision.mode}
+      data-layout-panels={layoutDecision.compactPanels ? "compact" : "default"}
       style={style}
       onPointerMove={revealChrome}
       onPointerEnter={revealChrome}
@@ -654,7 +666,7 @@ export function YTPlayer({
       <div className={s.ytpGradientTop} data-layer="1" aria-hidden="true" />
 
       {/* ── Layer 1: chrome top (title + author) ─────────────────────────── */}
-      {(title || author) && (
+      {!hiddenControls.has("title") && (title || author) && (
         <div className={s.ytpChromeTop} data-layer="1">
           <div className={s.ytpTitle}>
             <div className={s.ytpTitleText}>
@@ -753,6 +765,7 @@ export function YTPlayer({
         panelRef={episodesPanelRef}
         episodes={episodes}
         isOpen={isEpisodesOpen}
+        placement={layoutDecision.placements.episodesPanel}
         episodesCols={episodesCols}
         activeEpisodeIndex={activeEpisodeIndex}
         focusedEpisodeIndex={focusedEpisodeIndex}
@@ -765,6 +778,7 @@ export function YTPlayer({
       <SettingsPanel
         panelRef={settingsPanelRef}
         openPanel={openPanel}
+        placement={layoutDecision.placements.settingsPanel}
         qualities={qualities}
         activeQualityId={activeQualityId}
         onQualityChange={onQualityChange}
@@ -835,10 +849,10 @@ export function YTPlayer({
             </YtpButton>
 
             {/* ── Next + Episodes group ─────────────────────────────────── */}
-            {(onNext || hasEpisodes) && (
+            {(hasNext || hasEpisodes) && (
               <div className={s.ytpNextEpisodesGroup}>
                 {/* Next — only shown when caller provides onNext */}
-                {onNext && (
+                {hasNext && (
                   <YtpButton
                     tooltip="Next (SHIFT+N)"
                     ariaLabel="Next"
@@ -850,9 +864,9 @@ export function YTPlayer({
                   </YtpButton>
                 )}
                 {/* Episodes — slide wrapper mirrors the volume-slider reveal mechanism */}
-                {hasEpisodes && (
+                {hasEpisodes && !hiddenControls.has("episodes") && (
                   <div
-                    className={`${s.ytpEpisodesSlide}${onNext && !isEpisodesOpen ? ` ${s.ytpEpisodesReveal}` : ""}`}
+                    className={`${s.ytpEpisodesSlide}${hasNext && !isEpisodesOpen ? ` ${s.ytpEpisodesReveal}` : ""}`}
                   >
                     <YtpButton
                       tooltip="Episodes (E)"
@@ -874,58 +888,60 @@ export function YTPlayer({
             )}
 
             {/* Volume area — CSS hides on pointer:coarse (mobile system handles volume) */}
-            <span
-              className={`${s.ytpVolumeArea} ${volumeVisible ? s.ytpVolumeAreaExpanded : ""}`}
-              data-ytp-component="volume-area"
-            >
-              <div className={s.ytpMuteButton}>
-                <YtpButton
-                  tooltip={isMuted ? "Unmute (M)" : "Mute (M)"}
-                  onClick={toggleMute}
+            {!hiddenControls.has("volume") && (
+              <span
+                className={`${s.ytpVolumeArea} ${volumeVisible ? s.ytpVolumeAreaExpanded : ""}`}
+                data-ytp-component="volume-area"
+              >
+                <div className={s.ytpMuteButton}>
+                  <YtpButton
+                    tooltip={isMuted ? "Unmute (M)" : "Mute (M)"}
+                    onClick={toggleMute}
+                    onMouseEnter={revealVolumeSlider}
+                  >
+                    {isMuted || volume <= 0.001 ? (
+                      <MuteIcon />
+                    ) : (
+                      <VolumeIcon volume={volume} />
+                    )}
+                  </YtpButton>
+                </div>
+                <div
+                  className={s.ytpVolumePanel}
+                  role="slider"
+                  aria-label="Volume"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(effectiveVolume * 100)}
+                  aria-valuetext={`${Math.round(effectiveVolume * 100)}% volume`}
                   onMouseEnter={revealVolumeSlider}
                 >
-                  {isMuted || volume <= 0.001 ? (
-                    <MuteIcon />
-                  ) : (
-                    <VolumeIcon volume={volume} />
-                  )}
-                </YtpButton>
-              </div>
-              <div
-                className={s.ytpVolumePanel}
-                role="slider"
-                aria-label="Volume"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(effectiveVolume * 100)}
-                aria-valuetext={`${Math.round(effectiveVolume * 100)}% volume`}
-                onMouseEnter={revealVolumeSlider}
-              >
-                <div className={s.ytpVolumeSlider}>
-                  <input
-                    id={sliderId}
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={effectiveVolume}
-                    className={s.ytpVolumeInput}
-                    onChange={(e) =>
-                      changeVolume(Number(e.currentTarget.value))
-                    }
-                    aria-label="Volume"
-                  />
-                  <div
-                    className={s.ytpVolumeSliderFill}
-                    style={{ width: `${effectiveVolume * 100}%` }}
-                  />
-                  <div
-                    className={s.ytpVolumeSliderHandle}
-                    style={{ left: `${effectiveVolume * 100}%` }}
-                  />
+                  <div className={s.ytpVolumeSlider}>
+                    <input
+                      id={sliderId}
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={effectiveVolume}
+                      className={s.ytpVolumeInput}
+                      onChange={(e) =>
+                        changeVolume(Number(e.currentTarget.value))
+                      }
+                      aria-label="Volume"
+                    />
+                    <div
+                      className={s.ytpVolumeSliderFill}
+                      style={{ width: `${effectiveVolume * 100}%` }}
+                    />
+                    <div
+                      className={s.ytpVolumeSliderHandle}
+                      style={{ left: `${effectiveVolume * 100}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            </span>
+              </span>
+            )}
 
             {/* Time display — click to toggle elapsed / remaining */}
             <div
@@ -950,7 +966,7 @@ export function YTPlayer({
             </div>
 
             {/* Chapter title */}
-            {activeChapter && (
+            {activeChapter && !hiddenControls.has("chapter") && (
               <div className={s.ytpChapterContainer}>
                 <button
                   className={s.ytpChapterTitle}
@@ -995,7 +1011,7 @@ export function YTPlayer({
 
             <div className={s.ytpRightControlsRight}>
               {/* Theater mode — hidden in fullscreen and on touch devices (CSS) */}
-              {!isFullscreen && (
+              {!hiddenControls.has("theater") && (
                 <YtpButton
                   tooltip={isTheater ? "Default view (T)" : "Theater mode (T)"}
                   onClick={toggleTheater}

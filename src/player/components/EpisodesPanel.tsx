@@ -1,5 +1,6 @@
 import type { CSSProperties, PointerEvent, RefObject } from "react";
 import s from "../Player.module.css";
+import type { PanelPlacement } from "../hooks/useLayoutDecision";
 
 type EpisodesPanelProps = {
   activeEpisodeIndex: number;
@@ -10,6 +11,7 @@ type EpisodesPanelProps = {
   onEpisodeChange?: (index: number) => void;
   onFocusEpisode: (index: number) => void;
   panelRef: RefObject<HTMLDivElement>;
+  placement: PanelPlacement;
   episodes?: Array<{ title?: string }>;
 };
 
@@ -23,6 +25,7 @@ export function EpisodesPanel({
   onEpisodeChange,
   onFocusEpisode,
   panelRef,
+  placement,
 }: EpisodesPanelProps) {
   if (!isOpen || !episodes?.length) return null;
 
@@ -31,6 +34,7 @@ export function EpisodesPanel({
       ref={panelRef}
       className={s.ytpEpisodesPanel}
       data-layer="5"
+      data-placement={placement}
       role="dialog"
       aria-label="Episodes"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}

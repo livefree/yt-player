@@ -109,3 +109,14 @@
   - 保留本地 MP4、本地 HLS 与本地 fallback 资源作为稳定兜底
   - 继续保持开发预览不依赖 `thumbnailTrack`
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`、`npm run build:preview`
+
+## 2026-04-06 16:22
+
+- **任务**：PLAYER-12 — 引入布局决策层与布局契约测试
+- **所属序列**：SEQ-20260406-04
+- **结果**：
+  - 新增 `src/player/hooks/useLayoutDecision.ts`，统一输出布局模式、隐藏控件、slot 决策和 panel placement
+  - `Player.tsx` 开始消费布局决策：根节点暴露 `data-layout-mode`，volume / episodes / theater / chapter / top chrome 不再只依赖散落条件和 CSS 媒体查询
+  - `SettingsPanel` 与 `EpisodesPanel` 新增 placement 契约，compact/mobile 模式下切换到 top-right 锚点
+  - `src/test/Player.test.tsx` 扩展到 36 个回归测试，覆盖 desktop-default、desktop-compact、mobile-portrait 的布局契约
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

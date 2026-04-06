@@ -549,6 +549,12 @@
   animation: ytpPanelIn 0.12s ease;
 }
 
+.ytpSettingsMenu[data-placement="top-right"] {
+  top: 52px;
+  right: 12px;
+  bottom: auto;
+}
+
 @keyframes ytpPanelIn {
   from {
     opacity: 0;
@@ -1128,6 +1134,13 @@
   max-height: 260px;
   overflow-y: auto;
   animation: ytpPanelIn 0.12s ease; /* reuse existing panel-in animation */
+}
+
+.ytpEpisodesPanel[data-placement="top-right"] {
+  top: 52px;
+  right: 12px;
+  bottom: auto;
+  left: auto;
 }
 
 .ytpEpisodesGrid {
