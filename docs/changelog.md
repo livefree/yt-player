@@ -18,3 +18,14 @@
   - 将 `Player.tsx` 中 `src` 加载、HLS 生命周期、autoplay fallback、retry、cleanup 抽离到独立 hook
   - 保持公开 API 不变，现有 28 个回归测试继续通过
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 02:03
+
+- **任务**：PLAYER-04 — 抽离 progress 与移动端 gesture 输入层
+- **所属序列**：SEQ-20260406-01
+- **结果**：
+  - 新增 `src/player/hooks/useProgressInteractions.ts`
+  - 新增 `src/player/hooks/useGestureControls.ts`
+  - 将 progress hover/scrub、touch seek、touch volume、double-tap seek 从 `Player.tsx` 抽离到独立输入层 hook
+  - 保持公开 API 不变，现有 28 个回归测试继续通过
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

@@ -40,7 +40,6 @@ import {
   CHROME_HIDE_DELAY,
   IMMERSIVE_HIDE_DELAY,
   SEEK_OVERLAY_DURATION,
-  DOUBLE_TAP_THRESHOLD,
   EPISODES_COLS_SMALL,
   EPISODES_COLS_LARGE,
   EPISODES_COLS_THRESHOLD,
@@ -48,6 +47,8 @@ import {
 } from "./utils/format";
 import { useThumbnails } from "./hooks/useThumbnails";
 import { useSourceLoader } from "./hooks/useSourceLoader";
+import { useProgressInteractions } from "./hooks/useProgressInteractions";
+import { useGestureControls } from "./hooks/useGestureControls";
 import { Spinner } from "./components/Spinner";
 import { SeekOverlay } from "./components/SeekOverlay";
 import { Bezel } from "./components/Bezel";
@@ -144,22 +145,9 @@ export function YTPlayer({
   // ── Muted-autoplay state (shown when autoplay+sound was blocked) ───────────
   const [showUnmute, setShowUnmute] = useState(false);
 
-  // ── Double-tap detection (mobile) ─────────────────────────────────────────
-  const tapTimerRef = useRef<number | null>(null);
-  const tapCountRef = useRef(0);
-  const tapXRef = useRef(0);
-
-  // ── Progress hover tooltip ────────────────────────────────────────────────
-  const [hoverTime, setHoverTime] = useState<number | null>(null);
-  const [hoverX, setHoverX] = useState(0);
   const progressRailRef = useRef<HTMLDivElement>(null);
   const { getThumbnailAt } = useThumbnails(thumbnailTrack);
   const progressContainerRef = useRef<HTMLDivElement>(null);
-
-  // ── Progress bar touch scrubbing ──────────────────────────────────────────
-  const progressScrubActiveRef = useRef(false);
-  const progressScrubTimeRef = useRef<number | null>(null);
-  const [isProgressScrubbing, setIsProgressScrubbing] = useState(false);
 
   // ── Screen Wake Lock ──────────────────────────────────────────────────────
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -173,16 +161,54 @@ export function YTPlayer({
     useState(activeEpisodeIndex);
   const episodesPanelRef = useRef<HTMLDivElement>(null);
 
-  // ── Touch gesture state ────────────────────────────────────────────────────
-  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(
-    null,
-  );
-  const touchGestureRef = useRef<"seek" | "volume" | "none" | null>(null);
-  const [touchSeekDelta, setTouchSeekDelta] = useState<number | null>(null);
-
   const [showRemaining, setShowRemaining] = useState(false);
 
   const sliderId = useId();
+
+  const isImmersive = isTheater || isFullscreen;
+  const hasEpisodes = (episodes?.length ?? 0) > 0;
+  const episodesCols =
+    (episodes?.length ?? 0) > EPISODES_COLS_THRESHOLD
+      ? EPISODES_COLS_LARGE
+      : EPISODES_COLS_SMALL;
+
+  // ─── Chrome auto-hide ──────────────────────────────────────────────────────
+  const revealChrome = useCallback(() => {
+    setChromeVisible(true);
+    setCursorHidden(false);
+    if (keepControlsVisible) return;
+    if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
+    chromeTimerRef.current = window.setTimeout(
+      () => {
+        // Keep chrome visible while any panel (settings or episodes) is open
+        if (openPanel || isEpisodesOpen) return;
+        setChromeVisible(false);
+        if (isImmersive) setCursorHidden(true);
+      },
+      isImmersive ? IMMERSIVE_HIDE_DELAY : CHROME_HIDE_DELAY,
+    );
+  }, [isImmersive, openPanel, isEpisodesOpen, keepControlsVisible]);
+
+  const {
+    hoverTime,
+    hoverX,
+    isProgressScrubbing,
+    progressScrubActiveRef,
+    handleProgressHover,
+    handleProgressTouchStart,
+    handleProgressTouchMove,
+    handleProgressTouchEnd,
+    handleProgressPointerDown,
+    handleProgressPointerMove,
+    handleProgressPointerUp,
+    handleProgressMouseLeave,
+  } = useProgressInteractions({
+    duration,
+    videoRef,
+    progressRailRef,
+    revealChrome,
+    setCurrentTime,
+  });
 
   // ─── Computed values ───────────────────────────────────────────────────────
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -206,32 +232,6 @@ export function YTPlayer({
     }
     return null;
   }, [chapters, hoverTime]);
-
-  const isImmersive = isTheater || isFullscreen;
-
-  // Episodes: adaptive column count (≤12 → 4 cols, >12 → 6 cols)
-  const hasEpisodes = (episodes?.length ?? 0) > 0;
-  const episodesCols =
-    (episodes?.length ?? 0) > EPISODES_COLS_THRESHOLD
-      ? EPISODES_COLS_LARGE
-      : EPISODES_COLS_SMALL;
-
-  // ─── Chrome auto-hide ──────────────────────────────────────────────────────
-  const revealChrome = useCallback(() => {
-    setChromeVisible(true);
-    setCursorHidden(false);
-    if (keepControlsVisible) return;
-    if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
-    chromeTimerRef.current = window.setTimeout(
-      () => {
-        // Keep chrome visible while any panel (settings or episodes) is open
-        if (openPanel || isEpisodesOpen) return;
-        setChromeVisible(false);
-        if (isImmersive) setCursorHidden(true);
-      },
-      isImmersive ? IMMERSIVE_HIDE_DELAY : CHROME_HIDE_DELAY,
-    );
-  }, [isImmersive, openPanel, isEpisodesOpen, keepControlsVisible]);
 
   // Keep chrome pinned while any panel is open; restart hide-timer when all panels close
   useEffect(() => {
@@ -828,173 +828,22 @@ export function YTPlayer({
     }
   }
 
-  // ─── Touch handlers ────────────────────────────────────────────────────────
-  function handleTouchStart(e: React.TouchEvent) {
-    if (e.touches.length !== 1) return;
-    touchStartRef.current = {
-      x: e.touches[0]?.clientX ?? 0,
-      y: e.touches[0]?.clientY ?? 0,
-      time: Date.now(),
-    };
-    touchGestureRef.current = null;
-    tapXRef.current = e.touches[0]?.clientX ?? 0;
-  }
-
-  function handleTouchMove(e: React.TouchEvent) {
-    if (!touchStartRef.current || e.touches.length !== 1) return;
-    const touch = e.touches[0];
-    if (!touch) return;
-    const dx = touch.clientX - touchStartRef.current.x;
-    const dy = touch.clientY - touchStartRef.current.y;
-
-    if (!touchGestureRef.current) {
-      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
-        touchGestureRef.current = "seek";
-      } else if (Math.abs(dy) > 12) {
-        const rect = playerRef.current?.getBoundingClientRect();
-        touchGestureRef.current =
-          rect && touch.clientX > rect.left + rect.width / 2
-            ? "volume"
-            : "none";
-      }
-    }
-
-    if (touchGestureRef.current === "seek") {
-      const delta = clamp(dx / 8, -120, 120);
-      setTouchSeekDelta(delta);
-      e.preventDefault();
-    }
-
-    if (touchGestureRef.current === "volume") {
-      changeVolume(volume - dy / 150);
-      touchStartRef.current = {
-        ...touchStartRef.current,
-        y: touch.clientY,
-      };
-    }
-  }
-
-  function handleTouchEnd() {
-    if (touchGestureRef.current === "seek" && touchSeekDelta !== null) {
-      doSeek(touchSeekDelta, touchSeekDelta > 0 ? "forward" : "back");
-      setTouchSeekDelta(null);
-    }
-    touchStartRef.current = null;
-    touchGestureRef.current = null;
-  }
-
-  // ─── Gesture layer click (single/double tap) ───────────────────────────────
-  function handleGestureClick(e: React.MouseEvent) {
-    // On touch devices: if controls are hidden, the first tap should only
-    // reveal chrome without toggling play. This prevents accidental play/pause
-    // when the user is simply trying to see the controls.
-    if (!chromeVisible && !keepControlsVisible) {
-      revealChrome();
-      return;
-    }
-
-    tapCountRef.current += 1;
-    tapXRef.current = e.clientX;
-
-    if (tapCountRef.current === 1) {
-      tapTimerRef.current = window.setTimeout(() => {
-        tapCountRef.current = 0;
-        togglePlay();
-      }, DOUBLE_TAP_THRESHOLD);
-    } else {
-      if (tapTimerRef.current) window.clearTimeout(tapTimerRef.current);
-      tapCountRef.current = 0;
-      const rect = playerRef.current?.getBoundingClientRect();
-      if (rect) {
-        const isRight = tapXRef.current > rect.left + rect.width / 2;
-        doSeek(isRight ? SEEK_STEP : -SEEK_STEP, isRight ? "forward" : "back");
-      }
-    }
-  }
-
-  // ─── Progress bar hover ────────────────────────────────────────────────────
-  function handleProgressHover(e: React.MouseEvent) {
-    const rail = progressRailRef.current;
-    if (!rail || !duration) return;
-    const rect = rail.getBoundingClientRect();
-    const ratio = clamp((e.clientX - rect.left) / rect.width, 0, 1);
-    setHoverTime(ratio * duration);
-    setHoverX(e.clientX - rect.left);
-  }
-
-  // ─── Progress bar scrubbing (mouse + touch) ────────────────────────────────
-  function updateProgressScrub(clientX: number) {
-    const rail = progressRailRef.current;
-    if (!rail || !duration) return;
-    const rect = rail.getBoundingClientRect();
-    const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
-    const scrubTime = ratio * duration;
-    progressScrubTimeRef.current = scrubTime;
-    setHoverTime(scrubTime);
-    setHoverX(clientX - rect.left);
-  }
-
-  function handleProgressTouchStart(e: React.TouchEvent) {
-    const touch = e.touches[0];
-    if (!touch) return;
-    progressScrubActiveRef.current = true;
-    setIsProgressScrubbing(true);
-    revealChrome();
-    updateProgressScrub(touch.clientX);
-  }
-
-  function handleProgressTouchMove(e: React.TouchEvent) {
-    if (!progressScrubActiveRef.current) return;
-    const touch = e.touches[0];
-    if (!touch) return;
-    updateProgressScrub(touch.clientX);
-  }
-
-  function handleProgressTouchEnd() {
-    if (!progressScrubActiveRef.current) return;
-    progressScrubActiveRef.current = false;
-    setIsProgressScrubbing(false);
-    const scrubTime = progressScrubTimeRef.current;
-    progressScrubTimeRef.current = null;
-    const v = videoRef.current;
-    if (scrubTime !== null && v && isFinite(v.duration) && v.duration > 0) {
-      v.currentTime = scrubTime;
-      setCurrentTime(scrubTime);
-      revealChrome();
-    }
-    setHoverTime(null);
-  }
-
-  // Mouse-drag scrubbing via Pointer Events API.
-  // setPointerCapture keeps events flowing to the rail even when the cursor
-  // moves outside the element, mirroring the touch handler behaviour above.
-  function handleProgressPointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    if (e.pointerType !== "mouse" || e.button !== 0) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    progressScrubActiveRef.current = true;
-    setIsProgressScrubbing(true);
-    revealChrome();
-    updateProgressScrub(e.clientX);
-  }
-
-  function handleProgressPointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (e.pointerType !== "mouse" || !progressScrubActiveRef.current) return;
-    updateProgressScrub(e.clientX);
-  }
-
-  function handleProgressPointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    if (e.pointerType !== "mouse" || !progressScrubActiveRef.current) return;
-    progressScrubActiveRef.current = false;
-    setIsProgressScrubbing(false);
-    const scrubTime = progressScrubTimeRef.current;
-    progressScrubTimeRef.current = null;
-    const v = videoRef.current;
-    if (scrubTime !== null && v && isFinite(v.duration) && v.duration > 0) {
-      v.currentTime = scrubTime;
-      setCurrentTime(scrubTime);
-      revealChrome();
-    }
-  }
+  const {
+    touchSeekDelta,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    handleGestureClick,
+  } = useGestureControls({
+    playerRef,
+    chromeVisible,
+    keepControlsVisible,
+    revealChrome,
+    togglePlay,
+    changeVolume,
+    doSeek,
+    volume,
+  });
 
   // ─── AirPlay ───────────────────────────────────────────────────────────────
   function triggerAirPlay() {
@@ -1593,9 +1442,7 @@ export function YTPlayer({
             onPointerUp={handleProgressPointerUp}
             onPointerCancel={handleProgressPointerUp}
             onMouseMove={handleProgressHover}
-            onMouseLeave={() => {
-              if (!progressScrubActiveRef.current) setHoverTime(null);
-            }}
+            onMouseLeave={handleProgressMouseLeave}
             onClick={(e) => {
               // Skip if a pointer-drag just ended (pointerUp already seeked)
               if (progressScrubActiveRef.current) return;
