@@ -19,7 +19,7 @@
  */
 
 import {
-  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
   useEffect,
   useId,
   useMemo,
@@ -31,14 +31,11 @@ import { type PlayerProps, type SeekDirection, type Panel } from "./types";
 import {
   clamp,
   formatTime,
-  formatRate,
   SEEK_STEP,
-  SPEED_PRESETS,
   SEEK_OVERLAY_DURATION,
   EPISODES_COLS_SMALL,
   EPISODES_COLS_LARGE,
   EPISODES_COLS_THRESHOLD,
-  THUMB_CLAMP_PX,
 } from "./utils/format";
 import { useThumbnails } from "./hooks/useThumbnails";
 import { useSourceLoader } from "./hooks/useSourceLoader";
@@ -51,6 +48,9 @@ import { Spinner } from "./components/Spinner";
 import { SeekOverlay } from "./components/SeekOverlay";
 import { Bezel } from "./components/Bezel";
 import { YtpButton } from "./components/Button";
+import { EpisodesPanel } from "./components/EpisodesPanel";
+import { SettingsPanel } from "./components/SettingsPanel";
+import { ProgressBar } from "./components/ProgressBar";
 import {
   PlayIcon,
   PauseIcon,
@@ -467,6 +467,12 @@ export function YTPlayer({
     revealChrome();
   }
 
+  function handleProgressClick(event: ReactMouseEvent<HTMLDivElement>) {
+    const rect = progressRailRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    seekToPercent(clamp((event.clientX - rect.left) / rect.width, 0, 1));
+  }
+
   function togglePip() {
     const v = videoRef.current;
     if (!v) return;
@@ -714,364 +720,32 @@ export function YTPlayer({
       )}
 
       {/* ── Layer 5: episodes panel (bottom-left, desktop only) ───────────── */}
-      {isEpisodesOpen && hasEpisodes && (
-        <div
-          ref={episodesPanelRef}
-          className={s.ytpEpisodesPanel}
-          data-layer="5"
-          role="dialog"
-          aria-label="Episodes"
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          <div
-            className={s.ytpEpisodesGrid}
-            role="listbox"
-            style={
-              { "--_ep-cols": episodesCols } as CSSProperties
-            }
-          >
-            {episodes!.map((_, i) => (
-              <button
-                key={i}
-                role="option"
-                aria-selected={i === activeEpisodeIndex}
-                className={`${s.ytpEpisodeItem}${i === activeEpisodeIndex ? ` ${s.ytpEpisodeActive}` : ""}${i === focusedEpisodeIndex ? ` ${s.ytpEpisodeFocused}` : ""}`}
-                data-ep-focused={i === focusedEpisodeIndex ? "" : undefined}
-                onClick={() => {
-                  onEpisodeChange?.(i);
-                  setIsEpisodesOpen(false);
-                }}
-                onMouseEnter={() => setFocusedEpisodeIndex(i)}
-              >
-                {String(i + 1).padStart(2, "0")}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <EpisodesPanel
+        panelRef={episodesPanelRef}
+        episodes={episodes}
+        isOpen={isEpisodesOpen}
+        episodesCols={episodesCols}
+        activeEpisodeIndex={activeEpisodeIndex}
+        focusedEpisodeIndex={focusedEpisodeIndex}
+        onEpisodeChange={onEpisodeChange}
+        onFocusEpisode={setFocusedEpisodeIndex}
+        onClose={() => setIsEpisodesOpen(false)}
+      />
 
       {/* ── Layer 5: settings panel ───────────────────────────────────────── */}
-      {openPanel && (
-        <div
-          ref={settingsPanelRef}
-          className={`${s.ytpSettingsMenu} ${s.ytpPopup}`}
-          data-layer="5"
-          role="dialog"
-          aria-label="Settings"
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          <div className={s.ytpFocusTrap} tabIndex={0} />
-          <div className={s.ytpPanelMenu} role="menu">
-            {/* Main settings panel */}
-            {openPanel === "settings" && (
-              <>
-                {qualities.length > 0 && (
-                  <div
-                    className={s.ytpMenuItem}
-                    role="menuitem"
-                    tabIndex={0}
-                    onClick={() => setOpenPanel("quality")}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" && setOpenPanel("quality")
-                    }
-                  >
-                    <span className={s.ytpMenuItemLabel}>Quality</span>
-                    <span className={s.ytpMenuItemValue}>
-                      {qualities.find((q) => q.id === activeQualityId)?.label ??
-                        "Auto"}
-                    </span>
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      aria-hidden="true"
-                      className={s.ytpMenuChevron}
-                    >
-                      <path
-                        d="M9.71 18.71l-1.42-1.42 5.3-5.29-5.3-5.29 1.42-1.42 6.7 6.71z"
-                        fill="white"
-                      />
-                    </svg>
-                  </div>
-                )}
-                {subtitles.length > 0 && (
-                  <div
-                    className={s.ytpMenuItem}
-                    role="menuitem"
-                    tabIndex={0}
-                    onClick={() => setOpenPanel("subtitles")}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" && setOpenPanel("subtitles")
-                    }
-                  >
-                    <span className={s.ytpMenuItemLabel}>Subtitles/CC</span>
-                    <span className={s.ytpMenuItemValue}>
-                      {activeSubId
-                        ? subtitles.find((sub) => sub.id === activeSubId)?.label
-                        : "Off"}
-                    </span>
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      aria-hidden="true"
-                      className={s.ytpMenuChevron}
-                    >
-                      <path
-                        d="M9.71 18.71l-1.42-1.42 5.3-5.29-5.3-5.29 1.42-1.42 6.7 6.71z"
-                        fill="white"
-                      />
-                    </svg>
-                  </div>
-                )}
-                <div
-                  className={s.ytpMenuItem}
-                  role="menuitem"
-                  tabIndex={0}
-                  onClick={() => setOpenPanel("speed")}
-                  onKeyDown={(e) => e.key === "Enter" && setOpenPanel("speed")}
-                >
-                  <span className={s.ytpMenuItemLabel}>Playback speed</span>
-                  <span className={s.ytpMenuItemValue}>
-                    {formatRate(playbackRate)}
-                  </span>
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    aria-hidden="true"
-                    className={s.ytpMenuChevron}
-                  >
-                    <path
-                      d="M9.71 18.71l-1.42-1.42 5.3-5.29-5.3-5.29 1.42-1.42 6.7 6.71z"
-                      fill="white"
-                    />
-                  </svg>
-                </div>
-              </>
-            )}
-
-            {/* Quality sub-panel */}
-            {openPanel === "quality" && (
-              <>
-                <div
-                  className={s.ytpMenuHeader}
-                  role="menuitem"
-                  tabIndex={0}
-                  onClick={() => setOpenPanel("settings")}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && setOpenPanel("settings")
-                  }
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    aria-hidden="true"
-                    className={s.ytpMenuBack}
-                  >
-                    <path
-                      d="M14.29 5.29L12.88 3.88 5.76 11l7.12 7.12 1.41-1.41L8.58 11z"
-                      fill="white"
-                    />
-                  </svg>
-                  <span>Quality</span>
-                </div>
-                {qualities.map((q) => (
-                  <div
-                    key={q.id}
-                    className={`${s.ytpMenuItem} ${q.id === activeQualityId ? s.ytpMenuItemActive : ""}`}
-                    role="menuitemradio"
-                    aria-checked={q.id === activeQualityId}
-                    tabIndex={0}
-                    onClick={() => {
-                      onQualityChange?.(q.id);
-                      setOpenPanel("settings");
-                    }}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" &&
-                      (onQualityChange?.(q.id), setOpenPanel("settings"))
-                    }
-                  >
-                    {q.id === activeQualityId && (
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        aria-hidden="true"
-                        className={s.ytpMenuCheck}
-                      >
-                        <path
-                          d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
-                          fill="white"
-                        />
-                      </svg>
-                    )}
-                    <span className={s.ytpMenuItemLabel}>{q.label}</span>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Subtitles sub-panel */}
-            {openPanel === "subtitles" && (
-              <>
-                <div
-                  className={s.ytpMenuHeader}
-                  role="menuitem"
-                  tabIndex={0}
-                  onClick={() => setOpenPanel("settings")}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && setOpenPanel("settings")
-                  }
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    aria-hidden="true"
-                    className={s.ytpMenuBack}
-                  >
-                    <path
-                      d="M14.29 5.29L12.88 3.88 5.76 11l7.12 7.12 1.41-1.41L8.58 11z"
-                      fill="white"
-                    />
-                  </svg>
-                  <span>Subtitles/CC</span>
-                </div>
-                <div
-                  className={`${s.ytpMenuItem} ${!activeSubId ? s.ytpMenuItemActive : ""}`}
-                  role="menuitemradio"
-                  aria-checked={!activeSubId}
-                  tabIndex={0}
-                  onClick={() => {
-                    setActiveSubId(null);
-                    setOpenPanel("settings");
-                  }}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" &&
-                    (setActiveSubId(null), setOpenPanel("settings"))
-                  }
-                >
-                  {!activeSubId && (
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      aria-hidden="true"
-                      className={s.ytpMenuCheck}
-                    >
-                      <path
-                        d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
-                        fill="white"
-                      />
-                    </svg>
-                  )}
-                  <span className={s.ytpMenuItemLabel}>Off</span>
-                </div>
-                {subtitles.map((sub) => (
-                  <div
-                    key={sub.id}
-                    className={`${s.ytpMenuItem} ${sub.id === activeSubId ? s.ytpMenuItemActive : ""}`}
-                    role="menuitemradio"
-                    aria-checked={sub.id === activeSubId}
-                    tabIndex={0}
-                    onClick={() => {
-                      setActiveSubId(sub.id);
-                      setOpenPanel("settings");
-                    }}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" &&
-                      (setActiveSubId(sub.id), setOpenPanel("settings"))
-                    }
-                  >
-                    {sub.id === activeSubId && (
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        aria-hidden="true"
-                        className={s.ytpMenuCheck}
-                      >
-                        <path
-                          d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
-                          fill="white"
-                        />
-                      </svg>
-                    )}
-                    <span className={s.ytpMenuItemLabel}>{sub.label}</span>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Speed sub-panel */}
-            {openPanel === "speed" && (
-              <>
-                <div
-                  className={s.ytpMenuHeader}
-                  role="menuitem"
-                  tabIndex={0}
-                  onClick={() => setOpenPanel("settings")}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && setOpenPanel("settings")
-                  }
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    aria-hidden="true"
-                    className={s.ytpMenuBack}
-                  >
-                    <path
-                      d="M14.29 5.29L12.88 3.88 5.76 11l7.12 7.12 1.41-1.41L8.58 11z"
-                      fill="white"
-                    />
-                  </svg>
-                  <span>Playback speed</span>
-                </div>
-                {SPEED_PRESETS.map((rate) => (
-                  <div
-                    key={rate}
-                    className={`${s.ytpMenuItem} ${Math.abs(playbackRate - rate) < 0.01 ? s.ytpMenuItemActive : ""}`}
-                    role="menuitemradio"
-                    aria-checked={Math.abs(playbackRate - rate) < 0.01}
-                    tabIndex={0}
-                    onClick={() => {
-                      setPlaybackRate(rate);
-                      setOpenPanel("settings");
-                    }}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" &&
-                      (setPlaybackRate(rate), setOpenPanel("settings"))
-                    }
-                  >
-                    {Math.abs(playbackRate - rate) < 0.01 && (
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        aria-hidden="true"
-                        className={s.ytpMenuCheck}
-                      >
-                        <path
-                          d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
-                          fill="white"
-                        />
-                      </svg>
-                    )}
-                    <span className={s.ytpMenuItemLabel}>
-                      {formatRate(rate)}
-                    </span>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-          <div className={s.ytpFocusTrap} tabIndex={0} />
-        </div>
-      )}
+      <SettingsPanel
+        panelRef={settingsPanelRef}
+        openPanel={openPanel}
+        qualities={qualities}
+        activeQualityId={activeQualityId}
+        onQualityChange={onQualityChange}
+        subtitles={subtitles}
+        activeSubId={activeSubId}
+        onSubtitleChange={setActiveSubId}
+        playbackRate={playbackRate}
+        onPlaybackRateChange={setPlaybackRate}
+        onOpenPanel={setOpenPanel}
+      />
 
       {/* ── Layer 9: gradient bottom ──────────────────────────────────────── */}
       <div className={s.ytpGradientBottom} data-layer="9" aria-hidden="true" />
@@ -1090,132 +764,31 @@ export function YTPlayer({
       {/* ── Layer 9: chrome bottom ────────────────────────────────────────── */}
       <div className={s.ytpChromeBottom} data-layer="9">
         {/* ── Progress bar container ──────────────────────────────────────── */}
-        <div
-          ref={progressContainerRef}
-          className={`${s.ytpProgressBarContainer} ${isProgressScrubbing ? s.ytpProgressBarScrubbing : ""}`}
-          data-ytp-component="progress-bar"
-          onTouchStart={handleProgressTouchStart}
-          onTouchMove={handleProgressTouchMove}
-          onTouchEnd={handleProgressTouchEnd}
-        >
-          <div
-            ref={progressRailRef}
-            className={s.ytpProgressBar}
-            role="slider"
-            tabIndex={0}
-            aria-label="Seek"
-            aria-valuemin={0}
-            aria-valuemax={Math.floor(duration)}
-            aria-valuenow={Math.floor(currentTime)}
-            aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-            onPointerDown={handleProgressPointerDown}
-            onPointerMove={handleProgressPointerMove}
-            onPointerUp={handleProgressPointerUp}
-            onPointerCancel={handleProgressPointerUp}
-            onMouseMove={handleProgressHover}
-            onMouseLeave={handleProgressMouseLeave}
-            onClick={(e) => {
-              // Skip if a pointer-drag just ended (pointerUp already seeked)
-              if (progressScrubActiveRef.current) return;
-              const rect = progressRailRef.current?.getBoundingClientRect();
-              if (!rect) return;
-              seekToPercent(clamp((e.clientX - rect.left) / rect.width, 0, 1));
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowLeft") doSeek(-SEEK_STEP);
-              if (e.key === "ArrowRight") doSeek(SEEK_STEP);
-            }}
-          >
-            <div className={s.ytpChaptersContainer}>
-              <div className={s.ytpChapterHoverContainer}>
-                <div className={s.ytpProgressBarPadding} />
-                <div className={s.ytpProgressList}>
-                  {/* Buffered */}
-                  <div
-                    className={s.ytpLoadProgress}
-                    style={{ transform: `scaleX(${bufferedPct / 100})` }}
-                  />
-                  {/* Played — follows finger during touch scrubbing */}
-                  <div
-                    className={s.ytpPlayProgress}
-                    style={{ transform: `scaleX(${displayPct / 100})` }}
-                  />
-                  {/* Hover ghost */}
-                  {hoverTime !== null && (
-                    <div
-                      className={s.ytpHoverProgress}
-                      style={{
-                        transform: `scaleX(${hoverX / (progressRailRef.current?.clientWidth ?? 1)})`,
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Chapter markers */}
-            {chapterMarkers.map((ch) => (
-              <div
-                key={ch.title}
-                className={s.ytpChapterMarker}
-                style={{ left: `${ch.pct}%` }}
-                title={ch.title}
-              />
-            ))}
-
-            {/* Scrubber thumb — follows finger during touch scrubbing */}
-            <div
-              className={s.ytpScrubberContainer}
-              style={{ left: `${displayPct}%` }}
-            >
-              <div className={s.ytpScrubberButton} />
-            </div>
-
-            {/* Hover time tooltip (+ optional thumbnail) */}
-            {hoverTime !== null && (() => {
-              const thumb = getThumbnailAt(hoverTime);
-              const railW = progressRailRef.current?.clientWidth ?? 300;
-              const clampPx = thumb ? THUMB_CLAMP_PX : 40;
-              return (
-                <div
-                  className={s.ytpProgressTooltipWrap}
-                  style={{ left: `${clamp(hoverX, clampPx, railW - clampPx)}px` }}
-                >
-                  {thumb && (
-                    <div className={s.ytpThumbnailPreview}>
-                      <img
-                        src={thumb.url}
-                        className={s.ytpThumbnailImg}
-                        alt=""
-                        draggable={false}
-                        style={
-                          thumb.x !== undefined
-                            ? {
-                                objectFit: "none",
-                                objectPosition: `-${thumb.x}px -${thumb.y}px`,
-                                width: thumb.w,
-                                height: thumb.h,
-                              }
-                            : undefined
-                        }
-                      />
-                    </div>
-                  )}
-                  <div className={s.ytpTooltipProgressBar}>
-                    <div className={s.ytpTooltipProgressText}>
-                      {formatTime(hoverTime)}
-                    </div>
-                    {hoverChapter && (
-                      <div className={s.ytpTooltipChapterTitle}>
-                        {hoverChapter.title}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
+        <ProgressBar
+          progressContainerRef={progressContainerRef}
+          progressRailRef={progressRailRef}
+          progressScrubActiveRef={progressScrubActiveRef}
+          isScrubbing={isProgressScrubbing}
+          duration={duration}
+          currentTime={currentTime}
+          bufferedPct={bufferedPct}
+          displayPct={displayPct}
+          hoverTime={hoverTime}
+          hoverX={hoverX}
+          hoverChapterTitle={hoverChapter?.title}
+          chapterMarkers={chapterMarkers}
+          getThumbnailAt={getThumbnailAt}
+          handlePointerDown={handleProgressPointerDown}
+          handlePointerMove={handleProgressPointerMove}
+          handlePointerUp={handleProgressPointerUp}
+          handleProgressHover={handleProgressHover}
+          handleMouseLeave={handleProgressMouseLeave}
+          handleProgressTouchStart={handleProgressTouchStart}
+          handleProgressTouchMove={handleProgressTouchMove}
+          handleProgressTouchEnd={handleProgressTouchEnd}
+          handleProgressClick={handleProgressClick}
+          onSeekStep={doSeek}
+        />
 
         {/* ── Controls ───────────────────────────────────────────────────── */}
         <div className={s.ytpChromeControls}>

@@ -41,3 +41,15 @@
   - 将 chrome visibility、keyboard shortcuts、Fullscreen、Media Session、Wake Lock、AirPlay 从 `Player.tsx` 抽离到独立 hook
   - 保持公开 API 不变，现有 28 个回归测试继续通过
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 02:33
+
+- **任务**：PLAYER-06 — 完成薄组装层与移植性验收
+- **所属序列**：SEQ-20260406-01
+- **结果**：
+  - 新增 `src/player/components/EpisodesPanel.tsx`
+  - 新增 `src/player/components/SettingsPanel.tsx`
+  - 新增 `src/player/components/ProgressBar.tsx`
+  - 将 `Player.tsx` 压缩为更薄的组装层，行数由 1437 降到 1010
+  - 在 `README.md` 补充“可移植性契约”和最小复制集成清单，明确 React 18 + CSS Modules 即可直接接入
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
