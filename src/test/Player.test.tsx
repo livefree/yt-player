@@ -452,7 +452,9 @@ describe("YTPlayer — overlay manager contracts", () => {
       expect(root).toHaveAttribute("data-overlay-gestures-blocked", "true");
       expect(gestureLayer).toHaveAttribute("data-gestures-blocked", "true");
 
-      fireEvent.click(gestureLayer, { clientX: 200 });
+      fireEvent.click(
+        container.querySelector('[data-input-zone="center"]') as HTMLDivElement,
+      );
 
       await act(async () => {
         vi.advanceTimersByTime(300);
@@ -491,6 +493,51 @@ describe("YTPlayer — overlay manager contracts", () => {
     const root = container.firstElementChild as HTMLDivElement;
     expect(root).toHaveAttribute("data-overlay-top", "error");
     expect(root).toHaveAttribute("data-overlay-gestures-blocked", "true");
+  });
+});
+
+describe("YTPlayer — input router contracts", () => {
+  it("renders three gesture zones for desktop layouts", async () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-input-zones",
+        "left,center,right",
+      );
+    });
+
+    const zones = container.querySelectorAll('[data-input-route="gesture-zone"]');
+    expect(zones).toHaveLength(3);
+  });
+
+  it("renders a single center gesture zone for mobile portrait layouts", async () => {
+    coarsePointer = true;
+
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-input-zones",
+        "center",
+      );
+    });
+
+    const zones = container.querySelectorAll('[data-input-route="gesture-zone"]');
+    expect(zones).toHaveLength(1);
+    expect(zones[0]).toHaveAttribute("data-input-zone", "center");
   });
 });
 
@@ -537,27 +584,15 @@ describe("YTPlayer — progress and gesture regressions", () => {
   it("double-clicking the right half of the gesture layer seeks forward", async () => {
     const { container } = render(<YTPlayer src={TEST_SRC} />);
     const video = container.querySelector("video") as HTMLVideoElement;
-    const gestureLayer = container.querySelector(
-      '[data-layer="3"]',
+    const rightZone = container.querySelector(
+      '[data-input-zone="right"]',
     ) as HTMLDivElement;
-    const root = container.firstElementChild as HTMLDivElement;
 
     setVideoDuration(video, 120);
     setVideoCurrentTime(video, 20);
-    root.getBoundingClientRect = vi.fn(() => ({
-      x: 0,
-      y: 0,
-      top: 0,
-      left: 0,
-      right: 400,
-      bottom: 200,
-      width: 400,
-      height: 200,
-      toJSON: () => ({}),
-    }));
 
-    fireEvent.click(gestureLayer, { clientX: 320 });
-    fireEvent.click(gestureLayer, { clientX: 320 });
+    fireEvent.click(rightZone);
+    fireEvent.click(rightZone);
 
     expect(video.currentTime).toBe(30);
   });

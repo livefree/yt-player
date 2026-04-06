@@ -131,3 +131,14 @@
   - `useGestureControls` 接入统一的 gesture blocking 契约，不再在 blocking overlay 存在时继续响应点击和触摸
   - `src/test/Player.test.tsx` 扩展到 39 个回归测试，覆盖 settings / unmute prompt / error 的 overlay 优先级与手势阻断契约
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 16:35
+
+- **任务**：PLAYER-14 — 引入输入路由层并收回整屏手势捕获
+- **所属序列**：SEQ-20260406-04
+- **结果**：
+  - 新增 `src/player/hooks/useInputRouter.ts`，统一生成 gesture zones 与 gesture surface 配置
+  - `Player.tsx` 已从整屏透明 `gesture layer` 过渡到分区 `gesture surface`，显式渲染 `left / center / right` 路由区域
+  - `useGestureControls` 现在消费路由 zone，不再依赖整屏落点推断 seek 方向
+  - `src/test/Player.test.tsx` 扩展到 41 个回归测试，覆盖 desktop/mobile 的 input zones 契约与右侧 zone 双击 seek
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

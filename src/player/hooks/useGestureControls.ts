@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { DOUBLE_TAP_THRESHOLD, SEEK_STEP, clamp } from "../utils/format";
 import { type SeekDirection } from "../types";
+import type { InputZone } from "./useInputRouter";
 
 interface UseGestureControlsParams {
   playerRef: React.RefObject<HTMLDivElement>;
@@ -95,7 +96,7 @@ export function useGestureControls({
   }, [doSeek, gesturesBlocked, touchSeekDelta]);
 
   const handleGestureClick = useCallback(
-    (e: React.MouseEvent) => {
+    (zone: InputZone) => {
       if (gesturesBlocked) return;
       if (!chromeVisible && !keepControlsVisible) {
         revealChrome();
@@ -103,7 +104,6 @@ export function useGestureControls({
       }
 
       tapCountRef.current += 1;
-      tapXRef.current = e.clientX;
 
       if (tapCountRef.current === 1) {
         tapTimerRef.current = window.setTimeout(() => {
@@ -113,13 +113,11 @@ export function useGestureControls({
       } else {
         if (tapTimerRef.current) window.clearTimeout(tapTimerRef.current);
         tapCountRef.current = 0;
-        const rect = playerRef.current?.getBoundingClientRect();
-        if (rect) {
-          const isRight = tapXRef.current > rect.left + rect.width / 2;
-          doSeek(
-            isRight ? SEEK_STEP : -SEEK_STEP,
-            isRight ? "forward" : "back",
-          );
+        if (zone !== "center") {
+          const isRight = zone === "right";
+          doSeek(isRight ? SEEK_STEP : -SEEK_STEP, isRight ? "forward" : "back");
+        } else {
+          togglePlay();
         }
       }
     },
@@ -128,7 +126,6 @@ export function useGestureControls({
       doSeek,
       gesturesBlocked,
       keepControlsVisible,
-      playerRef,
       revealChrome,
       togglePlay,
     ],

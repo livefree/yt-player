@@ -256,16 +256,26 @@
 
 /* ─── Layer 3: Gesture layer ────────────────────────────────────────────────── */
 
-.ytpGestureLayer {
+.ytpGestureSurface {
   position: absolute;
   inset: 0;
   /* Covers video, below chrome */
   z-index: 30;
   cursor: default;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
-.ytpGestureLayer[data-gestures-blocked="true"] {
+.ytpGestureSurface[data-zone-count="1"] {
+  grid-template-columns: 1fr;
+}
+
+.ytpGestureSurface[data-gestures-blocked="true"] {
   pointer-events: none;
+}
+
+.ytpGestureZone {
+  min-width: 0;
 }
 
 /* ─── Layer 4: Spinner ──────────────────────────────────────────────────────── */
@@ -1419,7 +1429,7 @@
   }
 
   /* Prevent double-tap browser zoom on interactive elements */
-  .ytpGestureLayer,
+  .ytpGestureSurface,
   .ytpButton,
   .ytpTimeDisplay,
   .ytpVolumeArea {

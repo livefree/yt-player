@@ -175,7 +175,7 @@
 
 - **状态**：🔄 执行中
 - **创建时间**：2026-04-06 16:10
-- **最后更新时间**：2026-04-06 16:31
+- **最后更新时间**：2026-04-06 16:35
 - **目标**：按照 `docs/player-adaptive-layout-and-hit-testing-plan.md` 逐步建立布局决策层、overlay 管理层和输入路由层，抹平当前播放器与 YouTube 级交互架构的核心差距
 - **范围**：`src/player/`、`src/test/`、`docs/`、`DEVLOG.md`
 - **依赖**：延续现有薄组装层；保持公开 API 不变；禁止以局部 z-index / pointer-events / 布尔补丁替代架构层治理
@@ -196,11 +196,11 @@
    - 完成时间：2026-04-06 16:31
    - 验收要点：新增 `useOverlayManager`，统一 spinner/error/prompt/panel 的优先级、交互性和 gesture 阻断规则
 
-3. PLAYER-14 — 引入输入路由层并收回整屏手势捕获（状态：⬜）
+3. PLAYER-14 — 引入输入路由层并收回整屏手势捕获（状态：✅）
    - 创建时间：2026-04-06 16:10
    - 计划开始：PLAYER-13 完成后
-   - 实际开始：
-   - 完成时间：
+   - 实际开始：2026-04-06 16:35
+   - 完成时间：2026-04-06 16:35
    - 验收要点：新增 `useInputRouter`，让 gesture capture、控件区、popup 区与 progress scrub 区进入统一命中路由
 
 4. PLAYER-15 — 以 slot 为中心重组视图层（状态：⬜）

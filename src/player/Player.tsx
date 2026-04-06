@@ -49,6 +49,7 @@ import {
   buildOverlayEntries,
   useOverlayManager,
 } from "./hooks/useOverlayManager";
+import { useInputRouter } from "./hooks/useInputRouter";
 import { Spinner } from "./components/Spinner";
 import { SeekOverlay } from "./components/SeekOverlay";
 import { Bezel } from "./components/Bezel";
@@ -560,6 +561,10 @@ export function YTPlayer({
     openPanel: !!openPanel,
     isEpisodesOpen,
   });
+  const inputRouter = useInputRouter({
+    blocksGestures,
+    layoutMode: layoutDecision.mode,
+  });
 
   useKeyboardShortcuts({
     volume,
@@ -643,6 +648,7 @@ export function YTPlayer({
       data-layout-panels={layoutDecision.compactPanels ? "compact" : "default"}
       data-overlay-top={topOverlay ?? undefined}
       data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
+      data-input-zones={inputRouter.zones.join(",")}
       style={style}
       onPointerMove={revealChrome}
       onPointerEnter={revealChrome}
@@ -833,15 +839,25 @@ export function YTPlayer({
 
       {/* ── Layer 3: gesture layer (click / touch) ────────────────────────── */}
       <div
-        className={s.ytpGestureLayer}
+        className={s.ytpGestureSurface}
         data-layer="3"
-        data-gestures-blocked={blocksGestures ? "true" : "false"}
+        data-gestures-blocked={inputRouter.gestureSurfaceDisabled ? "true" : "false"}
+        data-zone-count={inputRouter.zones.length}
         aria-hidden="true"
-        onClick={handleGestureClick}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-      />
+      >
+        {inputRouter.zones.map((zone) => (
+          <div
+            key={zone}
+            className={s.ytpGestureZone}
+            data-input-route="gesture-zone"
+            data-input-zone={zone}
+            onClick={() => handleGestureClick(zone)}
+          />
+        ))}
+      </div>
 
       {/* ── Layer 9: chrome bottom ────────────────────────────────────────── */}
       <div className={s.ytpChromeBottom} data-layer="9">
