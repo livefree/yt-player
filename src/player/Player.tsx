@@ -20,7 +20,6 @@
 
 import {
   type CSSProperties,
-  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -34,11 +33,7 @@ import {
   formatTime,
   formatRate,
   SEEK_STEP,
-  VOLUME_STEP,
-  SPEED_STEP,
   SPEED_PRESETS,
-  CHROME_HIDE_DELAY,
-  IMMERSIVE_HIDE_DELAY,
   SEEK_OVERLAY_DURATION,
   EPISODES_COLS_SMALL,
   EPISODES_COLS_LARGE,
@@ -49,6 +44,9 @@ import { useThumbnails } from "./hooks/useThumbnails";
 import { useSourceLoader } from "./hooks/useSourceLoader";
 import { useProgressInteractions } from "./hooks/useProgressInteractions";
 import { useGestureControls } from "./hooks/useGestureControls";
+import { useChromeVisibility } from "./hooks/useChromeVisibility";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useSystemIntegrations } from "./hooks/useSystemIntegrations";
 import { Spinner } from "./components/Spinner";
 import { SeekOverlay } from "./components/SeekOverlay";
 import { Bezel } from "./components/Bezel";
@@ -128,10 +126,6 @@ export function YTPlayer({
 
   // ── UI state ───────────────────────────────────────────────────────────────
   const [isTheater, setIsTheater] = useState(defaultTheaterMode);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [chromeVisible, setChromeVisible] = useState(true);
-  const [cursorHidden, setCursorHidden] = useState(false);
-  const chromeTimerRef = useRef<number | null>(null);
 
   // ── Seek animation (layer 4) ───────────────────────────────────────────────
   const [seekDir, setSeekDir] = useState<SeekDirection>(null);
@@ -149,12 +143,6 @@ export function YTPlayer({
   const { getThumbnailAt } = useThumbnails(thumbnailTrack);
   const progressContainerRef = useRef<HTMLDivElement>(null);
 
-  // ── Screen Wake Lock ──────────────────────────────────────────────────────
-  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-
-  // ── AirPlay ───────────────────────────────────────────────────────────────
-  const [airPlayAvailable, setAirPlayAvailable] = useState(false);
-
   // ── Episodes panel ────────────────────────────────────────────────────────
   const [isEpisodesOpen, setIsEpisodesOpen] = useState(false);
   const [focusedEpisodeIndex, setFocusedEpisodeIndex] =
@@ -165,6 +153,21 @@ export function YTPlayer({
 
   const sliderId = useId();
 
+  const { isFullscreen, airPlayAvailable } = useSystemIntegrations({
+    videoRef,
+    title,
+    author,
+    poster,
+    onNext,
+    isPlaying,
+    duration,
+    playbackRate,
+    currentTime,
+    setCurrentTime,
+    doSeek,
+    setIsPlaying,
+  });
+
   const isImmersive = isTheater || isFullscreen;
   const hasEpisodes = (episodes?.length ?? 0) > 0;
   const episodesCols =
@@ -172,22 +175,12 @@ export function YTPlayer({
       ? EPISODES_COLS_LARGE
       : EPISODES_COLS_SMALL;
 
-  // ─── Chrome auto-hide ──────────────────────────────────────────────────────
-  const revealChrome = useCallback(() => {
-    setChromeVisible(true);
-    setCursorHidden(false);
-    if (keepControlsVisible) return;
-    if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
-    chromeTimerRef.current = window.setTimeout(
-      () => {
-        // Keep chrome visible while any panel (settings or episodes) is open
-        if (openPanel || isEpisodesOpen) return;
-        setChromeVisible(false);
-        if (isImmersive) setCursorHidden(true);
-      },
-      isImmersive ? IMMERSIVE_HIDE_DELAY : CHROME_HIDE_DELAY,
-    );
-  }, [isImmersive, openPanel, isEpisodesOpen, keepControlsVisible]);
+  const { chromeVisible, cursorHidden, revealChrome } = useChromeVisibility({
+    isImmersive,
+    openPanel,
+    isEpisodesOpen,
+    keepControlsVisible,
+  });
 
   const {
     hoverTime,
@@ -232,226 +225,6 @@ export function YTPlayer({
     }
     return null;
   }, [chapters, hoverTime]);
-
-  // Keep chrome pinned while any panel is open; restart hide-timer when all panels close
-  useEffect(() => {
-    if (openPanel || isEpisodesOpen) {
-      setChromeVisible(true);
-      if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
-    } else {
-      revealChrome();
-    }
-  }, [openPanel, isEpisodesOpen]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ─── Fullscreen sync ───────────────────────────────────────────────────────
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      // Standard API + webkit prefix (iOS uses webkitfullscreenchange on <video>)
-      const isFull =
-        !!document.fullscreenElement ||
-        !!(document as unknown as { webkitFullscreenElement: Element | null })
-          .webkitFullscreenElement;
-      setIsFullscreen(isFull);
-
-      // Attempt landscape lock / unlock on supported browsers (Android Chrome, etc.)
-      // screen.orientation.lock is not in all TS lib targets; use type assertion.
-      type OrientationExt = ScreenOrientation & {
-        lock?: (o: string) => Promise<void>;
-      };
-      const orient = screen.orientation as OrientationExt | undefined;
-      if (orient && typeof orient.lock === "function") {
-        if (isFull) {
-          orient.lock("landscape").catch(() => {
-            // Gracefully ignore: browser may not allow orientation lock
-          });
-        } else {
-          orient.unlock();
-        }
-      }
-    };
-
-    // iOS-specific: webkitEnterFullscreen fires events on the <video> element
-    const handleVideoFullBegin = () => setIsFullscreen(true);
-    const handleVideoFullEnd = () => {
-      setIsFullscreen(false);
-      (screen.orientation as ScreenOrientation | undefined)?.unlock();
-
-    };
-
-    const vid = videoRef.current;
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    vid?.addEventListener("webkitbeginfullscreen", handleVideoFullBegin);
-    vid?.addEventListener("webkitendfullscreen", handleVideoFullEnd);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange,
-      );
-      vid?.removeEventListener("webkitbeginfullscreen", handleVideoFullBegin);
-      vid?.removeEventListener("webkitendfullscreen", handleVideoFullEnd);
-    };
-  }, []);
-
-  // ─── AirPlay: detect support + set attribute ───────────────────────────────
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    // x-webkit-airplay="allow" opt-in for iOS Safari AirPlay routing
-    v.setAttribute("x-webkit-airplay", "allow");
-    // Check for webkitShowPlaybackTargetPicker (Safari-only AirPlay API)
-    setAirPlayAvailable(
-      typeof (
-        v as unknown as { webkitShowPlaybackTargetPicker?: unknown }
-      ).webkitShowPlaybackTargetPicker === "function",
-    );
-  }, []);
-
-  // ─── Media Session: metadata ───────────────────────────────────────────────
-  useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: title ?? "",
-      artist: author ?? "",
-      artwork: poster ? [{ src: poster }] : undefined,
-    });
-  }, [title, author, poster]);
-
-  // ─── Media Session: action handlers ───────────────────────────────────────
-  useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
-    const handlers: [MediaSessionAction, MediaSessionActionHandler | null][] = [
-      [
-        "play",
-        () => {
-          videoRef.current
-            ?.play()
-            .then(() => setIsPlaying(true))
-            .catch(() => {});
-        },
-      ],
-      [
-        "pause",
-        () => {
-          videoRef.current?.pause();
-          setIsPlaying(false);
-        },
-      ],
-      [
-        "seekforward",
-        (d) => {
-          doSeek(d.seekOffset ?? SEEK_STEP, "forward");
-        },
-      ],
-      [
-        "seekbackward",
-        (d) => {
-          doSeek(-(d.seekOffset ?? SEEK_STEP), "back");
-        },
-      ],
-      [
-        "seekto",
-        (d) => {
-          const v = videoRef.current;
-          if (d.seekTime != null && v && isFinite(v.duration)) {
-            v.currentTime = d.seekTime;
-            setCurrentTime(d.seekTime);
-          }
-        },
-      ],
-      ...(onNext
-        ? ([["nexttrack", onNext]] as [
-            MediaSessionAction,
-            MediaSessionActionHandler,
-          ][])
-        : []),
-    ];
-    handlers.forEach(([action, handler]) => {
-      try {
-        navigator.mediaSession.setActionHandler(action, handler);
-      } catch {
-        // Action may not be supported in all browsers
-      }
-    });
-    return () => {
-      handlers.forEach(([action]) => {
-        try {
-          navigator.mediaSession.setActionHandler(action, null);
-        } catch (_e) {
-          // Action unsupported in this browser; ignore
-        }
-      });
-    };
-  }, [onNext]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ─── Media Session: playback state sync ───────────────────────────────────
-  useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
-    navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
-  }, [isPlaying]);
-
-  // ─── Media Session: position state sync ───────────────────────────────────
-  useEffect(() => {
-    if (!("mediaSession" in navigator) || !duration) return;
-    try {
-      navigator.mediaSession.setPositionState({
-        duration,
-        playbackRate,
-        // position must be ≤ duration; clamp to be safe
-        position: Math.min(currentTime, duration),
-      });
-    } catch {
-      // setPositionState not supported in all browsers
-    }
-  }, [currentTime, duration, playbackRate]);
-
-  // ─── Screen Wake Lock: acquire / release ──────────────────────────────────
-  useEffect(() => {
-    if (!("wakeLock" in navigator)) return;
-    if (isPlaying) {
-      navigator.wakeLock
-        .request("screen")
-        .then((sentinel) => {
-          wakeLockRef.current = sentinel;
-        })
-        .catch(() => {
-          // Permission denied or not supported
-        });
-    } else {
-      const wakeLock = wakeLockRef.current;
-      wakeLock?.release()?.catch(() => {});
-      wakeLockRef.current = null;
-    }
-    return () => {
-      const wakeLock = wakeLockRef.current;
-      wakeLock?.release()?.catch(() => {});
-      wakeLockRef.current = null;
-    };
-  }, [isPlaying]);
-
-  // ─── Screen Wake Lock: re-acquire after tab becomes visible ───────────────
-  useEffect(() => {
-    if (!("wakeLock" in navigator)) return;
-    const handleVisibility = () => {
-      if (
-        document.visibilityState === "visible" &&
-        isPlaying &&
-        !wakeLockRef.current
-      ) {
-        navigator.wakeLock
-          .request("screen")
-          .then((sentinel) => {
-            wakeLockRef.current = sentinel;
-          })
-          .catch(() => {});
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibility);
-  }, [isPlaying]);
 
   const { retrySourceLoad } = useSourceLoader({
     videoRef,
@@ -503,130 +276,6 @@ export function YTPlayer({
     });
     return () => cleanups.forEach((fn) => fn());
   }, [activeSubId, subtitles]);
-
-  // ─── Keyboard shortcuts ────────────────────────────────────────────────────
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const tag       = (document.activeElement as HTMLElement)?.tagName;
-      const inputType = (document.activeElement as HTMLInputElement)?.type;
-      // Block shortcuts when typing in text fields, but allow them when the
-      // volume slider (type="range") is focused so M / arrows keep working.
-      if (tag === "TEXTAREA" || (tag === "INPUT" && inputType !== "range")) return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-
-      // ── Episodes panel keyboard intercept (captures all keys when open) ──────
-      if (isEpisodesOpen && episodes?.length) {
-        const total = episodes.length;
-        switch (e.key) {
-          case "ArrowRight":
-            e.preventDefault();
-            setFocusedEpisodeIndex((i) => Math.min(i + 1, total - 1));
-            return;
-          case "ArrowLeft":
-            e.preventDefault();
-            setFocusedEpisodeIndex((i) => Math.max(i - 1, 0));
-            return;
-          case "ArrowDown":
-            e.preventDefault();
-            setFocusedEpisodeIndex((i) =>
-              Math.min(i + episodesCols, total - 1),
-            );
-            return;
-          case "ArrowUp":
-            e.preventDefault();
-            setFocusedEpisodeIndex((i) => Math.max(i - episodesCols, 0));
-            return;
-          case "Enter":
-            e.preventDefault();
-            onEpisodeChange?.(focusedEpisodeIndex);
-            setIsEpisodesOpen(false);
-            return;
-          case "Escape":
-          case "e":
-          case "E":
-            e.preventDefault();
-            setIsEpisodesOpen(false);
-            return;
-          default:
-            e.preventDefault(); // block all other shortcuts while panel is open
-            return;
-        }
-      }
-
-      switch (e.key) {
-        case " ":
-        case "k":
-        case "K":
-          e.preventDefault();
-          togglePlay();
-          break;
-        case "ArrowLeft":
-          e.preventDefault();
-          doSeek(-SEEK_STEP);
-          break;
-        case "ArrowRight":
-          e.preventDefault();
-          doSeek(SEEK_STEP);
-          break;
-        case "ArrowUp":
-          e.preventDefault();
-          changeVolume(volume + VOLUME_STEP);
-          break;
-        case "ArrowDown":
-          e.preventDefault();
-          changeVolume(volume - VOLUME_STEP);
-          break;
-        case "m":
-        case "M":
-          e.preventDefault();
-          toggleMute();
-          break;
-        case "f":
-        case "F":
-          e.preventDefault();
-          toggleFullscreen();
-          break;
-        case "t":
-        case "T":
-          e.preventDefault();
-          toggleTheater();
-          break;
-        case "c":
-        case "C":
-          e.preventDefault();
-          cycleSubtitles();
-          break;
-        case "N":
-          if (e.shiftKey && onNext) {
-            e.preventDefault();
-            onNext();
-          }
-          break;
-        case "e":
-        case "E":
-          if (hasEpisodes) {
-            e.preventDefault();
-            setIsEpisodesOpen((v) => {
-              if (!v) setFocusedEpisodeIndex(activeEpisodeIndex);
-              return !v;
-            });
-          }
-          break;
-        case "[":
-          e.preventDefault();
-          setPlaybackRate((r) => clamp(r - SPEED_STEP, 0.25, 2));
-          break;
-        case "]":
-          e.preventDefault();
-          setPlaybackRate((r) => clamp(r + SPEED_STEP, 0.25, 2));
-          break;
-        default:
-          break;
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [volume, isMuted, prevVolume, subtitles, activeSubId, onNext, isEpisodesOpen, focusedEpisodeIndex, episodes, activeEpisodeIndex, onEpisodeChange, hasEpisodes, episodesCols]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Outside-click to close panels ────────────────────────────────────────
   useEffect(() => {
@@ -843,6 +492,28 @@ export function YTPlayer({
     changeVolume,
     doSeek,
     volume,
+  });
+
+  useKeyboardShortcuts({
+    volume,
+    isEpisodesOpen,
+    focusedEpisodeIndex,
+    episodes,
+    episodesCols,
+    activeEpisodeIndex,
+    hasEpisodes,
+    onEpisodeChange,
+    onNext,
+    togglePlay,
+    doSeek: (delta) => doSeek(delta),
+    changeVolume,
+    toggleMute,
+    toggleFullscreen,
+    toggleTheater,
+    cycleSubtitles,
+    setPlaybackRate,
+    setFocusedEpisodeIndex,
+    setIsEpisodesOpen,
   });
 
   // ─── AirPlay ───────────────────────────────────────────────────────────────

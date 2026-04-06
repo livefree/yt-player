@@ -29,3 +29,15 @@
   - 将 progress hover/scrub、touch seek、touch volume、double-tap seek 从 `Player.tsx` 抽离到独立输入层 hook
   - 保持公开 API 不变，现有 28 个回归测试继续通过
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 02:12
+
+- **任务**：PLAYER-05 — 抽离系统集成与可移植适配层
+- **所属序列**：SEQ-20260406-01
+- **结果**：
+  - 新增 `src/player/hooks/useChromeVisibility.ts`
+  - 新增 `src/player/hooks/useKeyboardShortcuts.ts`
+  - 新增 `src/player/hooks/useSystemIntegrations.ts`
+  - 将 chrome visibility、keyboard shortcuts、Fullscreen、Media Session、Wake Lock、AirPlay 从 `Player.tsx` 抽离到独立 hook
+  - 保持公开 API 不变，现有 28 个回归测试继续通过
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
