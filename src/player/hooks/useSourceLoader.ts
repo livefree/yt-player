@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 
 interface UseSourceLoaderParams {
   videoRef: React.RefObject<HTMLVideoElement>;
+  autoplayContextRef: React.MutableRefObject<"implicit" | "user-initiated">;
   src?: string;
   startTime?: number;
   autoplay: boolean;
@@ -17,6 +18,7 @@ interface UseSourceLoaderParams {
 
 export function useSourceLoader({
   videoRef,
+  autoplayContextRef,
   src,
   startTime,
   autoplay,
@@ -39,6 +41,9 @@ export function useSourceLoader({
 
   const doAutoplay = useCallback(
     (video: HTMLVideoElement) => {
+      const autoplayContext = autoplayContextRef.current;
+      autoplayContextRef.current = "implicit";
+
       if (startTime) video.currentTime = startTime;
       if (!autoplay) return;
 
@@ -46,6 +51,11 @@ export function useSourceLoader({
         .play()
         .then(() => setIsPlaying(true))
         .catch(() => {
+          if (autoplayContext === "user-initiated") {
+            setIsPlaying(false);
+            return;
+          }
+
           // Autoplay with sound blocked — retry muted (both iOS and desktop)
           video.muted = true;
           setIsMuted(true);
@@ -58,7 +68,14 @@ export function useSourceLoader({
             .catch(() => {});
         });
     },
-    [autoplay, setIsMuted, setIsPlaying, setShowUnmute, startTime],
+    [
+      autoplay,
+      autoplayContextRef,
+      setIsMuted,
+      setIsPlaying,
+      setShowUnmute,
+      startTime,
+    ],
   );
 
   const loadDirectSource = useCallback(
@@ -109,6 +126,7 @@ export function useSourceLoader({
           });
           hls.on(Hls.Events.ERROR, (_event, data) => {
             if (disposed || !data.fatal) return;
+            setIsLoading(false);
             setError("视频加载失败，请检查网络或刷新重试");
           });
         })
@@ -146,13 +164,14 @@ export function useSourceLoader({
     if (!video || !src) return;
 
     setError(null);
+    setIsLoading(true);
     if (hlsRef.current) {
       hlsRef.current.startLoad(-1);
       return;
     }
 
     loadDirectSource(video, src);
-  }, [loadDirectSource, setError, src, videoRef]);
+  }, [loadDirectSource, setError, setIsLoading, src, videoRef]);
 
   return { retrySourceLoad };
 }

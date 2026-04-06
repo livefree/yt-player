@@ -1,5 +1,6 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { YTPlayer } from "../player/Player";
 
@@ -246,6 +247,90 @@ describe("YTPlayer — source loading and fallback", () => {
     expect(
       screen.queryByRole("button", { name: /unmute/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("clears the muted autoplay prompt when the real media volume state changes back to unmuted", async () => {
+    mockPlay
+      .mockRejectedValueOnce(new Error("blocked"))
+      .mockResolvedValueOnce(undefined);
+
+    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    await screen.findByRole("button", { name: /^unmute$/i });
+
+    await act(async () => {
+      video.muted = false;
+      fireEvent(video, new Event("volumechange"));
+    });
+
+    expect(
+      screen.queryByRole("button", { name: /^unmute$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders the muted autoplay prompt above the gesture layer contract", async () => {
+    mockPlay
+      .mockRejectedValueOnce(new Error("blocked"))
+      .mockResolvedValueOnce(undefined);
+
+    render(<YTPlayer src={TEST_SRC} autoplay />);
+
+    const promptButton = await screen.findByRole("button", { name: /^unmute$/i });
+    expect(promptButton.parentElement).toHaveAttribute("data-layer", "5");
+  });
+
+  it("does not force-muted autoplay fallback after a user-initiated episode switch", async () => {
+    function EpisodeHost() {
+      const [src, setSrc] = useState(`${TEST_SRC}?ep=1`);
+
+      return (
+        <YTPlayer
+          src={src}
+          autoplay
+          episodes={EPISODES_3}
+          onEpisodeChange={(index) => setSrc(`${TEST_SRC}?ep=${index + 1}`)}
+        />
+      );
+    }
+
+    mockPlay
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error("blocked after episode switch"));
+
+    const { container } = render(<EpisodeHost />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
+    await userEvent.click(screen.getByRole("option", { name: "02" }));
+
+    await waitFor(() => {
+      expect(mockPlay).toHaveBeenCalledTimes(2);
+    });
+
+    expect(video.muted).toBe(false);
+    expect(
+      screen.queryByRole("button", { name: /^unmute$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the loading spinner instead of showing the generic error banner for managed HLS video errors", () => {
+    const { container } = render(<YTPlayer src={TEST_HLS_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    fireEvent.error(video);
+
+    expect(screen.getByRole("status", { name: /loading/i })).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("still shows the generic error banner for direct video source errors", () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    fireEvent.error(video);
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 });
 

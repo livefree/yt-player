@@ -53,3 +53,15 @@
   - 将 `Player.tsx` 压缩为更薄的组装层，行数由 1437 降到 1010
   - 在 `README.md` 补充“可移植性契约”和最小复制集成清单，明确 React 18 + CSS Modules 即可直接接入
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 14:59
+
+- **任务**：PLAYER-07 — 修复静音提示与加载状态回归
+- **所属序列**：SEQ-20260406-02
+- **结果**：
+  - 修复 `showUnmute` 与真实音频状态不同步：增加 `volumechange` 同步，并在手动音量/静音操作时清理提示
+  - 修复 `Tap to unmute` 被 gesture layer 遮挡：将提示层提升到可交互 overlay 层级
+  - 修复用户手动切集后的 autoplay block 误静音：为选集切换引入 user-initiated autoplay context，阻止静音 fallback 误触发
+  - 修复非原生 HLS 源 loading 期间被 `<video onError>` 误切到 generic error banner
+  - `src/test/Player.test.tsx` 扩展到 33 个回归测试，覆盖静音提示同步、层级契约、切集静音、HLS loading/error 分支
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

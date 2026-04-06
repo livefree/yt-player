@@ -95,6 +95,7 @@ export function YTPlayer({
 }: PlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const autoplayContextRef = useRef<"implicit" | "user-initiated">("implicit");
 
   // ── Panels ─────────────────────────────────────────────────────────────────
   const [openPanel, setOpenPanel] = useState<Panel>(null);
@@ -228,6 +229,7 @@ export function YTPlayer({
 
   const { retrySourceLoad } = useSourceLoader({
     videoRef,
+    autoplayContextRef,
     src,
     startTime,
     autoplay,
@@ -248,6 +250,20 @@ export function YTPlayer({
     v.volume = volume;
     v.muted = isMuted;
   }, [volume, isMuted]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const syncVolumeState = () => {
+      setVolume(video.volume);
+      setIsMuted(video.muted);
+      if (!video.muted) setShowUnmute(false);
+    };
+
+    video.addEventListener("volumechange", syncVolumeState);
+    return () => video.removeEventListener("volumechange", syncVolumeState);
+  }, []);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -364,12 +380,14 @@ export function YTPlayer({
     const safe = clamp(next, 0, 1);
     setVolume(safe);
     setIsMuted(safe <= 0.001);
+    setShowUnmute(false);
     if (safe > 0) setPrevVolume(safe);
     revealVolumeSlider();
     revealChrome();
   }
 
   function toggleMute() {
+    setShowUnmute(false);
     if (isMuted || volume <= 0.001) {
       const restored = prevVolume > 0.05 ? prevVolume : 0.65;
       setIsMuted(false);
@@ -531,6 +549,16 @@ export function YTPlayer({
     ).webkitShowPlaybackTargetPicker?.();
   }
 
+  function handleEpisodeChange(nextIndex: number) {
+    autoplayContextRef.current = "user-initiated";
+    onEpisodeChange?.(nextIndex);
+  }
+
+  const isManagedHlsSource =
+    !!src &&
+    src.includes(".m3u8") &&
+    videoRef.current?.canPlayType("application/vnd.apple.mpegurl") === "";
+
   // ─── Chapter markers ──────────────────────────────────────────────────────
   const chapterMarkers = useMemo(() => {
     if (!chapters.length || !duration) return [];
@@ -599,6 +627,7 @@ export function YTPlayer({
           onWaiting={() => setIsLoading(true)}
           onCanPlay={() => setIsLoading(false)}
           onError={() => {
+            if (isManagedHlsSource) return;
             setError("Video failed to load. Please try again.");
             setIsLoading(false);
           }}
@@ -636,9 +665,9 @@ export function YTPlayer({
         </div>
       )}
 
-      {/* ── Layer 2: muted-autoplay unmute prompt ─────────────────────────── */}
+      {/* ── Layer 5: muted-autoplay unmute prompt ─────────────────────────── */}
       {showUnmute && (
-        <div className={s.ytpUnmutePrompt} data-layer="2">
+        <div className={s.ytpUnmutePrompt} data-layer="5">
           <button
             className={s.ytpUnmuteButton}
             aria-label="Unmute"
@@ -727,7 +756,7 @@ export function YTPlayer({
         episodesCols={episodesCols}
         activeEpisodeIndex={activeEpisodeIndex}
         focusedEpisodeIndex={focusedEpisodeIndex}
-        onEpisodeChange={onEpisodeChange}
+        onEpisodeChange={handleEpisodeChange}
         onFocusEpisode={setFocusedEpisodeIndex}
         onClose={() => setIsEpisodesOpen(false)}
       />

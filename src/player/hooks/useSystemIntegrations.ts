@@ -168,12 +168,14 @@ export function useSystemIntegrations({
   useEffect(() => {
     if (!("wakeLock" in navigator)) return;
     if (isPlaying) {
-      navigator.wakeLock
-        .request("screen")
-        .then((sentinel) => {
-          wakeLockRef.current = sentinel;
-        })
-        .catch(() => {});
+      const wakeLockRequest = navigator.wakeLock.request("screen");
+      if (wakeLockRequest && typeof wakeLockRequest.then === "function") {
+        wakeLockRequest
+          .then((sentinel) => {
+            wakeLockRef.current = sentinel;
+          })
+          .catch(() => {});
+      }
     } else {
       const wakeLock = wakeLockRef.current;
       wakeLock?.release()?.catch(() => {});
@@ -195,12 +197,14 @@ export function useSystemIntegrations({
         isPlaying &&
         !wakeLockRef.current
       ) {
-        navigator.wakeLock
-          .request("screen")
-          .then((sentinel) => {
-            wakeLockRef.current = sentinel;
-          })
-          .catch(() => {});
+        const wakeLockRequest = navigator.wakeLock.request("screen");
+        if (wakeLockRequest && typeof wakeLockRequest.then === "function") {
+          wakeLockRequest
+            .then((sentinel) => {
+              wakeLockRef.current = sentinel;
+            })
+            .catch(() => {});
+        }
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
