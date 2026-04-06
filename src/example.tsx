@@ -17,17 +17,20 @@ import type { Chapter } from "./player/types";
 export function MinimalExample() {
   return (
     <YTPlayer
-      src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-      poster="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/320px-Camponotus_flavomarginatus_ant.jpg"
-      title="Big Buck Bunny"
-      author="Blender Foundation"
+      src="/samples/local-demo.mp4"
+      poster="/samples/local-demo-poster.jpg"
+      title="Local Demo MP4"
+      author="YTPlayer Local Sample"
     />
   );
 }
 
 // ─── Playlist ─────────────────────────────────────────────────────────────────
 
-const BASE = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample";
+const LOCAL_MP4 = "/samples/local-demo.mp4";
+const LOCAL_HLS = "/samples/hls/local-demo.m3u8";
+const LOCAL_POSTER = "/samples/local-demo-poster.jpg";
+const LOCAL_THUMBNAILS = "/samples/local-demo-thumbnails.vtt";
 
 interface VideoItem {
   src: string;
@@ -41,80 +44,54 @@ interface VideoItem {
 
 const PLAYLIST: VideoItem[] = [
   {
-    src: `${BASE}/BigBuckBunny.mp4`,
-    title: "Big Buck Bunny",
-    author: "Blender Foundation",
-    poster: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
-    thumbnailTrack: "/thumbnails.vtt",
+    src: LOCAL_MP4,
+    title: "Local Demo MP4",
+    author: "YTPlayer Local Sample",
+    poster: LOCAL_POSTER,
+    thumbnailTrack: LOCAL_THUMBNAILS,
     chapters: [
-      { title: "Opening", startTime: 0 },
-      { title: "Forest Chase", startTime: 180 },
-      { title: "Revenge", startTime: 420 },
-      { title: "Finale", startTime: 540 },
+      { title: "Opening Grid", startTime: 0 },
+      { title: "Middle Motion", startTime: 6 },
+      { title: "Audio Sync", startTime: 12 },
+      { title: "Ending Bars", startTime: 18 },
     ],
   },
   {
-    src: `${BASE}/ElephantsDream.mp4`,
-    title: "Elephants Dream",
-    author: "Blender Foundation",
-    poster: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Elephants_Dream_s5_both.jpg/320px-Elephants_Dream_s5_both.jpg",
+    src: LOCAL_HLS,
+    title: "Local Demo HLS",
+    author: "YTPlayer Local Sample",
+    poster: LOCAL_POSTER,
+    thumbnailTrack: LOCAL_THUMBNAILS,
     chapters: [
-      { title: "Awakening", startTime: 0 },
-      { title: "The Machine", startTime: 120 },
-      { title: "Confrontation", startTime: 360 },
+      { title: "Manifest Start", startTime: 0 },
+      { title: "Segment Two", startTime: 8 },
+      { title: "Segment Three", startTime: 16 },
     ],
   },
   {
-    src: `${BASE}/Sintel.mp4`,
-    title: "Sintel",
-    author: "Blender Foundation",
-    poster: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Sintel_Movie_Poster.jpg/220px-Sintel_Movie_Poster.jpg",
+    src: LOCAL_MP4,
+    title: "Local Demo Episodes",
+    author: "YTPlayer Local Sample",
+    poster: LOCAL_POSTER,
+    thumbnailTrack: LOCAL_THUMBNAILS,
     chapters: [
-      { title: "Prologue", startTime: 0 },
-      { title: "Journey", startTime: 150 },
-      { title: "The Cave", startTime: 420 },
-      { title: "Ending", startTime: 720 },
+      { title: "Episode Intro", startTime: 0 },
+      { title: "Gesture Test", startTime: 7 },
+      { title: "Chrome Check", startTime: 14 },
+      { title: "Wrap Up", startTime: 20 },
     ],
   },
   {
-    src: `${BASE}/TearsOfSteel.mp4`,
-    title: "Tears of Steel",
-    author: "Blender Foundation",
+    src: LOCAL_MP4,
+    title: "Local Demo Compact Layout",
+    author: "YTPlayer Local Sample",
+    poster: LOCAL_POSTER,
+    thumbnailTrack: LOCAL_THUMBNAILS,
     chapters: [
-      { title: "Lab", startTime: 0 },
-      { title: "Flashback", startTime: 120 },
-      { title: "Battle", startTime: 300 },
+      { title: "Control Group", startTime: 0 },
+      { title: "Midpoint", startTime: 10 },
+      { title: "Exit", startTime: 18 },
     ],
-  },
-  {
-    src: `${BASE}/ForBiggerBlazes.mp4`,
-    title: "For Bigger Blazes",
-    author: "Google",
-  },
-  {
-    src: `${BASE}/ForBiggerEscapes.mp4`,
-    title: "For Bigger Escapes",
-    author: "Google",
-  },
-  {
-    src: `${BASE}/ForBiggerFun.mp4`,
-    title: "For Bigger Fun",
-    author: "Google",
-  },
-  {
-    src: `${BASE}/ForBiggerJoyrides.mp4`,
-    title: "For Bigger Joyrides",
-    author: "Google",
-  },
-  {
-    src: `${BASE}/SubaruOutbackOnStreetAndDirt.mp4`,
-    title: "Subaru Outback On Street And Dirt",
-    author: "Subaru",
-  },
-  {
-    src: `${BASE}/VolkswagenGTIReview.mp4`,
-    title: "Volkswagen GTI Review",
-    author: "Volkswagen",
   },
 ];
 

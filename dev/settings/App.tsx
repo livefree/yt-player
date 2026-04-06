@@ -7,8 +7,9 @@ import { REGISTRY, ALL_VARS, LS_KEY, type ComponentDef, type VarSpec } from "./r
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const SAMPLE_SRC =
-  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+const SAMPLE_SRC = "/samples/local-demo.mp4";
+const SAMPLE_POSTER = "/samples/local-demo-poster.jpg";
+const SAMPLE_THUMBNAILS = "/samples/local-demo-thumbnails.vtt";
 
 function loadFromStorage(): Record<string, string> {
   try {
@@ -259,8 +260,10 @@ export function App() {
       <div style={styles.previewArea} onClick={handleInterceptClick}>
         <YTPlayer
           src={SAMPLE_SRC}
-          title="Big Buck Bunny"
-          author="Blender Foundation"
+          poster={SAMPLE_POSTER}
+          thumbnailTrack={SAMPLE_THUMBNAILS}
+          title="Local Demo MP4"
+          author="YTPlayer Local Sample"
           style={playerStyle as never}
           keepControlsVisible
         />

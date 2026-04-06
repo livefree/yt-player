@@ -76,3 +76,15 @@
   - 制定了目标架构、命中规则、响应式布局策略、分阶段迁移路线与文件结构方向
   - 显式写入“禁止补丁式修复”和“持续审查架构偏航”的工程约束
   - 本次为文档任务，未运行 `typecheck/lint/test/build`
+
+## 2026-04-06 15:49
+
+- **任务**：PLAYER-09 — 修复开发测试页样本媒体环境
+- **所属序列**：SEQ-20260406-03
+- **结果**：
+  - 新增本地样本媒体资源：`public/samples/local-demo.mp4`、`public/samples/hls/local-demo.m3u8`、封面图与 4 张缩略图
+  - 新增 `public/samples/local-demo-thumbnails.vtt`
+  - `src/example.tsx` 的预览 playlist 切换为本地 MP4/HLS 样本，不再依赖外部公开视频
+  - `dev/settings/App.tsx` 切换为本地样本资源
+  - `vite.config.ts` 增加 `publicDir` 指向项目根 `public/`，修复 `dev` / `build:preview` 对本地样本资源的解析
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`、`npm run build:preview`
