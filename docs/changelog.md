@@ -88,3 +88,14 @@
   - `dev/settings/App.tsx` 切换为本地样本资源
   - `vite.config.ts` 增加 `publicDir` 指向项目根 `public/`，修复 `dev` / `build:preview` 对本地样本资源的解析
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`、`npm run build:preview`
+
+## 2026-04-06 15:57
+
+- **任务**：PLAYER-10 — 扩展预览样本为本地 + 在线公共资源
+- **所属序列**：SEQ-20260406-03
+- **结果**：
+  - `src/example.tsx` 的 playlist 改为“本地 MP4、本地 HLS、在线公共 MP4”混合样本
+  - 保留本地样本作为网络异常时的稳定兜底
+  - 移除开发预览对 `thumbnailTrack` 的必要依赖
+  - `dev/settings/App.tsx` 保持使用最稳定的本地 MP4 样本
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`、`npm run build:preview`

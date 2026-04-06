@@ -30,7 +30,8 @@ export function MinimalExample() {
 const LOCAL_MP4 = "/samples/local-demo.mp4";
 const LOCAL_HLS = "/samples/hls/local-demo.m3u8";
 const LOCAL_POSTER = "/samples/local-demo-poster.jpg";
-const LOCAL_THUMBNAILS = "/samples/local-demo-thumbnails.vtt";
+const PUBLIC_SAMPLE_BASE =
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample";
 
 interface VideoItem {
   src: string;
@@ -38,8 +39,6 @@ interface VideoItem {
   author: string;
   poster?: string;
   chapters?: Chapter[];
-  /** WebVTT thumbnail track for progress bar preview */
-  thumbnailTrack?: string;
 }
 
 const PLAYLIST: VideoItem[] = [
@@ -48,7 +47,6 @@ const PLAYLIST: VideoItem[] = [
     title: "Local Demo MP4",
     author: "YTPlayer Local Sample",
     poster: LOCAL_POSTER,
-    thumbnailTrack: LOCAL_THUMBNAILS,
     chapters: [
       { title: "Opening Grid", startTime: 0 },
       { title: "Middle Motion", startTime: 6 },
@@ -61,7 +59,6 @@ const PLAYLIST: VideoItem[] = [
     title: "Local Demo HLS",
     author: "YTPlayer Local Sample",
     poster: LOCAL_POSTER,
-    thumbnailTrack: LOCAL_THUMBNAILS,
     chapters: [
       { title: "Manifest Start", startTime: 0 },
       { title: "Segment Two", startTime: 8 },
@@ -70,10 +67,9 @@ const PLAYLIST: VideoItem[] = [
   },
   {
     src: LOCAL_MP4,
-    title: "Local Demo Episodes",
+    title: "Big Buck Bunny (Local Fallback)",
     author: "YTPlayer Local Sample",
     poster: LOCAL_POSTER,
-    thumbnailTrack: LOCAL_THUMBNAILS,
     chapters: [
       { title: "Episode Intro", startTime: 0 },
       { title: "Gesture Test", startTime: 7 },
@@ -82,15 +78,34 @@ const PLAYLIST: VideoItem[] = [
     ],
   },
   {
-    src: LOCAL_MP4,
-    title: "Local Demo Compact Layout",
-    author: "YTPlayer Local Sample",
-    poster: LOCAL_POSTER,
-    thumbnailTrack: LOCAL_THUMBNAILS,
+    src: `${PUBLIC_SAMPLE_BASE}/BigBuckBunny.mp4`,
+    title: "Big Buck Bunny",
+    author: "Blender Foundation",
     chapters: [
-      { title: "Control Group", startTime: 0 },
-      { title: "Midpoint", startTime: 10 },
-      { title: "Exit", startTime: 18 },
+      { title: "Opening", startTime: 0 },
+      { title: "Forest Chase", startTime: 180 },
+      { title: "Revenge", startTime: 420 },
+      { title: "Finale", startTime: 540 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ElephantsDream.mp4`,
+    title: "Elephants Dream",
+    author: "Blender Foundation",
+    chapters: [
+      { title: "Awakening", startTime: 0 },
+      { title: "The Machine", startTime: 120 },
+      { title: "Confrontation", startTime: 360 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerJoyrides.mp4`,
+    title: "For Bigger Joyrides",
+    author: "Google",
+    chapters: [
+      { title: "City Run", startTime: 0 },
+      { title: "Wide Shot", startTime: 15 },
+      { title: "Wrap", startTime: 30 },
     ],
   },
 ];
@@ -276,7 +291,6 @@ export function FullExample() {
           episodes={PLAYLIST.map((item) => ({ title: item.title }))}
           activeEpisodeIndex={index}
           onEpisodeChange={goTo}
-          thumbnailTrack={video.thumbnailTrack}
         />
       </div>
 

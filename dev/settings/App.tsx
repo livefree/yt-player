@@ -9,7 +9,6 @@ import { REGISTRY, ALL_VARS, LS_KEY, type ComponentDef, type VarSpec } from "./r
 
 const SAMPLE_SRC = "/samples/local-demo.mp4";
 const SAMPLE_POSTER = "/samples/local-demo-poster.jpg";
-const SAMPLE_THUMBNAILS = "/samples/local-demo-thumbnails.vtt";
 
 function loadFromStorage(): Record<string, string> {
   try {
@@ -261,7 +260,6 @@ export function App() {
         <YTPlayer
           src={SAMPLE_SRC}
           poster={SAMPLE_POSTER}
-          thumbnailTrack={SAMPLE_THUMBNAILS}
           title="Local Demo MP4"
           author="YTPlayer Local Sample"
           style={playerStyle as never}
