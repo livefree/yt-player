@@ -65,7 +65,7 @@
 
 - **状态**：🔄 执行中
 - **创建时间**：2026-04-06 15:45
-- **最后更新时间**：2026-04-06 01:44
+- **最后更新时间**：2026-04-06 01:48
 - **目标**：在保持即插即用和高移植性的前提下，建立播放器回归保护网，并逐步拆出高风险副作用与移动端交互逻辑
 - **范围**：`src/player/`、`src/test/`、`README.md`、`DEVLOG.md`
 - **依赖**：现有 `YTPlayer` 公开 API 保持不变；HLS/IIFE 能力保持可用；不引入新的宿主依赖
@@ -86,11 +86,11 @@
    - 完成时间：2026-04-06 01:44
    - 验收要点：覆盖 source loading、HLS fallback、autoplay fallback、progress scrub、gesture、panel toggle、cleanup 等关键用户流
 
-3. PLAYER-03 — 抽离 source loading 与 HLS 生命周期（状态：⬜）
+3. PLAYER-03 — 抽离 source loading 与 HLS 生命周期（状态：✅）
    - 创建时间：2026-04-06 15:45
    - 计划开始：2026-04-06 17:00
-   - 实际开始：
-   - 完成时间：
+   - 实际开始：2026-04-06 01:45
+   - 完成时间：2026-04-06 01:48
    - 验收要点：新增独立 hook 管理普通源/HLS/autoplay/retry/cleanup；`Player.tsx` 不再直接持有 HLS 初始化和销毁细节
 
 4. PLAYER-04 — 抽离 progress 与移动端 gesture 输入层（状态：⬜）

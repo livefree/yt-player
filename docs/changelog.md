@@ -8,3 +8,13 @@
   - 扩展 `src/test/Player.test.tsx`，覆盖 source loading、HLS 生命周期、autoplay muted fallback、progress click/touch scrub、gesture seek、settings/episodes 面板等关键回归路径
   - 修复 `src/player/Player.tsx` 中 `Screen Wake Lock` cleanup 的空 sentinel 调用 bug
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 01:48
+
+- **任务**：PLAYER-03 — 抽离 source loading 与 HLS 生命周期
+- **所属序列**：SEQ-20260406-01
+- **结果**：
+  - 新增 `src/player/hooks/useSourceLoader.ts`
+  - 将 `Player.tsx` 中 `src` 加载、HLS 生命周期、autoplay fallback、retry、cleanup 抽离到独立 hook
+  - 保持公开 API 不变，现有 28 个回归测试继续通过
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
