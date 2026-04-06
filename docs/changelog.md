@@ -99,3 +99,13 @@
   - 移除开发预览对 `thumbnailTrack` 的必要依赖
   - `dev/settings/App.tsx` 保持使用最稳定的本地 MP4 样本
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`、`npm run build:preview`
+
+## 2026-04-06 16:05
+
+- **任务**：PLAYER-11 — 替换预览公共样本源为指定媒体列表
+- **所属序列**：SEQ-20260406-03
+- **结果**：
+  - `src/example.tsx` 的在线公共样本源替换为用户提供的 `mediaJSON` 视频列表
+  - 保留本地 MP4、本地 HLS 与本地 fallback 资源作为稳定兜底
+  - 继续保持开发预览不依赖 `thumbnailTrack`
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`、`npm run build:preview`

@@ -31,7 +31,7 @@ const LOCAL_MP4 = "/samples/local-demo.mp4";
 const LOCAL_HLS = "/samples/hls/local-demo.m3u8";
 const LOCAL_POSTER = "/samples/local-demo-poster.jpg";
 const PUBLIC_SAMPLE_BASE =
-  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample";
+  "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample";
 
 interface VideoItem {
   src: string;
@@ -90,12 +90,42 @@ const PLAYLIST: VideoItem[] = [
   },
   {
     src: `${PUBLIC_SAMPLE_BASE}/ElephantsDream.mp4`,
-    title: "Elephants Dream",
+    title: "Elephant Dream",
     author: "Blender Foundation",
     chapters: [
       { title: "Awakening", startTime: 0 },
       { title: "The Machine", startTime: 120 },
       { title: "Confrontation", startTime: 360 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerBlazes.mp4`,
+    title: "For Bigger Blazes",
+    author: "Google",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Showcase", startTime: 10 },
+      { title: "Closing", startTime: 20 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerEscapes.mp4`,
+    title: "For Bigger Escape",
+    author: "Google",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Escapes", startTime: 10 },
+      { title: "End Card", startTime: 20 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerFun.mp4`,
+    title: "For Bigger Fun",
+    author: "Google",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Main Segment", startTime: 10 },
+      { title: "End Card", startTime: 20 },
     ],
   },
   {
@@ -106,6 +136,77 @@ const PLAYLIST: VideoItem[] = [
       { title: "City Run", startTime: 0 },
       { title: "Wide Shot", startTime: 15 },
       { title: "Wrap", startTime: 30 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerMeltdowns.mp4`,
+    title: "For Bigger Meltdowns",
+    author: "Google",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Meltdown", startTime: 10 },
+      { title: "End Card", startTime: 20 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/Sintel.mp4`,
+    title: "Sintel",
+    author: "Blender Foundation",
+    chapters: [
+      { title: "Prologue", startTime: 0 },
+      { title: "Journey", startTime: 150 },
+      { title: "The Cave", startTime: 420 },
+      { title: "Ending", startTime: 720 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/SubaruOutbackOnStreetAndDirt.mp4`,
+    title: "Subaru Outback On Street And Dirt",
+    author: "Garage419",
+    chapters: [
+      { title: "Street", startTime: 0 },
+      { title: "Off-road", startTime: 20 },
+      { title: "Wrap", startTime: 40 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/TearsOfSteel.mp4`,
+    title: "Tears of Steel",
+    author: "Blender Foundation",
+    chapters: [
+      { title: "Lab", startTime: 0 },
+      { title: "Flashback", startTime: 120 },
+      { title: "Battle", startTime: 300 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/VolkswagenGTIReview.mp4`,
+    title: "Volkswagen GTI Review",
+    author: "Garage419",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Track Run", startTime: 40 },
+      { title: "Verdict", startTime: 80 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/WeAreGoingOnBullrun.mp4`,
+    title: "We Are Going On Bullrun",
+    author: "Garage419",
+    chapters: [
+      { title: "Road Start", startTime: 0 },
+      { title: "Rally Update", startTime: 30 },
+      { title: "Wrap", startTime: 60 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/WhatCarCanYouGetForAGrand.mp4`,
+    title: "What care can you get for a grand?",
+    author: "Garage419",
+    chapters: [
+      { title: "Challenge", startTime: 0 },
+      { title: "Car Search", startTime: 30 },
+      { title: "Verdict", startTime: 60 },
     ],
   },
 ];
