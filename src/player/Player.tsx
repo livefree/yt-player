@@ -44,7 +44,10 @@ import { useGestureControls } from "./hooks/useGestureControls";
 import { useChromeVisibility } from "./hooks/useChromeVisibility";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSystemIntegrations } from "./hooks/useSystemIntegrations";
-import { useLayoutDecision } from "./hooks/useLayoutDecision";
+import {
+  useLayoutDecision,
+  type ControlId,
+} from "./hooks/useLayoutDecision";
 import {
   buildOverlayEntries,
   useOverlayManager,
@@ -57,6 +60,7 @@ import { YtpButton } from "./components/Button";
 import { EpisodesPanel } from "./components/EpisodesPanel";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { ProgressBar } from "./components/ProgressBar";
+import { ControlSlot } from "./components/ControlSlot";
 import {
   PlayIcon,
   PauseIcon,
@@ -189,7 +193,6 @@ export function YTPlayer({
     hasEpisodes,
     hasNext,
   });
-  const hiddenControls = new Set(layoutDecision.hiddenControls);
 
   const { chromeVisible, cursorHidden, revealChrome } = useChromeVisibility({
     isImmersive,
@@ -639,6 +642,238 @@ export function YTPlayer({
     .join(" ");
 
   const effectiveVolume = isMuted ? 0 : volume;
+  const toggleEpisodes = () =>
+    setIsEpisodesOpen((value) => {
+      if (!value) setFocusedEpisodeIndex(activeEpisodeIndex);
+      return !value;
+    });
+
+  const renderControl = (control: ControlId) => {
+    switch (control) {
+      case "play":
+        return (
+          <YtpButton
+            key="play"
+            tooltip={isPlaying ? "Pause (K)" : "Play (K)"}
+            onClick={togglePlay}
+            ariaLabel={isPlaying ? "Pause" : "Play"}
+            className={s.ytpPlayButton}
+            data-ytp-component="play-btn"
+          >
+            {isPlaying ? <PauseIcon /> : <PlayIcon />}
+          </YtpButton>
+        );
+      case "next":
+        return hasNext ? (
+          <YtpButton
+            key="next"
+            tooltip="Next (SHIFT+N)"
+            ariaLabel="Next"
+            onClick={onNext}
+            className={s.ytpNextButton}
+            data-ytp-component="next-btn"
+          >
+            <NextIcon />
+          </YtpButton>
+        ) : null;
+      case "episodes": {
+        if (!hasEpisodes) return null;
+        const inBottomLeft = layoutDecision.slots["bottom-left"].includes("episodes");
+        return (
+          <div
+            key="episodes"
+            className={
+              inBottomLeft
+                ? `${s.ytpEpisodesSlide}${hasNext && !isEpisodesOpen ? ` ${s.ytpEpisodesReveal}` : ""}`
+                : ""
+            }
+          >
+            <YtpButton
+              tooltip="Episodes (E)"
+              ariaLabel="Episodes"
+              onClick={toggleEpisodes}
+              className={s.ytpEpisodesButton}
+              data-ytp-component="episodes-btn"
+            >
+              <EpisodesIcon />
+            </YtpButton>
+          </div>
+        );
+      }
+      case "volume":
+        return (
+          <span
+            key="volume"
+            className={`${s.ytpVolumeArea} ${volumeVisible ? s.ytpVolumeAreaExpanded : ""}`}
+            data-ytp-component="volume-area"
+          >
+            <div className={s.ytpMuteButton}>
+              <YtpButton
+                tooltip={isMuted ? "Unmute (M)" : "Mute (M)"}
+                onClick={toggleMute}
+                onMouseEnter={revealVolumeSlider}
+              >
+                {isMuted || volume <= 0.001 ? (
+                  <MuteIcon />
+                ) : (
+                  <VolumeIcon volume={volume} />
+                )}
+              </YtpButton>
+            </div>
+            <div
+              className={s.ytpVolumePanel}
+              role="slider"
+              aria-label="Volume"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(effectiveVolume * 100)}
+              aria-valuetext={`${Math.round(effectiveVolume * 100)}% volume`}
+              onMouseEnter={revealVolumeSlider}
+            >
+              <div className={s.ytpVolumeSlider}>
+                <input
+                  id={sliderId}
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={effectiveVolume}
+                  className={s.ytpVolumeInput}
+                  onChange={(e) => changeVolume(Number(e.currentTarget.value))}
+                  aria-label="Volume"
+                />
+                <div
+                  className={s.ytpVolumeSliderFill}
+                  style={{ width: `${effectiveVolume * 100}%` }}
+                />
+                <div
+                  className={s.ytpVolumeSliderHandle}
+                  style={{ left: `${effectiveVolume * 100}%` }}
+                />
+              </div>
+            </div>
+          </span>
+        );
+      case "time":
+        return (
+          <div
+            key="time"
+            className={s.ytpTimeDisplay}
+            onClick={() => setShowRemaining((value) => !value)}
+            title={showRemaining ? "Show elapsed time" : "Show remaining time"}
+            data-ytp-component="time-display"
+          >
+            <div className={s.ytpTimeWrapper}>
+              <div className={s.ytpTimeContents}>
+                <span className={s.ytpTimeCurrent}>
+                  {showRemaining
+                    ? `-${formatTime(duration - currentTime)}`
+                    : formatTime(currentTime)}
+                </span>
+                <span className={s.ytpTimeSeparator}> / </span>
+                <span className={s.ytpTimeDuration}>{formatTime(duration)}</span>
+              </div>
+            </div>
+          </div>
+        );
+      case "chapter":
+        return activeChapter ? (
+          <div key="chapter" className={s.ytpChapterContainer}>
+            <button className={s.ytpChapterTitle} type="button" aria-label="Chapter">
+              <span className={s.ytpChapterTitlePrefix} aria-hidden="true">
+                •
+              </span>
+              <span className={s.ytpChapterTitleContent}>{activeChapter.title}</span>
+            </button>
+          </div>
+        ) : null;
+      case "subtitles":
+        return subtitles.length > 0 ? (
+          <YtpButton
+            key="subtitles"
+            tooltip="Subtitles/closed captions (C)"
+            onClick={cycleSubtitles}
+            ariaPressed={!!activeSubId}
+            data-ytp-component="subtitles-btn"
+          >
+            <SubtitlesIcon active={!!activeSubId} />
+          </YtpButton>
+        ) : null;
+      case "settings":
+        return (
+          <YtpButton
+            key="settings"
+            tooltip="Settings"
+            onClick={() => setOpenPanel((panel) => (panel ? null : "settings"))}
+            ariaPressed={!!openPanel}
+            className={openPanel ? s.ytpSettingsButtonActive : ""}
+            data-ytp-component="settings-btn"
+          >
+            <SettingsIcon />
+          </YtpButton>
+        );
+      case "theater":
+        return (
+          <YtpButton
+            key="theater"
+            tooltip={isTheater ? "Default view (T)" : "Theater mode (T)"}
+            onClick={toggleTheater}
+            ariaPressed={isTheater}
+            className={s.ytpTheaterButton}
+            data-ytp-component="theater-btn"
+          >
+            <TheaterIcon active={isTheater} />
+          </YtpButton>
+        );
+      case "airplay":
+        return airPlayAvailable ? (
+          <YtpButton
+            key="airplay"
+            tooltip="AirPlay"
+            onClick={triggerAirPlay}
+            data-ytp-component="airplay-btn"
+          >
+            <AirPlayIcon />
+          </YtpButton>
+        ) : null;
+      case "pip":
+        return "pictureInPictureEnabled" in document ? (
+          <YtpButton
+            key="pip"
+            tooltip="Picture-in-picture"
+            onClick={togglePip}
+            data-ytp-component="pip-btn"
+          >
+            <PipIcon />
+          </YtpButton>
+        ) : null;
+      case "fullscreen":
+        return (
+          <YtpButton
+            key="fullscreen"
+            tooltip={isFullscreen ? "Exit full screen (F)" : "Full screen (F)"}
+            onClick={toggleFullscreen}
+            ariaPressed={isFullscreen}
+            data-ytp-component="fullscreen-btn"
+          >
+            <FullscreenIcon active={isFullscreen} />
+          </YtpButton>
+        );
+      case "title":
+        return null;
+      default:
+        return null;
+    }
+  };
+  const topRightControls = layoutDecision.slots["top-right"]
+    .map(renderControl)
+    .filter(Boolean);
+  const bottomLeftControls = layoutDecision.slots["bottom-left"]
+    .map(renderControl)
+    .filter(Boolean);
+  const bottomRightControls = layoutDecision.slots["bottom-right"]
+    .map(renderControl)
+    .filter(Boolean);
 
   return (
     <div
@@ -707,16 +942,22 @@ export function YTPlayer({
       <div className={s.ytpGradientTop} data-layer="1" aria-hidden="true" />
 
       {/* ── Layer 1: chrome top (title + author) ─────────────────────────── */}
-      {!hiddenControls.has("title") && (title || author) && (
+      {(layoutDecision.slots["top-left"].includes("title") && (title || author)) ||
+      topRightControls.length > 0 ? (
         <div className={s.ytpChromeTop} data-layer="1">
-          <div className={s.ytpTitle}>
-            <div className={s.ytpTitleText}>
-              {title && <span className={s.ytpTitleLink}>{title}</span>}
-              {author && <div className={s.ytpTitleSubtext}>{author}</div>}
+          {layoutDecision.slots["top-left"].includes("title") && (title || author) && (
+            <div className={s.ytpTitle}>
+              <div className={s.ytpTitleText}>
+                {title && <span className={s.ytpTitleLink}>{title}</span>}
+                {author && <div className={s.ytpTitleSubtext}>{author}</div>}
+              </div>
             </div>
-          </div>
+          )}
+          {topRightControls.length > 0 && (
+            <ControlSlot slot="top-right">{topRightControls}</ControlSlot>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* ── Layer 5: muted-autoplay unmute prompt ─────────────────────────── */}
       {isOverlayVisible("unmute-prompt") && (
@@ -890,219 +1131,13 @@ export function YTPlayer({
 
         {/* ── Controls ───────────────────────────────────────────────────── */}
         <div className={s.ytpChromeControls}>
-          {/* Left controls */}
-          <div className={s.ytpLeftControls}>
-            {/* Play/Pause */}
-            <YtpButton
-              tooltip={isPlaying ? "Pause (K)" : "Play (K)"}
-              onClick={togglePlay}
-              ariaLabel={isPlaying ? "Pause" : "Play"}
-              className={s.ytpPlayButton}
-              data-ytp-component="play-btn"
-            >
-              {isPlaying ? <PauseIcon /> : <PlayIcon />}
-            </YtpButton>
+          <ControlSlot className={s.ytpLeftControls} slot="bottom-left">
+            {bottomLeftControls}
+          </ControlSlot>
 
-            {/* ── Next + Episodes group ─────────────────────────────────── */}
-            {(hasNext || hasEpisodes) && (
-              <div className={s.ytpNextEpisodesGroup}>
-                {/* Next — only shown when caller provides onNext */}
-                {hasNext && (
-                  <YtpButton
-                    tooltip="Next (SHIFT+N)"
-                    ariaLabel="Next"
-                    onClick={onNext}
-                    className={s.ytpNextButton}
-                    data-ytp-component="next-btn"
-                  >
-                    <NextIcon />
-                  </YtpButton>
-                )}
-                {/* Episodes — slide wrapper mirrors the volume-slider reveal mechanism */}
-                {hasEpisodes && !hiddenControls.has("episodes") && (
-                  <div
-                    className={`${s.ytpEpisodesSlide}${hasNext && !isEpisodesOpen ? ` ${s.ytpEpisodesReveal}` : ""}`}
-                  >
-                    <YtpButton
-                      tooltip="Episodes (E)"
-                      ariaLabel="Episodes"
-                      onClick={() =>
-                        setIsEpisodesOpen((v) => {
-                          if (!v) setFocusedEpisodeIndex(activeEpisodeIndex);
-                          return !v;
-                        })
-                      }
-                      className={s.ytpEpisodesButton}
-                      data-ytp-component="episodes-btn"
-                    >
-                      <EpisodesIcon />
-                    </YtpButton>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Volume area — CSS hides on pointer:coarse (mobile system handles volume) */}
-            {!hiddenControls.has("volume") && (
-              <span
-                className={`${s.ytpVolumeArea} ${volumeVisible ? s.ytpVolumeAreaExpanded : ""}`}
-                data-ytp-component="volume-area"
-              >
-                <div className={s.ytpMuteButton}>
-                  <YtpButton
-                    tooltip={isMuted ? "Unmute (M)" : "Mute (M)"}
-                    onClick={toggleMute}
-                    onMouseEnter={revealVolumeSlider}
-                  >
-                    {isMuted || volume <= 0.001 ? (
-                      <MuteIcon />
-                    ) : (
-                      <VolumeIcon volume={volume} />
-                    )}
-                  </YtpButton>
-                </div>
-                <div
-                  className={s.ytpVolumePanel}
-                  role="slider"
-                  aria-label="Volume"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(effectiveVolume * 100)}
-                  aria-valuetext={`${Math.round(effectiveVolume * 100)}% volume`}
-                  onMouseEnter={revealVolumeSlider}
-                >
-                  <div className={s.ytpVolumeSlider}>
-                    <input
-                      id={sliderId}
-                      type="range"
-                      min={0}
-                      max={1}
-                      step={0.01}
-                      value={effectiveVolume}
-                      className={s.ytpVolumeInput}
-                      onChange={(e) =>
-                        changeVolume(Number(e.currentTarget.value))
-                      }
-                      aria-label="Volume"
-                    />
-                    <div
-                      className={s.ytpVolumeSliderFill}
-                      style={{ width: `${effectiveVolume * 100}%` }}
-                    />
-                    <div
-                      className={s.ytpVolumeSliderHandle}
-                      style={{ left: `${effectiveVolume * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </span>
-            )}
-
-            {/* Time display — click to toggle elapsed / remaining */}
-            <div
-              className={s.ytpTimeDisplay}
-              onClick={() => setShowRemaining((v) => !v)}
-              title={showRemaining ? "Show elapsed time" : "Show remaining time"}
-              data-ytp-component="time-display"
-            >
-              <div className={s.ytpTimeWrapper}>
-                <div className={s.ytpTimeContents}>
-                  <span className={s.ytpTimeCurrent}>
-                    {showRemaining
-                      ? `-${formatTime(duration - currentTime)}`
-                      : formatTime(currentTime)}
-                  </span>
-                  <span className={s.ytpTimeSeparator}> / </span>
-                  <span className={s.ytpTimeDuration}>
-                    {formatTime(duration)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Chapter title */}
-            {activeChapter && !hiddenControls.has("chapter") && (
-              <div className={s.ytpChapterContainer}>
-                <button
-                  className={s.ytpChapterTitle}
-                  type="button"
-                  aria-label="Chapter"
-                >
-                  <span className={s.ytpChapterTitlePrefix} aria-hidden="true">
-                    •
-                  </span>
-                  <span className={s.ytpChapterTitleContent}>
-                    {activeChapter.title}
-                  </span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Right controls */}
-          <div className={s.ytpRightControls} data-ytp-component="right-controls">
-            <div className={s.ytpRightControlsLeft}>
-              {/* Subtitles */}
-              {subtitles.length > 0 && (
-                <YtpButton
-                  tooltip="Subtitles/closed captions (C)"
-                  onClick={cycleSubtitles}
-                  ariaPressed={!!activeSubId}
-                >
-                  <SubtitlesIcon active={!!activeSubId} />
-                </YtpButton>
-              )}
-
-              {/* Settings */}
-              <YtpButton
-                tooltip="Settings"
-                onClick={() => setOpenPanel((p) => (p ? null : "settings"))}
-                ariaPressed={!!openPanel}
-                className={openPanel ? s.ytpSettingsButtonActive : ""}
-              >
-                <SettingsIcon />
-              </YtpButton>
-            </div>
-
-            <div className={s.ytpRightControlsRight}>
-              {/* Theater mode — hidden in fullscreen and on touch devices (CSS) */}
-              {!hiddenControls.has("theater") && (
-                <YtpButton
-                  tooltip={isTheater ? "Default view (T)" : "Theater mode (T)"}
-                  onClick={toggleTheater}
-                  ariaPressed={isTheater}
-                  className={s.ytpTheaterButton}
-                >
-                  <TheaterIcon active={isTheater} />
-                </YtpButton>
-              )}
-
-              {/* AirPlay — iOS Safari only */}
-              {airPlayAvailable && (
-                <YtpButton tooltip="AirPlay" onClick={triggerAirPlay}>
-                  <AirPlayIcon />
-                </YtpButton>
-              )}
-
-              {/* PiP */}
-              {"pictureInPictureEnabled" in document && (
-                <YtpButton tooltip="Picture-in-picture" onClick={togglePip}>
-                  <PipIcon />
-                </YtpButton>
-              )}
-
-              {/* Fullscreen */}
-              <YtpButton
-                tooltip={
-                  isFullscreen ? "Exit full screen (F)" : "Full screen (F)"
-                }
-                onClick={toggleFullscreen}
-                ariaPressed={isFullscreen}
-              >
-                <FullscreenIcon active={isFullscreen} />
-              </YtpButton>
-            </div>
-          </div>
+          <ControlSlot className={s.ytpRightControls} slot="bottom-right">
+            {bottomRightControls}
+          </ControlSlot>
         </div>
       </div>
     </div>

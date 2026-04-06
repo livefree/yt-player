@@ -198,6 +198,18 @@
 .ytpTitle {
 }
 
+.ytpControlSlot {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 4px;
+}
+
+.ytpControlSlot[data-control-slot="top-right"] {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
 .ytpTitleText {
   display: flex;
   flex-direction: column;

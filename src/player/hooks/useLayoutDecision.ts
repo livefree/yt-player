@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState, type RefObject } from "react";
 
-type LayoutMode =
+export type LayoutMode =
   | "desktop-default"
   | "desktop-compact"
   | "mobile-portrait"
   | "mobile-landscape"
   | "fullscreen-immersive";
 
-type ControlId =
+export type ControlId =
   | "title"
   | "play"
   | "next"
@@ -22,7 +22,7 @@ type ControlId =
   | "pip"
   | "fullscreen";
 
-type ControlSlot =
+export type ControlSlot =
   | "top-left"
   | "top-right"
   | "bottom-left"

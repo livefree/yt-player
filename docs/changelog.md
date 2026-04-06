@@ -142,3 +142,14 @@
   - `useGestureControls` 现在消费路由 zone，不再依赖整屏落点推断 seek 方向
   - `src/test/Player.test.tsx` 扩展到 41 个回归测试，覆盖 desktop/mobile 的 input zones 契约与右侧 zone 双击 seek
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 16:49
+
+- **任务**：PLAYER-15 — 以 slot 为中心重组视图层
+- **所属序列**：SEQ-20260406-04
+- **结果**：
+  - 新增 `src/player/components/ControlSlot.tsx`，让视图层按 `slot` 渲染控件容器
+  - `useLayoutDecision` 导出 `ControlId` / `ControlSlot` 类型，`Player.tsx` 改为通过 `renderControl` 消费 `layoutDecision.slots`
+  - 顶部与底部控件已从固定 left/right chrome 结构收敛为 `top-right / bottom-left / bottom-right` slot 组合
+  - `src/test/Player.test.tsx` 扩展到 43 个回归测试，新增 default/compact 下的 slot 组合契约
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

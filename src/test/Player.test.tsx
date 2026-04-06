@@ -541,6 +541,56 @@ describe("YTPlayer — input router contracts", () => {
   });
 });
 
+describe("YTPlayer — slot composition contracts", () => {
+  it("keeps settings in the bottom-right slot for desktop-default layouts", async () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "desktop-default",
+      );
+    });
+
+    const bottomRight = container.querySelector(
+      '[data-control-slot="bottom-right"]',
+    ) as HTMLDivElement;
+
+    expect(
+      bottomRight.querySelector('[data-ytp-component="settings-btn"]'),
+    ).toBeInTheDocument();
+  });
+
+  it("moves settings and episodes into the top-right slot for desktop-compact layouts", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 560,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "desktop-compact",
+      );
+    });
+
+    const topRight = container.querySelector(
+      '[data-control-slot="top-right"]',
+    ) as HTMLDivElement;
+
+    expect(
+      topRight.querySelector('[data-ytp-component="settings-btn"]'),
+    ).toBeInTheDocument();
+    expect(
+      topRight.querySelector('[data-ytp-component="episodes-btn"]'),
+    ).toBeInTheDocument();
+  });
+});
+
 describe("YTPlayer — progress and gesture regressions", () => {
   it("seeks on progress-bar click based on pointer position", () => {
     const { container } = render(<YTPlayer src={TEST_SRC} />);
