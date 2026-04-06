@@ -264,6 +264,10 @@
   cursor: default;
 }
 
+.ytpGestureLayer[data-gestures-blocked="true"] {
+  pointer-events: none;
+}
+
 /* ─── Layer 4: Spinner ──────────────────────────────────────────────────────── */
 
 .ytpSpinner {

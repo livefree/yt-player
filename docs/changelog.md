@@ -120,3 +120,14 @@
   - `SettingsPanel` 与 `EpisodesPanel` 新增 placement 契约，compact/mobile 模式下切换到 top-right 锚点
   - `src/test/Player.test.tsx` 扩展到 36 个回归测试，覆盖 desktop-default、desktop-compact、mobile-portrait 的布局契约
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 16:31
+
+- **任务**：PLAYER-13 — 引入 overlay 管理层与命中优先级契约
+- **所属序列**：SEQ-20260406-04
+- **结果**：
+  - 新增 `src/player/hooks/useOverlayManager.ts`，统一生成 overlay 条目、优先级、交互性和 gesture 阻断规则
+  - `Player.tsx` 开始消费 overlay manager：根节点输出 `data-overlay-top` / `data-overlay-gestures-blocked`，gesture layer 也暴露阻断状态
+  - `useGestureControls` 接入统一的 gesture blocking 契约，不再在 blocking overlay 存在时继续响应点击和触摸
+  - `src/test/Player.test.tsx` 扩展到 39 个回归测试，覆盖 settings / unmute prompt / error 的 overlay 优先级与手势阻断契约
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

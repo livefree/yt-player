@@ -45,6 +45,10 @@ import { useChromeVisibility } from "./hooks/useChromeVisibility";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSystemIntegrations } from "./hooks/useSystemIntegrations";
 import { useLayoutDecision } from "./hooks/useLayoutDecision";
+import {
+  buildOverlayEntries,
+  useOverlayManager,
+} from "./hooks/useOverlayManager";
 import { Spinner } from "./components/Spinner";
 import { SeekOverlay } from "./components/SeekOverlay";
 import { Bezel } from "./components/Bezel";
@@ -511,6 +515,18 @@ export function YTPlayer({
     }
   }
 
+  const gestureBlockingOverlayVisible = buildOverlayEntries({
+    isLoading,
+    error,
+    showBezel: bezelVisible,
+    seekVisible: seekDir !== null,
+    showTouchSeekIndicator: false,
+    showCaptions: !!subtitleCue && !!activeSubId,
+    showUnmute,
+    openPanel: !!openPanel,
+    isEpisodesOpen,
+  }).some((entry) => entry.visible && entry.blocksGestures);
+
   const {
     touchSeekDelta,
     handleTouchStart,
@@ -520,12 +536,29 @@ export function YTPlayer({
   } = useGestureControls({
     playerRef,
     chromeVisible,
+    gesturesBlocked: gestureBlockingOverlayVisible,
     keepControlsVisible,
     revealChrome,
     togglePlay,
     changeVolume,
     doSeek,
     volume,
+  });
+
+  const {
+    blocksGestures,
+    topOverlay,
+    isVisible: isOverlayVisible,
+  } = useOverlayManager({
+    isLoading,
+    error,
+    showBezel: bezelVisible,
+    seekVisible: seekDir !== null,
+    showTouchSeekIndicator: touchSeekDelta !== null,
+    showCaptions: !!subtitleCue && !!activeSubId,
+    showUnmute,
+    openPanel: !!openPanel,
+    isEpisodesOpen,
   });
 
   useKeyboardShortcuts({
@@ -608,6 +641,8 @@ export function YTPlayer({
       className={playerClass}
       data-layout-mode={layoutDecision.mode}
       data-layout-panels={layoutDecision.compactPanels ? "compact" : "default"}
+      data-overlay-top={topOverlay ?? undefined}
+      data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
       style={style}
       onPointerMove={revealChrome}
       onPointerEnter={revealChrome}
@@ -678,7 +713,7 @@ export function YTPlayer({
       )}
 
       {/* ── Layer 5: muted-autoplay unmute prompt ─────────────────────────── */}
-      {showUnmute && (
+      {isOverlayVisible("unmute-prompt") && (
         <div className={s.ytpUnmutePrompt} data-layer="5">
           <button
             className={s.ytpUnmuteButton}
@@ -698,16 +733,19 @@ export function YTPlayer({
       )}
 
       {/* ── Layer 4: spinner ──────────────────────────────────────────────── */}
-      <Spinner visible={isLoading} />
+      <Spinner visible={isOverlayVisible("spinner")} />
 
       {/* ── Layer 4: seek overlay animation ──────────────────────────────── */}
-      <SeekOverlay direction={seekDir} seconds={SEEK_STEP} />
+      <SeekOverlay
+        direction={isOverlayVisible("seek-indicator") ? seekDir : null}
+        seconds={SEEK_STEP}
+      />
 
       {/* ── Layer 4: bezel (center flash) ────────────────────────────────── */}
-      <Bezel visible={bezelVisible} paused={bezelPaused} />
+      <Bezel visible={isOverlayVisible("bezel")} paused={bezelPaused} />
 
       {/* ── Layer 4: touch seek indicator ────────────────────────────────── */}
-      {touchSeekDelta !== null && (
+      {isOverlayVisible("touch-seek") && touchSeekDelta !== null && (
         <div
           className={s.ytpTouchSeekIndicator}
           data-layer="4"
@@ -724,7 +762,7 @@ export function YTPlayer({
       )}
 
       {/* ── Layer 4: error banner ─────────────────────────────────────────── */}
-      {error && (
+      {isOverlayVisible("error") && error && (
         <div className={s.ytpErrorDisplay} data-layer="4" role="alert">
           <div className={s.ytpErrorContent}>
             <svg viewBox="0 0 24 24" width="48" height="48" aria-hidden="true">
@@ -747,7 +785,7 @@ export function YTPlayer({
       )}
 
       {/* ── Layer 4: subtitle cue ─────────────────────────────────────────── */}
-      {subtitleCue && activeSubId && (
+      {isOverlayVisible("captions") && subtitleCue && activeSubId && (
         <div
           className={`${s.ytpCaptionsWindow} ${chromeVisible ? s.ytpCaptionsWindowAbove : ""}`}
           data-layer="4"
@@ -797,6 +835,7 @@ export function YTPlayer({
       <div
         className={s.ytpGestureLayer}
         data-layer="3"
+        data-gestures-blocked={blocksGestures ? "true" : "false"}
         aria-hidden="true"
         onClick={handleGestureClick}
         onTouchStart={handleTouchStart}

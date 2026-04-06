@@ -5,6 +5,7 @@ import { type SeekDirection } from "../types";
 interface UseGestureControlsParams {
   playerRef: React.RefObject<HTMLDivElement>;
   chromeVisible: boolean;
+  gesturesBlocked: boolean;
   keepControlsVisible: boolean;
   revealChrome: () => void;
   togglePlay: () => void;
@@ -16,6 +17,7 @@ interface UseGestureControlsParams {
 export function useGestureControls({
   playerRef,
   chromeVisible,
+  gesturesBlocked,
   keepControlsVisible,
   revealChrome,
   togglePlay,
@@ -33,6 +35,7 @@ export function useGestureControls({
   const [touchSeekDelta, setTouchSeekDelta] = useState<number | null>(null);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (gesturesBlocked) return;
     if (e.touches.length !== 1) return;
     touchStartRef.current = {
       x: e.touches[0]?.clientX ?? 0,
@@ -41,10 +44,11 @@ export function useGestureControls({
     };
     touchGestureRef.current = null;
     tapXRef.current = e.touches[0]?.clientX ?? 0;
-  }, []);
+  }, [gesturesBlocked]);
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
+      if (gesturesBlocked) return;
       if (!touchStartRef.current || e.touches.length !== 1) return;
       const touch = e.touches[0];
       if (!touch) return;
@@ -77,20 +81,22 @@ export function useGestureControls({
         };
       }
     },
-    [changeVolume, playerRef, volume],
+    [changeVolume, gesturesBlocked, playerRef, volume],
   );
 
   const handleTouchEnd = useCallback(() => {
+    if (gesturesBlocked) return;
     if (touchGestureRef.current === "seek" && touchSeekDelta !== null) {
       doSeek(touchSeekDelta, touchSeekDelta > 0 ? "forward" : "back");
       setTouchSeekDelta(null);
     }
     touchStartRef.current = null;
     touchGestureRef.current = null;
-  }, [doSeek, touchSeekDelta]);
+  }, [doSeek, gesturesBlocked, touchSeekDelta]);
 
   const handleGestureClick = useCallback(
     (e: React.MouseEvent) => {
+      if (gesturesBlocked) return;
       if (!chromeVisible && !keepControlsVisible) {
         revealChrome();
         return;
@@ -120,6 +126,7 @@ export function useGestureControls({
     [
       chromeVisible,
       doSeek,
+      gesturesBlocked,
       keepControlsVisible,
       playerRef,
       revealChrome,

@@ -436,6 +436,64 @@ describe("YTPlayer — layout decision contracts", () => {
   });
 });
 
+describe("YTPlayer — overlay manager contracts", () => {
+  it("marks settings as the top blocking overlay and disables gesture capture", async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<YTPlayer src={TEST_SRC} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /settings/i }));
+
+      const root = container.firstElementChild as HTMLDivElement;
+      const gestureLayer = container.querySelector('[data-layer="3"]') as HTMLDivElement;
+      const video = container.querySelector("video") as HTMLVideoElement;
+
+      expect(root).toHaveAttribute("data-overlay-top", "settings");
+      expect(root).toHaveAttribute("data-overlay-gestures-blocked", "true");
+      expect(gestureLayer).toHaveAttribute("data-gestures-blocked", "true");
+
+      fireEvent.click(gestureLayer, { clientX: 200 });
+
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(mockPlay).not.toHaveBeenCalled();
+      expect(video.currentTime).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("tracks unmute prompt as the top overlay without globally blocking gestures", async () => {
+    mockPlay
+      .mockRejectedValueOnce(new Error("blocked"))
+      .mockResolvedValueOnce(undefined);
+
+    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+
+    await screen.findByRole("button", { name: /^unmute$/i });
+
+    const root = container.firstElementChild as HTMLDivElement;
+    const gestureLayer = container.querySelector('[data-layer="3"]') as HTMLDivElement;
+
+    expect(root).toHaveAttribute("data-overlay-top", "unmute-prompt");
+    expect(root).toHaveAttribute("data-overlay-gestures-blocked", "false");
+    expect(gestureLayer).toHaveAttribute("data-gestures-blocked", "false");
+  });
+
+  it("promotes the error banner to the top blocking overlay", () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    fireEvent.error(video);
+
+    const root = container.firstElementChild as HTMLDivElement;
+    expect(root).toHaveAttribute("data-overlay-top", "error");
+    expect(root).toHaveAttribute("data-overlay-gestures-blocked", "true");
+  });
+});
+
 describe("YTPlayer — progress and gesture regressions", () => {
   it("seeks on progress-bar click based on pointer position", () => {
     const { container } = render(<YTPlayer src={TEST_SRC} />);
