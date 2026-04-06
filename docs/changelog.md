@@ -65,3 +65,14 @@
   - 修复非原生 HLS 源 loading 期间被 `<video onError>` 误切到 generic error banner
   - `src/test/Player.test.tsx` 扩展到 33 个回归测试，覆盖静音提示同步、层级契约、切集静音、HLS loading/error 分支
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 15:16
+
+- **任务**：PLAYER-08 — 制定播放器自适应布局与命中系统重构计划
+- **所属序列**：SEQ-20260406-02
+- **结果**：
+  - 新增 `docs/player-adaptive-layout-and-hit-testing-plan.md`
+  - 明确了当前播放器与 YouTube 级交互架构在布局层、输入路由层、overlay 管理层上的根本差异
+  - 制定了目标架构、命中规则、响应式布局策略、分阶段迁移路线与文件结构方向
+  - 显式写入“禁止补丁式修复”和“持续审查架构偏航”的工程约束
+  - 本次为文档任务，未运行 `typecheck/lint/test/build`
