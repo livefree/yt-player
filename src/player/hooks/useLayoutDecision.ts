@@ -131,13 +131,13 @@ function createTabletTouchSlots(hasEpisodes: boolean) {
   } satisfies Record<ControlSlot, ControlId[]>;
 }
 
-function createPhoneTouchSlots(hasEpisodes: boolean) {
+function createPhoneTouchSlots(hasEpisodes: boolean, hasNext: boolean) {
   return {
     "top-left": ["title"],
     "top-right": ["speed", "settings"],
-    "bottom-left": ["play"],
+    "bottom-left": ["time"],
     "bottom-right": [...(hasEpisodes ? (["episodes"] as ControlId[]) : []), "fullscreen"],
-    "center-overlay": [],
+    "center-overlay": ["play", ...(hasNext ? (["next"] as ControlId[]) : [])],
     "edge-left": [],
     "edge-right": [],
   } satisfies Record<ControlSlot, ControlId[]>;
@@ -327,10 +327,10 @@ export function useLayoutDecision({
       interactionPolicy === "tablet-touch"
         ? createTabletTouchSlots(hasEpisodes)
         : interactionPolicy === "phone-touch"
-          ? createPhoneTouchSlots(hasEpisodes)
+          ? createPhoneTouchSlots(hasEpisodes, hasNext)
           : !isCoarsePointer && !isFullscreen
         ? createDesktopDefaultSlots(hasEpisodes, hasNext)
-        : createPhoneTouchSlots(hasEpisodes);
+        : createPhoneTouchSlots(hasEpisodes, hasNext);
     const slots =
       !isCoarsePointer && !isFullscreen
         ? applyDesktopCollapsePolicy({

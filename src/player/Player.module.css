@@ -901,6 +901,32 @@
   pointer-events: auto;
 }
 
+.ytpCenterControls {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.ytpControlSlot[data-control-slot="center-overlay"] {
+  gap: 14px;
+}
+
+.ytpControlSlot[data-control-slot="center-overlay"] .ytpPlayButton {
+  --_bg-w: 56px;
+  --_hover-w: 56px;
+  width: 56px;
+  height: 56px;
+}
+
+.ytpControlSlot[data-control-slot="center-overlay"] .ytpNextButton {
+  --_bg-w: 44px;
+  --_hover-w: 44px;
+  width: 44px;
+  height: 44px;
+}
+
 /* ─── Progress bar container ────────────────────────────────────────────────── */
 
 .ytpProgressBarContainer {
@@ -1662,6 +1688,7 @@
 
 /* Controls fade when ytpAutohide class is present */
 .ytpAutohide .ytpChromeBottom,
+.ytpAutohide .ytpCenterControls,
 .ytpAutohide .ytpChromeTop,
 .ytpAutohide .ytpGradientTop,
 .ytpAutohide .ytpGradientBottom {

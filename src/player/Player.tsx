@@ -1008,6 +1008,9 @@ export function YTPlayer({
   const bottomRightControls = layoutDecision.slots["bottom-right"]
     .map(renderControl)
     .filter(Boolean);
+  const centerOverlayControls = layoutDecision.slots["center-overlay"]
+    .map(renderControl)
+    .filter(Boolean);
   const hasTopInteractiveControls = topRightControls.length > 0;
   const showNextEpisodesGroup =
     bottomLeftSlot.includes("next") || bottomLeftSlot.includes("episodes");
@@ -1287,6 +1290,12 @@ export function YTPlayer({
           onPlaybackRateChange={setPlaybackRate}
           onRequestClose={() => setOpenPanel(null)}
         />
+      )}
+
+      {centerOverlayControls.length > 0 && (
+        <div className={s.ytpCenterControls} data-layer="9">
+          <ControlSlot slot="center-overlay">{centerOverlayControls}</ControlSlot>
+        </div>
       )}
 
       {/* ── Layer 9: gradient bottom ──────────────────────────────────────── */}

@@ -534,7 +534,7 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(container.querySelector(".ytpChapterContainer")).not.toBeInTheDocument();
   });
 
-  it("switches to mobile layout on coarse pointers and promotes episodes into a visible phone entry point", async () => {
+  it("switches to mobile layout on coarse pointers and promotes phone main controls into the center overlay", async () => {
     coarsePointer = true;
 
     Object.defineProperty(window, "innerWidth", {
@@ -583,8 +583,14 @@ describe("YTPlayer — layout decision contracts", () => {
     const topRight = container.querySelector(
       '[data-control-slot="top-right"]',
     ) as HTMLDivElement;
+    const bottomLeft = container.querySelector(
+      '[data-control-slot="bottom-left"]',
+    ) as HTMLDivElement;
     const bottomRight = container.querySelector(
       '[data-control-slot="bottom-right"]',
+    ) as HTMLDivElement;
+    const centerOverlay = container.querySelector(
+      '[data-control-slot="center-overlay"]',
     ) as HTMLDivElement;
 
     expect(
@@ -599,6 +605,10 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(
       topRight.querySelector('[data-ytp-component="episodes-btn"]'),
     ).not.toBeInTheDocument();
+    expect(bottomLeft.textContent).toContain("0:00");
+    expect(
+      centerOverlay.querySelector('[data-ytp-component="play-btn"]'),
+    ).toBeInTheDocument();
     expect(
       bottomRight.querySelector('[data-ytp-component="episodes-btn"]'),
     ).toBeInTheDocument();
@@ -675,6 +685,43 @@ describe("YTPlayer — layout decision contracts", () => {
       topRight.querySelector('[data-ytp-component="subtitles-btn"]'),
     ).toBeInTheDocument();
     expect(bottomLeft.textContent).toContain("0:00");
+  });
+
+  it("surfaces the next button beside the centered play control on phone-touch when next is available", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    const { container } = render(
+      <YTPlayer src={TEST_SRC} episodes={EPISODES_3} onNext={vi.fn()} />,
+    );
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-interaction-policy",
+        "phone-touch",
+      );
+    });
+
+    const centerOverlay = container.querySelector(
+      '[data-control-slot="center-overlay"]',
+    ) as HTMLDivElement;
+
+    expect(
+      centerOverlay.querySelector('[data-ytp-component="play-btn"]'),
+    ).toBeInTheDocument();
+    expect(
+      centerOverlay.querySelector('[data-ytp-component="next-btn"]'),
+    ).toBeInTheDocument();
   });
 });
 

@@ -440,3 +440,10 @@
 - 新增共享 `ytpPanelSurface` 与 `--ytp-panel-*` token，统一 settings / speed / episodes 面板的背景、圆角、阴影、主次文本色与 hover / active surface
 - 三类面板不再各自硬编码视觉参数，后续 panel 体系可在统一 token 上继续演进
 - 回归测试扩到 77 个，补充了共享 panel surface contract
+
+# 2026-04-07 13:19
+
+- 完成 `SEQ-20260407-26 / PLAYER-47`
+- `phone-touch` 布局已将 `play` / `next` 迁移到中央 `center-overlay` 主控区，底部左侧回归时间展示
+- 中央主控区已接入 autohide 契约，手机竖屏最窄场景下会出现更强的播放主控和显式 next 入口
+- 回归测试扩到 78 个，补充了 phone-touch 中央主控与 next 入口布局覆盖
