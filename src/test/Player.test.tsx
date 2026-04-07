@@ -588,6 +588,63 @@ describe("YTPlayer — slot composition contracts", () => {
     expect(
       topRight.querySelector('[data-ytp-component="episodes-btn"]'),
     ).toBeInTheDocument();
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-top-controls-interactive",
+      "true",
+    );
+    expect(
+      container.querySelector('[data-input-route="gesture-zone"]')?.parentElement,
+    ).toHaveStyle({ "--ytp-gesture-top": "52px" });
+  });
+
+  it("keeps the next/episodes reveal group in the bottom-left slot for desktop-default layouts", async () => {
+    const { container } = render(
+      <YTPlayer src={TEST_SRC} episodes={EPISODES_3} onNext={vi.fn()} />,
+    );
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "desktop-default",
+      );
+    });
+
+    const bottomLeft = container.querySelector(
+      '[data-control-slot="bottom-left"]',
+    ) as HTMLDivElement;
+
+    expect(
+      bottomLeft.querySelector('[data-ytp-component="next-episodes-group"]'),
+    ).toBeInTheDocument();
+    expect(
+      bottomLeft.querySelector('[data-ytp-component="next-btn"]'),
+    ).toBeInTheDocument();
+    expect(
+      bottomLeft.querySelector('[data-ytp-component="episodes-btn"]'),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("YTPlayer — panel toggle contracts", () => {
+  it("closes settings when the settings button is clicked again", async () => {
+    render(<YTPlayer src={TEST_SRC} />);
+
+    const settingsButton = screen.getByRole("button", { name: "Settings" });
+
+    fireEvent.click(settingsButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: "Settings" })).toBeInTheDocument();
+    });
+
+    fireEvent.mouseDown(settingsButton);
+    fireEvent.click(settingsButton);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Settings" }),
+      ).not.toBeInTheDocument();
+    });
   });
 });
 

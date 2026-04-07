@@ -315,7 +315,11 @@ export function YTPlayer({
   useEffect(() => {
     if (!openPanel) return;
     const onDown = (e: MouseEvent) => {
-      if (!settingsPanelRef.current?.contains(e.target as Node)) {
+      const target = e.target as HTMLElement;
+      if (
+        !settingsPanelRef.current?.contains(target) &&
+        !target.closest('[data-ytp-component="settings-btn"]')
+      ) {
         setOpenPanel(null);
       }
     };
@@ -868,12 +872,21 @@ export function YTPlayer({
   const topRightControls = layoutDecision.slots["top-right"]
     .map(renderControl)
     .filter(Boolean);
-  const bottomLeftControls = layoutDecision.slots["bottom-left"]
+  const bottomLeftSlot = layoutDecision.slots["bottom-left"];
+  const bottomLeftControls = bottomLeftSlot
+    .filter((control) => control !== "next" && control !== "episodes")
     .map(renderControl)
     .filter(Boolean);
   const bottomRightControls = layoutDecision.slots["bottom-right"]
     .map(renderControl)
     .filter(Boolean);
+  const hasTopInteractiveControls = topRightControls.length > 0;
+  const showNextEpisodesGroup =
+    bottomLeftSlot.includes("next") || bottomLeftSlot.includes("episodes");
+  const nextControl = bottomLeftSlot.includes("next") ? renderControl("next") : null;
+  const episodesControl = bottomLeftSlot.includes("episodes")
+    ? renderControl("episodes")
+    : null;
 
   return (
     <div
@@ -884,6 +897,7 @@ export function YTPlayer({
       data-overlay-top={topOverlay ?? undefined}
       data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
       data-input-zones={inputRouter.zones.join(",")}
+      data-top-controls-interactive={hasTopInteractiveControls ? "true" : "false"}
       style={style}
       onPointerMove={revealChrome}
       onPointerEnter={revealChrome}
@@ -1085,6 +1099,11 @@ export function YTPlayer({
         data-gestures-blocked={inputRouter.gestureSurfaceDisabled ? "true" : "false"}
         data-zone-count={inputRouter.zones.length}
         aria-hidden="true"
+        style={
+          hasTopInteractiveControls
+            ? ({ "--ytp-gesture-top": "52px" } as React.CSSProperties)
+            : undefined
+        }
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -1132,6 +1151,15 @@ export function YTPlayer({
         {/* ── Controls ───────────────────────────────────────────────────── */}
         <div className={s.ytpChromeControls}>
           <ControlSlot className={s.ytpLeftControls} slot="bottom-left">
+            {showNextEpisodesGroup && (
+              <div
+                className={s.ytpNextEpisodesGroup}
+                data-ytp-component="next-episodes-group"
+              >
+                {nextControl}
+                {episodesControl}
+              </div>
+            )}
             {bottomLeftControls}
           </ControlSlot>
 

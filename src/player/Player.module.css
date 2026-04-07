@@ -195,6 +195,10 @@
   pointer-events: auto;
 }
 
+.moviePlayer[data-top-controls-interactive="true"] .ytpChromeTop {
+  z-index: 35;
+}
+
 .ytpTitle {
 }
 
@@ -270,7 +274,7 @@
 
 .ytpGestureSurface {
   position: absolute;
-  inset: 0;
+  inset: var(--ytp-gesture-top, 0px) 0 0 0;
   /* Covers video, below chrome */
   z-index: 30;
   cursor: default;

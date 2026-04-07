@@ -153,3 +153,14 @@
   - 顶部与底部控件已从固定 left/right chrome 结构收敛为 `top-right / bottom-left / bottom-right` slot 组合
   - `src/test/Player.test.tsx` 扩展到 43 个回归测试，新增 default/compact 下的 slot 组合契约
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 17:06
+
+- **任务**：PLAYER-16 — 修复顶部迁移控件命中与 settings 切换契约
+- **所属序列**：SEQ-20260406-05
+- **结果**：
+  - `Player.tsx` 为顶部 slot 控件引入显式交互契约：根节点输出 `data-top-controls-interactive`，gesture surface 在顶部控件存在时下移，避免 compact/mobile 下 top-right 控件被手势面覆盖
+  - settings outside-click 逻辑已排除 settings 按钮自身，修复再次点击按钮时的关闭竞争
+  - 恢复 bottom-left 的 `next + episodes` 组合容器，修复控制栏选集按钮在 slot 重组后失去 reveal / hover 交互的问题
+  - `src/test/Player.test.tsx` 扩展到 45 个回归测试，新增顶部交互契约、next/episodes 组合存在性、settings 二次点击关闭验证
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
