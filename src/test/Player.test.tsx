@@ -852,6 +852,69 @@ describe("YTPlayer — overlay manager contracts", () => {
     expect(root).toHaveAttribute("data-overlay-top", "error");
     expect(root).toHaveAttribute("data-overlay-gestures-blocked", "true");
   });
+
+  it("raises caption placement when a bottom-anchored panel is open on phone-touch", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    fireEvent(window, new Event("resize"));
+
+    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
+
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-overlay-caption-placement",
+      "raised-for-bottom-overlay",
+    );
+  });
+
+  it("keeps caption placement near chrome when the panel is top-anchored on tablet-touch", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 1024,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 768,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    fireEvent(window, new Event("resize"));
+
+    await userEvent.click(screen.getByRole("button", { name: /settings/i }));
+
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-overlay-caption-placement",
+      "above-chrome",
+    );
+  });
+
+  it("suppresses the spinner once a fatal error banner is shown", () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    fireEvent.loadStart(video);
+    expect(screen.getByRole("status", { name: /loading video/i })).toBeInTheDocument();
+
+    fireEvent.error(video);
+
+    expect(
+      screen.queryByRole("status", { name: /loading video|buffering video/i }),
+    ).not.toBeInTheDocument();
+    expect(container.firstElementChild).toHaveAttribute("data-overlay-top", "error");
+  });
 });
 
 describe("YTPlayer — input router contracts", () => {

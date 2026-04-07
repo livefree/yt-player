@@ -18,12 +18,19 @@ export type OverlayEntry = {
   priority: number;
   visible: boolean;
 };
+export type OverlayCaptionPlacement =
+  | "default"
+  | "above-chrome"
+  | "raised-for-bottom-overlay";
 
 type UseOverlayManagerParams = {
+  chromeVisible: boolean;
   error: string | null;
+  episodesPlacement: "bottom-left" | "bottom-right" | "top-right";
   isEpisodesOpen: boolean;
   loadingState: "idle" | "initial" | "buffering";
   openPanel: boolean;
+  settingsPlacement: "bottom-left" | "bottom-right" | "top-right";
   seekVisible: boolean;
   showCaptions: boolean;
   showTouchSeekIndicator: boolean;
@@ -124,12 +131,48 @@ export function buildOverlayEntries({
 export function useOverlayManager(params: UseOverlayManagerParams) {
   return useMemo(() => {
     const entries = buildOverlayEntries(params);
+    const entryMap = new Map(entries.map((entry) => [entry.kind, entry]));
+    const errorVisible = entryMap.get("error")?.visible ?? false;
+    const blockingPanelVisible =
+      (entryMap.get("settings")?.visible ?? false) ||
+      (entryMap.get("episodes")?.visible ?? false);
+    const bottomPanelVisible =
+      (params.openPanel && params.settingsPlacement === "bottom-right") ||
+      (params.isEpisodesOpen && params.episodesPlacement !== "top-right");
+
+    if (errorVisible) {
+      for (const kind of [
+        "spinner",
+        "bezel",
+        "seek-indicator",
+        "touch-seek",
+        "captions",
+        "unmute-prompt",
+      ] as const) {
+        const entry = entryMap.get(kind);
+        if (entry) entry.visible = false;
+      }
+    } else if (blockingPanelVisible) {
+      for (const kind of ["bezel", "seek-indicator", "touch-seek"] as const) {
+        const entry = entryMap.get(kind);
+        if (entry) entry.visible = false;
+      }
+    }
+
     const visibleEntries = entries
       .filter((entry) => entry.visible)
       .sort((left, right) => right.priority - left.priority);
+    const captionPlacement: OverlayCaptionPlacement = errorVisible
+      ? "default"
+      : bottomPanelVisible || (entryMap.get("touch-seek")?.visible ?? false)
+        ? "raised-for-bottom-overlay"
+        : params.chromeVisible
+          ? "above-chrome"
+          : "default";
 
     return {
       entries,
+      captionPlacement,
       visibleEntries,
       interactiveOverlayVisible: visibleEntries.some((entry) => entry.interactive),
       blocksGestures: visibleEntries.some((entry) => entry.blocksGestures),

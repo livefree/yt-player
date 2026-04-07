@@ -546,6 +546,7 @@ export function YTPlayer({
   }
 
   const gestureBlockingOverlayVisible = buildOverlayEntries({
+    chromeVisible,
     loadingState,
     error,
     showBezel: bezelVisible,
@@ -555,6 +556,8 @@ export function YTPlayer({
     showUnmute,
     openPanel: !!openPanel,
     isEpisodesOpen,
+    settingsPlacement: layoutDecision.placements.settingsPanel,
+    episodesPlacement: layoutDecision.placements.episodesPanel,
   }).some((entry) => entry.visible && entry.blocksGestures);
 
   const {
@@ -575,10 +578,12 @@ export function YTPlayer({
   });
 
   const {
+    captionPlacement,
     blocksGestures,
     topOverlay,
     isVisible: isOverlayVisible,
   } = useOverlayManager({
+    chromeVisible,
     loadingState,
     error,
     showBezel: bezelVisible,
@@ -588,6 +593,8 @@ export function YTPlayer({
     showUnmute,
     openPanel: !!openPanel,
     isEpisodesOpen,
+    settingsPlacement: layoutDecision.placements.settingsPanel,
+    episodesPlacement: layoutDecision.placements.episodesPanel,
   });
   const inputRouter = useInputRouter({
     blocksGestures,
@@ -944,6 +951,7 @@ export function YTPlayer({
       data-loading-state={loadingState}
       data-overlay-top={topOverlay ?? undefined}
       data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
+      data-overlay-caption-placement={captionPlacement}
       data-input-device-policy={inputRouter.devicePolicy}
       data-input-zones={inputRouter.zones.join(",")}
       data-top-controls-interactive={hasTopInteractiveControls ? "true" : "false"}
@@ -1111,7 +1119,15 @@ export function YTPlayer({
       {/* ── Layer 4: subtitle cue ─────────────────────────────────────────── */}
       {isOverlayVisible("captions") && subtitleCue && activeSubId && (
         <div
-          className={`${s.ytpCaptionsWindow} ${chromeVisible ? s.ytpCaptionsWindowAbove : ""}`}
+          className={[
+            s.ytpCaptionsWindow,
+            captionPlacement === "above-chrome" ? s.ytpCaptionsWindowAbove : "",
+            captionPlacement === "raised-for-bottom-overlay"
+              ? s.ytpCaptionsWindowRaised
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           data-layer="4"
           aria-live="polite"
         >

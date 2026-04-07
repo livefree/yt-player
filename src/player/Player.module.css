@@ -533,6 +533,10 @@
   bottom: 80px;
 }
 
+.ytpCaptionsWindowRaised {
+  bottom: 132px;
+}
+
 .ytpCaptionSegment {
   background: rgba(0, 0, 0, 0.75);
   color: #fff;

@@ -514,3 +514,21 @@
    - 实际开始：2026-04-07 00:24
    - 完成时间：2026-04-07 00:31
    - 验收要点：布局层产出显式 `chromeVisibilityPolicy`；可见性 hook 不再自己推导 pause/hide delay；补 desktop/tablet/phone/immersive 契约测试
+
+## [SEQ-20260407-20] YTPlayer overlay orchestration 第一阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:33
+- **最后更新时间**：2026-04-07 00:39
+- **目标**：将 overlay manager 从单纯优先级排序推进到第一层 orchestration，先收口 captions 空间避让与 transient overlay 抑制规则
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于现有 `layoutDecision` placement 与 `useOverlayManager`；本轮不引入新的 panel 组件或 drawer 形态
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-36 — 引入 caption placement 与 transient suppression 规则（状态：✅）
+   - 创建时间：2026-04-07 00:33
+   - 计划开始：2026-04-07 00:33
+   - 实际开始：2026-04-07 00:33
+   - 完成时间：2026-04-07 00:39
+   - 验收要点：overlay 层输出 caption placement；底部 panel 会抬高 captions；fatal error 抑制 spinner；panel 打开时抑制 bezel/seek/touch-seek；补对应契约测试

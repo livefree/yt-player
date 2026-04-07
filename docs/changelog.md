@@ -354,6 +354,13 @@
   - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
   - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+# 2026-04-07 00:39
+
+- 完成 `SEQ-20260407-20 / PLAYER-36`
+- 将 overlay manager 推进到第一层 orchestration，新增 caption placement，并在 fatal error / blocking panel 场景下抑制瞬时 overlay
+- `Player` 已暴露 `data-overlay-caption-placement`，字幕支持 `default / above-chrome / raised-for-bottom-overlay`
+- 回归测试扩到 66 个，补充了 phone / tablet 的 caption placement 与 fatal error 抑制 spinner 契约
+
 # 2026-04-07 00:31
 
 - 完成 `SEQ-20260407-19 / PLAYER-35`
