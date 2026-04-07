@@ -1271,6 +1271,7 @@ export function YTPlayer({
         panelId={settingsPanelId}
         openPanel={openPanel}
         placement={layoutDecision.placements.settingsPanel}
+        viewportBand={layoutDecision.viewportBand}
         qualities={qualities}
         activeQualityId={activeQualityId}
         onQualityChange={onQualityChange}
@@ -1287,6 +1288,7 @@ export function YTPlayer({
           panelId={speedPanelId}
           placement={layoutDecision.placements.speedPanel}
           playbackRate={playbackRate}
+          viewportBand={layoutDecision.viewportBand}
           onPlaybackRateChange={setPlaybackRate}
           onRequestClose={() => setOpenPanel(null)}
         />

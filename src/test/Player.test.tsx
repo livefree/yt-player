@@ -1544,6 +1544,28 @@ describe("YTPlayer — speed control contracts", () => {
     expect(speedDialog.querySelector(".ytpSpeedSlider")).toBeInTheDocument();
     expect(speedDialog.querySelector(".ytpSpeedHelp")).toBeInTheDocument();
   });
+
+  it("applies the shared small-window popup contract to the speed panel on phone-portrait", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    render(<YTPlayer src={TEST_SRC} />);
+    fireEvent(window, new Event("resize"));
+
+    await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
+
+    const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
+    expect(speedDialog).toHaveAttribute("data-viewport-band", "phone-portrait");
+  });
 });
 
 describe("YTPlayer — panel surface contracts", () => {
@@ -1565,6 +1587,28 @@ describe("YTPlayer — panel surface contracts", () => {
     expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveClass(
       "ytpPanelSurface",
     );
+  });
+
+  it("applies the shared small-window popup contract to the settings panel on phone-portrait", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    render(<YTPlayer src={TEST_SRC} />);
+    fireEvent(window, new Event("resize"));
+
+    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
+
+    const settingsDialog = screen.getByRole("dialog", { name: "Settings" });
+    expect(settingsDialog).toHaveAttribute("data-viewport-band", "phone-portrait");
   });
 });
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import type { KeyboardEvent, PointerEvent, RefObject } from "react";
 import s from "../Player.module.css";
-import type { PanelPlacement } from "../hooks/useLayoutDecision";
+import type { PanelPlacement, ViewportBand } from "../hooks/useLayoutDecision";
 import {
   SPEED_MAX,
   SPEED_MIN,
@@ -15,6 +15,7 @@ type SpeedPanelProps = {
   panelRef: RefObject<HTMLDivElement>;
   placement: PanelPlacement;
   playbackRate: number;
+  viewportBand: ViewportBand;
   onPlaybackRateChange: (rate: number) => void;
   onRequestClose: () => void;
 };
@@ -24,6 +25,7 @@ export function SpeedPanel({
   panelRef,
   placement,
   playbackRate,
+  viewportBand,
   onPlaybackRateChange,
   onRequestClose,
 }: SpeedPanelProps) {
@@ -58,6 +60,7 @@ export function SpeedPanel({
       className={`${s.ytpSpeedPanel} ${s.ytpPanelSurface} ${s.ytpPopup}`}
       data-layer="5"
       data-placement={placement}
+      data-viewport-band={viewportBand}
       role="dialog"
       aria-label="Playback speed"
       aria-modal="false"

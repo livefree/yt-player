@@ -472,3 +472,10 @@
 - speed panel 已压成更紧凑形态：去掉冗余标题/说明文案，当前倍速改为置顶居中显示
 - speed slider 已切到与 volume slider 一致的轨道 / fill / handle 视觉语言，快捷键提示改为 hover tooltip
 - 回归测试扩到 80 个，补充了 compact speed panel 契约
+
+# 2026-04-07 13:53
+
+- 完成 `SEQ-20260407-27 / PLAYER-51`
+- settings / speed / episodes 已统一接入 compact / narrow / phone-portrait 的 popup 约束，包含底部抬升、顶部偏移和高度限制
+- settings / speed 面板现在也具备稳定的内部滚动契约，不再只靠外层固定盒子
+- 回归测试扩到 82 个，补充了 speed / settings 的 shared popup contract
