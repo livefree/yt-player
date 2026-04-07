@@ -37,6 +37,8 @@ export type LayoutProfile =
   | "short-height"
   | "medium-width"
   | "narrow-width";
+export type InteractionPolicy = "desktop-pointer" | "tablet-touch" | "phone-touch";
+export type ChromePolicy = "hover-autohide" | "touch-persistent-paused";
 
 type UseLayoutDecisionParams = {
   hasEpisodes: boolean;
@@ -47,6 +49,7 @@ type UseLayoutDecisionParams = {
 };
 
 export type LayoutDecision = {
+  chromePolicy: ChromePolicy;
   compactPanels: boolean;
   constraints: {
     height: "short" | "tall";
@@ -54,6 +57,7 @@ export type LayoutDecision = {
   };
   density: "collapsed" | "comfortable" | "condensed";
   hiddenControls: ControlId[];
+  interactionPolicy: InteractionPolicy;
   mode: LayoutMode;
   profile: LayoutProfile;
   placements: {
@@ -235,6 +239,8 @@ export function useLayoutDecision({
     const heightBand = viewport.height > 0 && viewport.height <= SHORT_HEIGHT ? "short" : "tall";
     let density: LayoutDecision["density"] = "comfortable";
     let profile: LayoutProfile = "default";
+    let interactionPolicy: InteractionPolicy = "desktop-pointer";
+    let chromePolicy: ChromePolicy = "hover-autohide";
 
     if (isFullscreen) {
       mode = "fullscreen-immersive";
@@ -245,6 +251,12 @@ export function useLayoutDecision({
           : "mobile-portrait";
     } else if (viewport.width > 0 && viewport.width <= DESKTOP_COMPACT_WIDTH) {
       mode = "desktop-compact";
+    }
+
+    if (isCoarsePointer) {
+      interactionPolicy =
+        viewport.width > viewport.height ? "tablet-touch" : "phone-touch";
+      chromePolicy = "touch-persistent-paused";
     }
 
     if (!isCoarsePointer && !isFullscreen) {
@@ -299,6 +311,8 @@ export function useLayoutDecision({
     return {
       mode,
       profile,
+      interactionPolicy,
+      chromePolicy,
       hiddenControls,
       density,
       constraints: {

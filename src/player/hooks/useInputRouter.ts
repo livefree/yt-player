@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { LayoutMode } from "./useLayoutDecision";
+import type { InteractionPolicy } from "./useLayoutDecision";
 
 export type InputZone = "left" | "center" | "right";
 export type InputIntent = "seek-backward" | "seek-forward" | "toggle-playback" | "reveal-chrome" | "blocked";
@@ -17,24 +17,25 @@ export type InputRoute = {
 type UseInputRouterParams = {
   blocksGestures: boolean;
   chromeVisible: boolean;
+  interactionPolicy: InteractionPolicy;
   keepControlsVisible: boolean;
-  layoutMode: LayoutMode;
 };
 
 export function useInputRouter({
   blocksGestures,
   chromeVisible,
+  interactionPolicy,
   keepControlsVisible,
-  layoutMode,
 }: UseInputRouterParams) {
   return useMemo(() => {
     const useThreeZones = true;
     const zones: InputZone[] = ["left", "center", "right"];
-    const devicePolicy: InputDevicePolicy = layoutMode.startsWith("mobile")
-      ? layoutMode === "mobile-portrait"
+    const devicePolicy: InputDevicePolicy =
+      interactionPolicy === "phone-touch"
         ? "touch-phone"
-        : "touch-tablet"
-      : "pointer";
+        : interactionPolicy === "tablet-touch"
+          ? "touch-tablet"
+          : "pointer";
     const shouldRevealChrome = !chromeVisible && !keepControlsVisible;
 
     const getIntent = (zone: InputZone): InputIntent => {
@@ -61,5 +62,5 @@ export function useInputRouter({
       useThreeZones,
       gestureSurfaceDisabled: blocksGestures,
     };
-  }, [blocksGestures, chromeVisible, keepControlsVisible, layoutMode]);
+  }, [blocksGestures, chromeVisible, interactionPolicy, keepControlsVisible]);
 }

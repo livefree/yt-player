@@ -546,6 +546,14 @@ describe("YTPlayer — layout decision contracts", () => {
         "mobile-portrait",
       );
     });
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-interaction-policy",
+      "phone-touch",
+    );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-chrome-policy",
+      "touch-persistent-paused",
+    );
 
     const topRight = container.querySelector(
       '[data-control-slot="top-right"]',
@@ -563,6 +571,43 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(
       screen.queryByRole("button", { name: /theater mode/i }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("YTPlayer — mobile chrome policy contracts", () => {
+  it("keeps chrome visible while paused on phone-touch layouts", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-chrome-policy",
+        "touch-persistent-paused",
+      );
+    });
+
+    vi.useFakeTimers();
+    try {
+      await act(async () => {
+        vi.advanceTimersByTime(2500);
+      });
+
+      expect(container.firstElementChild).not.toHaveClass("ytpAutohide");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

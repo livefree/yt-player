@@ -203,7 +203,9 @@ export function YTPlayer({
   });
 
   const { chromeVisible, cursorHidden, revealChrome } = useChromeVisibility({
+    chromePolicy: layoutDecision.chromePolicy,
     isImmersive,
+    isPlaying,
     openPanel,
     isEpisodesOpen,
     keepControlsVisible,
@@ -592,8 +594,8 @@ export function YTPlayer({
   const inputRouter = useInputRouter({
     blocksGestures,
     chromeVisible,
+    interactionPolicy: layoutDecision.interactionPolicy,
     keepControlsVisible,
-    layoutMode: layoutDecision.mode,
   });
 
   useKeyboardShortcuts({
@@ -931,6 +933,8 @@ export function YTPlayer({
       data-layout-panels={layoutDecision.compactPanels ? "compact" : "default"}
       data-layout-density={layoutDecision.density}
       data-layout-profile={layoutDecision.profile}
+      data-interaction-policy={layoutDecision.interactionPolicy}
+      data-chrome-policy={layoutDecision.chromePolicy}
       data-layout-width={layoutDecision.constraints.width}
       data-layout-height={layoutDecision.constraints.height}
       data-loading-state={loadingState}

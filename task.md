@@ -406,3 +406,21 @@
    - 实际开始：2026-04-06 20:13
    - 完成时间：2026-04-06 20:19
    - 验收要点：`useInputRouter` 产出显式 `intent` 与 `devicePolicy`；手势处理不再只根据 zone 推断行为；补对应契约测试
+
+## [SEQ-20260406-14] YTPlayer 移动端交互策略第一阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 20:23
+- **最后更新时间**：2026-04-06 21:36
+- **目标**：将移动端 touch-first 交互策略落成显式 policy，并先收口 chrome visibility 的手机端行为
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `layout / input intent` 架构；本轮不进入竖视频适配和面板重排
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-30 — 引入 mobile-first interaction / chrome policy（状态：✅）
+   - 创建时间：2026-04-06 20:23
+   - 计划开始：2026-04-06 20:23
+   - 实际开始：2026-04-06 20:23
+   - 完成时间：2026-04-06 21:36
+   - 验收要点：`useLayoutDecision` 输出显式 interaction/chrome policy；手机端暂停态 chrome 保持可见；补对应契约测试

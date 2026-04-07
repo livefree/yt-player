@@ -301,3 +301,15 @@
   - `src/player/Player.tsx` 已将 route 元数据暴露为 `data-input-intent`、`data-input-device-policy`，便于测试和后续 intent graph 扩展
   - `src/test/Player.test.tsx` 已补充 desktop/mobile device policy、三区 intent、chrome hidden -> reveal intent 的契约测试，当前回归测试总数为 58
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 21:36
+
+- **任务**：PLAYER-30 — 引入 mobile-first interaction / chrome policy
+- **所属序列**：SEQ-20260406-14
+- **结果**：
+  - `src/player/hooks/useLayoutDecision.ts` 已新增 `interactionPolicy` 与 `chromePolicy` 输出，把 `desktop-pointer / tablet-touch / phone-touch` 与 `hover-autohide / touch-persistent-paused` 收口为显式策略
+  - `src/player/hooks/useChromeVisibility.ts` 已接入 `chromePolicy` 与 `isPlaying`，手机端暂停态会保持 chrome 可见，播放后再进入自动隐藏
+  - `src/player/hooks/useInputRouter.ts` 已改为消费 `interactionPolicy`，不再继续从 `layoutMode` 间接推断触摸设备策略
+  - `src/player/Player.tsx` 已通过 `data-interaction-policy` 与 `data-chrome-policy` 暴露移动端策略元数据
+  - `src/test/Player.test.tsx` 已补充 phone-touch policy 与暂停态 chrome 可见的契约测试，当前回归测试总数为 59
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
