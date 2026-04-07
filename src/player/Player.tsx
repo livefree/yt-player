@@ -566,9 +566,7 @@ export function YTPlayer({
   } = useGestureControls({
     allowVolumeGesture: !layoutDecision.mode.startsWith("mobile"),
     playerRef,
-    chromeVisible,
     gesturesBlocked: gestureBlockingOverlayVisible,
-    keepControlsVisible,
     revealChrome,
     togglePlay,
     changeVolume,
@@ -593,6 +591,9 @@ export function YTPlayer({
   });
   const inputRouter = useInputRouter({
     blocksGestures,
+    chromeVisible,
+    keepControlsVisible,
+    layoutMode: layoutDecision.mode,
   });
 
   useKeyboardShortcuts({
@@ -935,6 +936,7 @@ export function YTPlayer({
       data-loading-state={loadingState}
       data-overlay-top={topOverlay ?? undefined}
       data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
+      data-input-device-policy={inputRouter.devicePolicy}
       data-input-zones={inputRouter.zones.join(",")}
       data-top-controls-interactive={hasTopInteractiveControls ? "true" : "false"}
       style={style}
@@ -1164,13 +1166,15 @@ export function YTPlayer({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {inputRouter.zones.map((zone) => (
+        {inputRouter.routes.map((route) => (
           <div
-            key={zone}
+            key={route.zone}
             className={s.ytpGestureZone}
             data-input-route="gesture-zone"
-            data-input-zone={zone}
-            onClick={() => handleGestureClick(zone)}
+            data-input-zone={route.zone}
+            data-input-intent={route.intent}
+            data-input-device-policy={route.devicePolicy}
+            onClick={() => handleGestureClick(route.intent)}
           />
         ))}
       </div>

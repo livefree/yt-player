@@ -290,3 +290,14 @@
   - `src/player/Player.tsx` 已通过 `data-layout-profile` 暴露当前布局 profile，便于视图层和测试消费
   - `src/test/Player.test.tsx` 已补充 `medium-width / short-height` 差异契约测试，当前回归测试总数为 57
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 20:19
+
+- **任务**：PLAYER-29 — 为 gesture surface 引入显式 input intent
+- **所属序列**：SEQ-20260406-13
+- **结果**：
+  - `src/player/hooks/useInputRouter.ts` 已从纯 zone 生成器升级为显式输入路由，当前会输出 `intent` 与 `devicePolicy`
+  - `src/player/hooks/useGestureControls.ts` 已改为直接消费 route `intent`，手势点击不再依赖 zone 自行推断 reveal / seek / toggle
+  - `src/player/Player.tsx` 已将 route 元数据暴露为 `data-input-intent`、`data-input-device-policy`，便于测试和后续 intent graph 扩展
+  - `src/test/Player.test.tsx` 已补充 desktop/mobile device policy、三区 intent、chrome hidden -> reveal intent 的契约测试，当前回归测试总数为 58
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

@@ -637,8 +637,15 @@ describe("YTPlayer — input router contracts", () => {
       );
     });
 
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-input-device-policy",
+      "pointer",
+    );
     const zones = container.querySelectorAll('[data-input-route="gesture-zone"]');
     expect(zones).toHaveLength(3);
+    expect(zones[0]).toHaveAttribute("data-input-intent", "seek-backward");
+    expect(zones[1]).toHaveAttribute("data-input-intent", "toggle-playback");
+    expect(zones[2]).toHaveAttribute("data-input-intent", "seek-forward");
   });
 
   it("renders three gesture zones for mobile portrait layouts to support double-tap seek", async () => {
@@ -667,8 +674,32 @@ describe("YTPlayer — input router contracts", () => {
 
     const zones = container.querySelectorAll('[data-input-route="gesture-zone"]');
     expect(zones).toHaveLength(3);
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-input-device-policy",
+      "touch-phone",
+    );
     expect(zones[0]).toHaveAttribute("data-input-zone", "left");
     expect(zones[2]).toHaveAttribute("data-input-zone", "right");
+    expect(zones[0]).toHaveAttribute("data-input-intent", "seek-backward");
+    expect(zones[2]).toHaveAttribute("data-input-intent", "seek-forward");
+  });
+
+  it("switches all gesture zones to reveal-chrome intent when controls are hidden", async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<YTPlayer src={TEST_SRC} />);
+
+      await act(async () => {
+        vi.advanceTimersByTime(2500);
+      });
+
+      const zones = container.querySelectorAll('[data-input-route="gesture-zone"]');
+      expect(zones[0]).toHaveAttribute("data-input-intent", "reveal-chrome");
+      expect(zones[1]).toHaveAttribute("data-input-intent", "reveal-chrome");
+      expect(zones[2]).toHaveAttribute("data-input-intent", "reveal-chrome");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

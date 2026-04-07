@@ -388,3 +388,21 @@
    - 实际开始：2026-04-06 19:49
    - 完成时间：2026-04-06 20:09
    - 验收要点：桌面端宽度受限与高度受限不再共享同一组折叠结果；`useLayoutDecision` 输出明确布局 profile；补 medium-width / short-height 差异契约测试
+
+## [SEQ-20260406-13] YTPlayer 输入意图路由第一阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 20:13
+- **最后更新时间**：2026-04-06 20:19
+- **目标**：将 `useInputRouter` 从纯 zone 生成器升级为可表达 gesture intent 的输入路由层，为后续 intent graph 打基础
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `layout / overlay / slot` 架构；本轮不改 keyboard 和 progress scrub 路由
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-29 — 为 gesture surface 引入显式 input intent（状态：✅）
+   - 创建时间：2026-04-06 20:13
+   - 计划开始：2026-04-06 20:13
+   - 实际开始：2026-04-06 20:13
+   - 完成时间：2026-04-06 20:19
+   - 验收要点：`useInputRouter` 产出显式 `intent` 与 `devicePolicy`；手势处理不再只根据 zone 推断行为；补对应契约测试
