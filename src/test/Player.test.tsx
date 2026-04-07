@@ -408,6 +408,7 @@ describe("YTPlayer — layout decision contracts", () => {
       "data-layout-profile",
       "default",
     );
+    expect(container.firstElementChild).toHaveAttribute("data-layout-band", "wide");
     expect(container.firstElementChild).toHaveAttribute("data-layout-width", "wide");
     expect(container.firstElementChild).toHaveAttribute("data-layout-height", "tall");
   });
@@ -435,8 +436,9 @@ describe("YTPlayer — layout decision contracts", () => {
     );
     expect(container.firstElementChild).toHaveAttribute(
       "data-layout-profile",
-      "medium-width",
+      "compact-width",
     );
+    expect(container.firstElementChild).toHaveAttribute("data-layout-band", "compact");
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
 
@@ -510,7 +512,7 @@ describe("YTPlayer — layout decision contracts", () => {
     await waitFor(() => {
       expect(container.firstElementChild).toHaveAttribute(
         "data-layout-profile",
-        "medium-width",
+        "compact-width",
       );
     });
 
@@ -553,6 +555,10 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(container.firstElementChild).toHaveAttribute(
       "data-chrome-policy",
       "touch-persistent-paused",
+    );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-band",
+      "phone-portrait",
     );
     expect(container.firstElementChild).toHaveAttribute(
       "data-chrome-pause-behavior",
@@ -1157,9 +1163,37 @@ describe("YTPlayer — slot composition contracts", () => {
       "data-top-controls-interactive",
       "true",
     );
+    expect(container.firstElementChild).toHaveAttribute("data-layout-band", "compact");
     expect(
       container.querySelector('[data-input-route="gesture-zone"]')?.parentElement,
     ).toHaveStyle({ "--ytp-gesture-top": "52px" });
+  });
+
+  it("tracks medium desktop widths as a separate continuous viewport band", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 860,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-band",
+        "medium",
+      );
+    });
+
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-profile",
+      "medium-width",
+    );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-density",
+      "comfortable",
+    );
   });
 
   it("collapses lower-priority desktop controls on very narrow widths", async () => {

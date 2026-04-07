@@ -354,6 +354,13 @@
   - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
   - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+# 2026-04-07 04:32
+
+- 完成 `SEQ-20260407-26 / PLAYER-42`
+- 布局层新增连续 `viewportBand` contract，覆盖 `wide / medium / compact / narrow / phone-portrait`
+- 新增 `compact-width` profile 与 `data-layout-band` 观察点，为后续 responsive 收口提供统一基线
+- 回归测试扩到 71 个，补充了连续宽度带的布局契约
+
 # 2026-04-07 02:02
 
 - 新增 `SEQ-20260407-26`，将最新实机反馈整理为新的连续响应式任务序列

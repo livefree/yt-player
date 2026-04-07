@@ -944,6 +944,7 @@ export function YTPlayer({
       data-layout-panels={layoutDecision.compactPanels ? "compact" : "default"}
       data-layout-density={layoutDecision.density}
       data-layout-profile={layoutDecision.profile}
+      data-layout-band={layoutDecision.viewportBand}
       data-interaction-policy={layoutDecision.interactionPolicy}
       data-chrome-policy={layoutDecision.chromePolicy}
       data-chrome-pause-behavior={

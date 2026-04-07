@@ -40,8 +40,15 @@ export type PanelPlacement = "bottom-left" | "bottom-right" | "top-right";
 export type LayoutProfile =
   | "default"
   | "short-height"
+  | "compact-width"
   | "medium-width"
   | "narrow-width";
+export type ViewportBand =
+  | "wide"
+  | "medium"
+  | "compact"
+  | "narrow"
+  | "phone-portrait";
 export type InteractionPolicy = "desktop-pointer" | "tablet-touch" | "phone-touch";
 export type ChromePolicy =
   | "hover-autohide"
@@ -68,13 +75,14 @@ export type LayoutDecision = {
   compactPanels: boolean;
   constraints: {
     height: "short" | "tall";
-    width: "narrow" | "medium" | "wide";
+    width: "compact" | "medium" | "narrow" | "wide";
   };
   density: "collapsed" | "comfortable" | "condensed";
   hiddenControls: ControlId[];
   interactionPolicy: InteractionPolicy;
   mode: LayoutMode;
   profile: LayoutProfile;
+  viewportBand: ViewportBand;
   placements: {
     episodesPanel: PanelPlacement;
     settingsPanel: PanelPlacement;
@@ -84,6 +92,7 @@ export type LayoutDecision = {
 
 const DESKTOP_COLLAPSED_WIDTH = 560;
 const DESKTOP_COMPACT_WIDTH = 760;
+const DESKTOP_MEDIUM_WIDTH = 960;
 const SHORT_HEIGHT = 460;
 
 function createDesktopDefaultSlots(hasEpisodes: boolean, hasNext: boolean) {
@@ -259,12 +268,18 @@ export function useLayoutDecision({
   return useMemo(() => {
     let mode: LayoutMode = "desktop-default";
     const widthBand =
-      viewport.width > 0 && viewport.width <= DESKTOP_COMPACT_WIDTH
-        ? viewport.width <= DESKTOP_COLLAPSED_WIDTH
-          ? "narrow"
-          : "medium"
-        : "wide";
+      viewport.width > 0 && viewport.width <= DESKTOP_COLLAPSED_WIDTH
+        ? "narrow"
+        : viewport.width > 0 && viewport.width <= DESKTOP_COMPACT_WIDTH
+          ? "compact"
+          : viewport.width > 0 && viewport.width <= DESKTOP_MEDIUM_WIDTH
+            ? "medium"
+            : "wide";
     const heightBand = viewport.height > 0 && viewport.height <= SHORT_HEIGHT ? "short" : "tall";
+    const viewportBand: ViewportBand =
+      isCoarsePointer && viewport.width > 0 && viewport.width <= viewport.height
+        ? "phone-portrait"
+        : widthBand;
     let density: LayoutDecision["density"] = "comfortable";
     let profile: LayoutProfile = "default";
     let interactionPolicy: InteractionPolicy = "desktop-pointer";
@@ -295,9 +310,12 @@ export function useLayoutDecision({
       if (widthBand === "narrow") {
         density = "collapsed";
         profile = "narrow-width";
-      } else if (widthBand === "medium" || heightBand === "short") {
+      } else if (widthBand === "compact" || heightBand === "short") {
         density = "condensed";
-        profile = widthBand === "medium" ? "medium-width" : "short-height";
+        profile = widthBand === "compact" ? "compact-width" : "short-height";
+      } else if (widthBand === "medium") {
+        density = "comfortable";
+        profile = "medium-width";
       }
     }
 
@@ -359,6 +377,7 @@ export function useLayoutDecision({
     return {
       mode,
       profile,
+      viewportBand,
       interactionPolicy,
       chromePolicy,
       chromeVisibilityPolicy,
