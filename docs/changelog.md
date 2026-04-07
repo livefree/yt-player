@@ -258,3 +258,13 @@
   - `src/player/components/EpisodesPanel.tsx` 已补充本地 `Tab` 循环和 button 级 `Home/End/Enter/Space` 处理，为 episodes 面板提供更完整的键盘入口
   - `src/test/Player.test.tsx` 现在包含 settings panel traversal 回归，整体测试数为 54
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 19:47
+
+- **任务**：PLAYER-26 — 输出系统集成支持矩阵与降级契约
+- **所属序列**：SEQ-20260406-10
+- **结果**：
+  - 新增 [`docs/player-system-integration-matrix.md`](/Users/livefree/projects/yt-player-worktree/docs/player-system-integration-matrix.md)，系统整理 Fullscreen / PiP / Media Session / Wake Lock / AirPlay / HLS / Orientation lock 的当前支持边界
+  - 文档明确了每项能力的检测方式、预期环境、可见行为、降级契约和宿主应用表述建议
+  - 文档额外给出推荐 QA 矩阵，便于后续在桌面 Chromium / Safari、iPhone Safari、iPad Safari、Android Chrome 下统一验证
+  - 本次为纯文档任务，未运行 `typecheck/lint/test/build`
