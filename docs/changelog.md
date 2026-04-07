@@ -174,3 +174,13 @@
   - `Player.module.css` 将 tooltip 边缘钉住规则从 `play/fullscreen` 特例改为基于 `data-control-slot` 的左右槽位通用规则，避免边缘按钮提示被播放器边界裁切
   - `src/test/Player.test.tsx` 扩展到 46 个回归测试，新增 bottom-left 子元素顺序契约验证
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 17:14
+
+- **任务**：PLAYER-18 — 输出重构后差距清单与决策矩阵
+- **所属序列**：SEQ-20260406-07
+- **结果**：
+  - 新增 `docs/player-post-refactor-gap-audit.md`，系统盘点当前播放器在完成布局/overlay/input/slot 重构后，和 YouTube 级桌面/移动交互仍存在的差距
+  - 将差距明确拆分为 `targeted bugfix / narrow improvement` 与 `下一阶段架构调整` 两类，避免已解决的架构问题重新混入下一轮决策
+  - 输出建议执行顺序：先做 `Focused Hardening`，再进入 `Next Architecture Iteration`
+  - 本次为纯文档任务，未运行 `typecheck/lint/test/build`
