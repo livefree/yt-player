@@ -286,7 +286,7 @@
 
 - **状态**：✅ 已完成
 - **创建时间**：2026-04-06 17:23
-- **最后更新时间**：2026-04-06 17:35
+- **最后更新时间**：2026-04-06 17:49
 - **目标**：把现有播放器先拉回已确认的多终端策略方向，优先修正手机端 `episodes` 入口、portrait 双击 seek 和移动端伪音量手势
 - **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
 - **依赖**：以 `docs/player-post-refactor-gap-audit.md` 和 `docs/player-device-interaction-strategy.md` 为基线；仅做 focused hardening，不开启新一轮大架构改造
@@ -300,9 +300,16 @@
    - 完成时间：2026-04-06 17:32
    - 验收要点：手机端显式提供 `episodes` 入口；portrait 恢复左右双击 seek；移动端禁用伪音量手势；补对应回归测试
 
-2. PLAYER-21 — 收口移动端 safe-area 与 panel/chrome 兼容（状态：🔄）
+2. PLAYER-21 — 收口移动端 safe-area 与 panel/chrome 兼容（状态：✅）
    - 创建时间：2026-04-06 17:36
    - 计划开始：2026-04-06 17:36
    - 实际开始：2026-04-06 17:36
    - 完成时间：2026-04-06 17:35
    - 验收要点：top/bottom chrome 接入安全区避让；top-right panel 在异形屏与 fullscreen 下不顶到边；移动端 panel 高度与边距更加稳定；验证不引入回归
+
+3. PLAYER-22 — 补强 panel keyboard focus 与可访问性语义（状态：✅）
+   - 创建时间：2026-04-06 17:40
+   - 计划开始：2026-04-06 17:40
+   - 实际开始：2026-04-06 17:40
+   - 完成时间：2026-04-06 17:49
+   - 验收要点：settings / episodes 打开后焦点进入面板；Escape 可稳定关闭；关闭后焦点回到触发按钮；补对应回归测试

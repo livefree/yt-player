@@ -824,6 +824,30 @@ describe("YTPlayer — panel regressions", () => {
     fireEvent.mouseDown(document.body);
     expect(screen.queryByRole("dialog", { name: /settings/i })).not.toBeInTheDocument();
   });
+
+  it("moves focus into settings and returns it to the trigger on Escape", async () => {
+    render(
+      <YTPlayer
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/en.vtt" }]}
+      />,
+    );
+
+    const settingsButton = screen.getByRole("button", { name: /settings/i });
+    await userEvent.click(settingsButton);
+
+    const settingsDialog = screen.getByRole("dialog", { name: /settings/i });
+    expect(settingsDialog).toBeInTheDocument();
+    await waitFor(() => {
+      expect(document.activeElement).toHaveAttribute("role", "menuitem");
+    });
+
+    fireEvent.keyDown(settingsDialog, { key: "Escape" });
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: /settings/i })).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(settingsButton);
+    });
+  });
 });
 
 describe("YTPlayer — Episodes panel", () => {
@@ -908,6 +932,27 @@ describe("YTPlayer — Episodes panel", () => {
     expect(screen.getByRole("dialog", { name: /episodes/i })).toBeInTheDocument();
     fireEvent.keyDown(container.firstElementChild!, { key: "Escape" });
     expect(screen.queryByRole("dialog", { name: /episodes/i })).not.toBeInTheDocument();
+  });
+
+  it("moves focus into episodes and returns it to the trigger on Escape", async () => {
+    render(<YTPlayer episodes={EPISODES_3} />);
+
+    const episodesButton = screen.getByRole("button", { name: /episodes/i });
+    await userEvent.click(episodesButton);
+
+    const episodesDialog = screen.getByRole("dialog", { name: /episodes/i });
+    expect(episodesDialog).toBeInTheDocument();
+    await waitFor(() => {
+      expect(document.activeElement).toHaveAttribute("role", "option");
+      expect(document.activeElement).toHaveTextContent("01");
+    });
+
+    fireEvent.keyDown(episodesDialog, { key: "Escape" });
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: /episodes/i })).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(episodesButton);
+    });
   });
 
   it("renders all 15 episode items for a large list", async () => {

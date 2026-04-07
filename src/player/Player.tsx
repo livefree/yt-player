@@ -106,6 +106,10 @@ export function YTPlayer({
   const playerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoplayContextRef = useRef<"implicit" | "user-initiated">("implicit");
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const episodesButtonRef = useRef<HTMLButtonElement>(null);
+  const prevOpenPanelRef = useRef<Panel | null>(null);
+  const prevEpisodesOpenRef = useRef(false);
 
   // ── Panels ─────────────────────────────────────────────────────────────────
   const [openPanel, setOpenPanel] = useState<Panel>(null);
@@ -350,6 +354,20 @@ export function YTPlayer({
       ?.querySelector<HTMLElement>("[data-ep-focused]")
       ?.scrollIntoView({ block: "nearest" });
   }, [focusedEpisodeIndex, isEpisodesOpen]);
+
+  useEffect(() => {
+    if (prevOpenPanelRef.current && !openPanel) {
+      settingsButtonRef.current?.focus();
+    }
+    prevOpenPanelRef.current = openPanel;
+  }, [openPanel]);
+
+  useEffect(() => {
+    if (prevEpisodesOpenRef.current && !isEpisodesOpen) {
+      episodesButtonRef.current?.focus();
+    }
+    prevEpisodesOpenRef.current = isEpisodesOpen;
+  }, [isEpisodesOpen]);
 
   // ─── Actions ───────────────────────────────────────────────────────────────
   function togglePlay() {
@@ -695,10 +713,11 @@ export function YTPlayer({
             <YtpButton
               tooltip="Episodes (E)"
               ariaLabel="Episodes"
-              onClick={toggleEpisodes}
-              className={s.ytpEpisodesButton}
-              data-ytp-component="episodes-btn"
-            >
+            onClick={toggleEpisodes}
+            className={s.ytpEpisodesButton}
+            data-ytp-component="episodes-btn"
+            ref={episodesButtonRef}
+          >
               <EpisodesIcon />
             </YtpButton>
           </div>
@@ -812,6 +831,7 @@ export function YTPlayer({
             ariaPressed={!!openPanel}
             className={openPanel ? s.ytpSettingsButtonActive : ""}
             data-ytp-component="settings-btn"
+            ref={settingsButtonRef}
           >
             <SettingsIcon />
           </YtpButton>
@@ -1091,6 +1111,7 @@ export function YTPlayer({
         playbackRate={playbackRate}
         onPlaybackRateChange={setPlaybackRate}
         onOpenPanel={setOpenPanel}
+        onRequestClose={() => setOpenPanel(null)}
       />
 
       {/* ── Layer 9: gradient bottom ──────────────────────────────────────── */}

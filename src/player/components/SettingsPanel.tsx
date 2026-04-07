@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { KeyboardEvent, PointerEvent, ReactNode, RefObject } from "react";
 import s from "../Player.module.css";
 import type { PanelPlacement } from "../hooks/useLayoutDecision";
@@ -10,6 +11,7 @@ type SettingsPanelProps = {
   activeSubId: string | null;
   onOpenPanel: (panel: Panel) => void;
   onPlaybackRateChange: (rate: number) => void;
+  onRequestClose: () => void;
   onQualityChange?: (id: string) => void;
   onSubtitleChange: (subtitleId: string | null) => void;
   openPanel: Panel;
@@ -38,7 +40,10 @@ function MenuItem({
   tabIndex = 0,
 }: MenuItemProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter") onActivate();
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onActivate();
+    }
   };
 
   return (
@@ -69,7 +74,10 @@ function MenuHeader({
       tabIndex={0}
       onClick={onBack}
       onKeyDown={(event) => {
-        if (event.key === "Enter") onBack();
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onBack();
+        }
       }}
     >
       <MenuBackIcon className={s.ytpMenuBack} />
@@ -83,6 +91,7 @@ export function SettingsPanel({
   activeSubId,
   onOpenPanel,
   onPlaybackRateChange,
+  onRequestClose,
   onQualityChange,
   onSubtitleChange,
   openPanel,
@@ -92,13 +101,21 @@ export function SettingsPanel({
   qualities,
   subtitles,
 }: SettingsPanelProps) {
-  if (!openPanel) return null;
-
   const activeQualityLabel =
     qualities.find((quality) => quality.id === activeQualityId)?.label ?? "Auto";
   const activeSubtitleLabel = activeSubId
     ? (subtitles.find((subtitle) => subtitle.id === activeSubId)?.label ?? "Off")
     : "Off";
+
+  useEffect(() => {
+    if (!openPanel) return;
+    const firstFocusable = panelRef.current?.querySelector<HTMLElement>(
+      '[role="menuitem"], [role="menuitemradio"]',
+    );
+    firstFocusable?.focus();
+  }, [openPanel, panelRef]);
+
+  if (!openPanel) return null;
 
   return (
     <div
@@ -109,6 +126,12 @@ export function SettingsPanel({
       role="dialog"
       aria-label="Settings"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onRequestClose();
+        }
+      }}
     >
       <div className={s.ytpFocusTrap} tabIndex={0} />
       <div className={s.ytpPanelMenu} role="menu">

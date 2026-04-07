@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import { ButtonHTMLAttributes, ReactNode, forwardRef } from "react";
 import s from "../Player.module.css";
 
 type YtpButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -13,7 +13,7 @@ type YtpButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
  *  Layer 2 (::after):  hover / active overlay
  *  Layer 3 (content):  SVG icon + tooltip span
  */
-export function YtpButton({
+export const YtpButton = forwardRef<HTMLButtonElement, YtpButtonProps>(function YtpButton({
   tooltip,
   onClick,
   onMouseEnter,
@@ -22,9 +22,10 @@ export function YtpButton({
   ariaPressed,
   children,
   ...rest
-}: YtpButtonProps) {
+}, ref) {
   return (
     <button
+      ref={ref}
       type="button"
       className={`${s.ytpButton} ${className}`}
       onClick={onClick}
@@ -37,4 +38,4 @@ export function YtpButton({
       <span className={s.ytpTooltip} aria-hidden="true">{tooltip}</span>
     </button>
   );
-}
+});

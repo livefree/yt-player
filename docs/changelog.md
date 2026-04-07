@@ -215,3 +215,14 @@
   - settings / episodes 面板已接入 top-right 安全区偏移，并增加基于可用高度的 `max-height` 约束，减少异形屏和 fullscreen 下贴边或过高的问题
   - fullscreen 下 panel 高度限制已统一收口，不再只对 bottom chrome 单独补 `safe-area-inset-bottom`
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 17:49
+
+- **任务**：PLAYER-22 — 补强 panel keyboard focus 与可访问性语义
+- **所属序列**：SEQ-20260406-09
+- **结果**：
+  - `src/player/components/Button.tsx` 已改为 `forwardRef`，`Player.tsx` 能在 settings / episodes 面板关闭后把焦点稳定还给触发按钮
+  - `src/player/components/SettingsPanel.tsx` 与 `src/player/components/EpisodesPanel.tsx` 在打开后会主动把焦点送入面板内容，并支持 `Escape` 关闭
+  - settings 菜单项与面板头部返回项已补齐 `Space` 键激活，episodes 项在聚焦时会同步当前焦点态，形成更完整的键盘交互路径
+  - `src/test/Player.test.tsx` 扩展到 50 个回归测试，新增 settings / episodes 的焦点进入、`Escape` 关闭和焦点回落覆盖
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

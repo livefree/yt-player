@@ -1,4 +1,5 @@
-import type { CSSProperties, PointerEvent, RefObject } from "react";
+import { useEffect } from "react";
+import type { CSSProperties, KeyboardEvent, PointerEvent, RefObject } from "react";
 import s from "../Player.module.css";
 import type { PanelPlacement } from "../hooks/useLayoutDecision";
 
@@ -27,6 +28,13 @@ export function EpisodesPanel({
   panelRef,
   placement,
 }: EpisodesPanelProps) {
+  useEffect(() => {
+    if (!isOpen || !episodes?.length) return;
+    panelRef.current
+      ?.querySelector<HTMLElement>("[data-ep-focused], [role='option']")
+      ?.focus();
+  }, [episodes?.length, focusedEpisodeIndex, isOpen, panelRef]);
+
   if (!isOpen || !episodes?.length) return null;
 
   return (
@@ -38,6 +46,12 @@ export function EpisodesPanel({
       role="dialog"
       aria-label="Episodes"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
+      onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+        }
+      }}
     >
       <div
         className={s.ytpEpisodesGrid}
@@ -56,6 +70,7 @@ export function EpisodesPanel({
               onClose();
             }}
             onMouseEnter={() => onFocusEpisode(index)}
+            onFocus={() => onFocusEpisode(index)}
           >
             {String(index + 1).padStart(2, "0")}
           </button>
