@@ -839,7 +839,10 @@ describe("YTPlayer — overlay manager contracts", () => {
 
     expect(root).toHaveAttribute("data-overlay-top", "unmute-prompt");
     expect(root).toHaveAttribute("data-overlay-gestures-blocked", "false");
-    expect(root).toHaveAttribute("data-overlay-prompt-placement", "top-edge");
+    expect(root).toHaveAttribute(
+      "data-overlay-prompt-placement",
+      "top-edge-right",
+    );
     expect(gestureLayer).toHaveAttribute("data-gestures-blocked", "false");
   });
 
@@ -868,7 +871,37 @@ describe("YTPlayer — overlay manager contracts", () => {
     const root = container.firstElementChild as HTMLDivElement;
     expect(root).toHaveAttribute(
       "data-overlay-prompt-placement",
-      "below-top-chrome",
+      "below-top-chrome-right",
+    );
+  });
+
+  it("moves the unmute prompt to the left when a top-right panel is open", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 1024,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 768,
+    });
+
+    mockPlay
+      .mockRejectedValueOnce(new Error("blocked"))
+      .mockResolvedValueOnce(undefined);
+
+    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+    fireEvent(window, new Event("resize"));
+
+    await screen.findByRole("button", { name: /^unmute$/i });
+    await userEvent.click(screen.getByRole("button", { name: /settings/i }));
+
+    const root = container.firstElementChild as HTMLDivElement;
+    expect(root).toHaveAttribute(
+      "data-overlay-prompt-placement",
+      "below-top-chrome-left",
     );
   });
 

@@ -354,6 +354,13 @@
   - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
   - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+# 2026-04-07 01:10
+
+- 完成 `SEQ-20260407-22 / PLAYER-38`
+- overlay orchestration 将 `promptPlacement` 扩展为三态，top-right panel 打开时 unmute prompt 会切到左侧下方
+- 这一步开始处理 top overlays 的横向编排，不再只做纵向下移
+- 回归测试扩到 68 个，补充了 top-right panel 冲突下 prompt 切左的契约
+
 # 2026-04-07 00:56
 
 - 完成 `SEQ-20260407-21 / PLAYER-37`

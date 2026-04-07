@@ -22,7 +22,10 @@ export type OverlayCaptionPlacement =
   | "default"
   | "above-chrome"
   | "raised-for-bottom-overlay";
-export type OverlayPromptPlacement = "below-top-chrome" | "top-edge";
+export type OverlayPromptPlacement =
+  | "below-top-chrome-left"
+  | "below-top-chrome-right"
+  | "top-edge-right";
 
 type UseOverlayManagerParams = {
   chromeVisible: boolean;
@@ -174,8 +177,11 @@ export function useOverlayManager(params: UseOverlayManagerParams) {
         : params.chromeVisible
           ? "above-chrome"
           : "default";
-    const promptPlacement: OverlayPromptPlacement =
-      params.hasTopChrome || topPanelVisible ? "below-top-chrome" : "top-edge";
+    const promptPlacement: OverlayPromptPlacement = topPanelVisible
+      ? "below-top-chrome-left"
+      : params.hasTopChrome
+        ? "below-top-chrome-right"
+        : "top-edge-right";
 
     return {
       entries,

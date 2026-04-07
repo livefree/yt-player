@@ -1057,8 +1057,11 @@ export function YTPlayer({
         <div
           className={[
             s.ytpUnmutePrompt,
-            promptPlacement === "below-top-chrome"
+            promptPlacement === "below-top-chrome-right"
               ? s.ytpUnmutePromptBelowTopChrome
+              : "",
+            promptPlacement === "below-top-chrome-left"
+              ? s.ytpUnmutePromptBelowTopChromeLeft
               : "",
           ]
             .filter(Boolean)

@@ -550,3 +550,21 @@
    - 实际开始：2026-04-07 00:47
    - 完成时间：2026-04-07 00:56
    - 验收要点：overlay 层输出 prompt placement；phone-touch / top chrome 场景下 prompt 下移；desktop 无 top chrome 时保持贴顶；补对应契约测试
+
+## [SEQ-20260407-22] YTPlayer overlay orchestration 第三阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 01:02
+- **最后更新时间**：2026-04-07 01:10
+- **目标**：让 top overlays 进入横向编排，先解决 unmute prompt 与 top-right panel 的同侧冲突
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `promptPlacement` policy；本轮不新增新的 overlay 类型
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-38 — 为 top-right panel 冲突引入 prompt 横向避让（状态：✅）
+   - 创建时间：2026-04-07 01:02
+   - 计划开始：2026-04-07 01:02
+   - 实际开始：2026-04-07 01:02
+   - 完成时间：2026-04-07 01:10
+   - 验收要点：top-right panel 打开时 prompt 切到左侧；默认状态仍保持右侧；补对应 orchestration 契约测试

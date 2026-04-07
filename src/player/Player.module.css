@@ -259,6 +259,12 @@
   top: 56px;
 }
 
+.ytpUnmutePromptBelowTopChromeLeft {
+  top: 56px;
+  left: calc(12px + var(--ytp-safe-left));
+  right: auto;
+}
+
 .ytpUnmuteButton {
   display: flex;
   align-items: center;
