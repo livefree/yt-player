@@ -31,6 +31,9 @@ export function SpeedPanel({
   onPlaybackRateChange,
   onRequestClose,
 }: SpeedPanelProps) {
+  const isCompactViewport = ["compact", "narrow", "phone-portrait"].includes(
+    viewportBand,
+  );
   const speedPct = ((playbackRate - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) * 100;
   const nudgePlaybackRate = useCallback(
     (delta: number) => {
@@ -114,10 +117,15 @@ export function SpeedPanel({
       />
       <div className={s.ytpPanelScroller}>
         <div className={s.ytpPanelMenu}>
-          <div className={s.ytpSpeedPanelHeader}>
-            <span className={s.ytpSpeedPanelValue}>{formatRateBadge(playbackRate)}</span>
-          </div>
-          <div className={s.ytpSpeedPanelBody}>
+          {!isCompactViewport ? (
+            <div className={s.ytpSpeedPanelHeader}>
+              <span className={s.ytpSpeedPanelValue}>{formatRateBadge(playbackRate)}</span>
+            </div>
+          ) : null}
+          <div
+            className={s.ytpSpeedPanelBody}
+            data-density={isCompactViewport ? "compact" : "default"}
+          >
             <div className={s.ytpSpeedSliderRow}>
               <YtpButton
                 tooltip="Slower ([)"

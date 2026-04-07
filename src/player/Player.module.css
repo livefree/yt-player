@@ -664,8 +664,15 @@
 .ytpSpeedPanel {
   bottom: calc(54px + var(--ytp-safe-bottom));
   right: calc(12px + var(--ytp-safe-right));
-  min-width: 248px;
-  max-width: 296px;
+  width: min(
+    248px,
+    calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right))
+  );
+  min-width: 0;
+  max-width: min(
+    248px,
+    calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right))
+  );
   max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
   overflow: hidden;
   animation: ytpPanelIn 0.12s ease;
@@ -721,9 +728,6 @@
 .ytpSettingsMenu[data-viewport-band="compact"],
 .ytpSettingsMenu[data-viewport-band="narrow"],
 .ytpSettingsMenu[data-viewport-band="phone-portrait"],
-.ytpSpeedPanel[data-viewport-band="compact"],
-.ytpSpeedPanel[data-viewport-band="narrow"],
-.ytpSpeedPanel[data-viewport-band="phone-portrait"],
 .ytpEpisodesPanel[data-viewport-band="compact"],
 .ytpEpisodesPanel[data-viewport-band="narrow"],
 .ytpEpisodesPanel[data-viewport-band="phone-portrait"] {
@@ -734,9 +738,6 @@
 .ytpSettingsMenu[data-placement="top-right"][data-viewport-band="compact"],
 .ytpSettingsMenu[data-placement="top-right"][data-viewport-band="narrow"],
 .ytpSettingsMenu[data-placement="top-right"][data-viewport-band="phone-portrait"],
-.ytpSpeedPanel[data-placement="top-right"][data-viewport-band="compact"],
-.ytpSpeedPanel[data-placement="top-right"][data-viewport-band="narrow"],
-.ytpSpeedPanel[data-placement="top-right"][data-viewport-band="phone-portrait"],
 .ytpEpisodesPanel[data-placement="top-right"][data-viewport-band="compact"],
 .ytpEpisodesPanel[data-placement="top-right"][data-viewport-band="narrow"],
 .ytpEpisodesPanel[data-placement="top-right"][data-viewport-band="phone-portrait"] {
@@ -745,10 +746,7 @@
 
 .ytpSettingsMenu[data-viewport-band="compact"],
 .ytpSettingsMenu[data-viewport-band="narrow"],
-.ytpSettingsMenu[data-viewport-band="phone-portrait"],
-.ytpSpeedPanel[data-viewport-band="compact"],
-.ytpSpeedPanel[data-viewport-band="narrow"],
-.ytpSpeedPanel[data-viewport-band="phone-portrait"] {
+.ytpSettingsMenu[data-viewport-band="phone-portrait"] {
   width: min(
     calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right)),
     296px
@@ -855,6 +853,12 @@
   gap: 8px;
   padding: 0 12px 10px;
   align-items: stretch;
+}
+
+.ytpSpeedPanelBody[data-density="compact"] {
+  gap: 7px;
+  padding-top: 10px;
+  padding-bottom: 8px;
 }
 
 .ytpSpeedSliderBlock {

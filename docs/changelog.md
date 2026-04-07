@@ -498,3 +498,14 @@
 - speed panel 已移除遮挡主值的旧快捷键气泡，改为 slider 两侧 `-` / `+` step 按钮，并继续收口主值与 slider 的居中布局
 - settings / speed / episodes 统一切到 `panel shell + inner scroller` 契约，滚动条不再直接切掉圆角外观，小窗口下底边与控制栏/进度条保持更明确的安全间隔
 - compact / narrow / phone-portrait 下的 speed button 已改为 numeric-only，避免小屏空间继续被图标挤占
+
+# 2026-04-07 14:22
+
+- 新增 `SEQ-20260407-29`
+- 本轮继续收口两个问题：小屏 speed panel 去除主值标题，以及 PC 过渡宽度下 speed panel 的自适应尺寸防抖
+
+# 2026-04-07 14:19
+
+- 完成 `SEQ-20260407-29 / PLAYER-58 / PLAYER-59`
+- `compact / narrow / phone-portrait` 下的 speed panel 已隐藏当前倍速标题，仅保留 slider 与 preset，进一步去除小屏冗余
+- speed panel 宽度策略已改为优先固定宽度、仅在空间不足时收缩，避免 PC 过渡尺寸下随容器变宽出现明显空白膨胀
