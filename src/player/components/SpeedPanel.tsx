@@ -56,7 +56,7 @@ export function SpeedPanel({
     <div
       ref={panelRef}
       id={panelId}
-      className={`${s.ytpSpeedPanel} ${s.ytpPopup}`}
+      className={`${s.ytpSpeedPanel} ${s.ytpPanelSurface} ${s.ytpPopup}`}
       data-layer="5"
       data-placement={placement}
       role="dialog"

@@ -433,3 +433,10 @@
 - 将 speed 从 settings 二级菜单提升为一级控制，桌面与触摸布局都新增了显式 `speed-btn`
 - 新增独立 `SpeedPanel`，提供 `0.25x-3x` 水平 slider、4 个常用 preset，以及 `[` / `]` 快捷键到 `3x` 的契约
 - 回归测试扩到 76 个，补充了一级 speed control、touch layout 可见性与 slider / keyboard 速度调整的覆盖
+
+# 2026-04-07 13:16
+
+- 完成 `SEQ-20260407-26 / PLAYER-46`
+- 新增共享 `ytpPanelSurface` 与 `--ytp-panel-*` token，统一 settings / speed / episodes 面板的背景、圆角、阴影、主次文本色与 hover / active surface
+- 三类面板不再各自硬编码视觉参数，后续 panel 体系可在统一 token 上继续演进
+- 回归测试扩到 77 个，补充了共享 panel surface contract

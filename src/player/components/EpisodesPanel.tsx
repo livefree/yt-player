@@ -59,7 +59,7 @@ export function EpisodesPanel({
     <div
       ref={panelRef}
       id={panelId}
-      className={s.ytpEpisodesPanel}
+      className={`${s.ytpEpisodesPanel} ${s.ytpPanelSurface}`}
       data-layer="5"
       data-placement={placement}
       data-viewport-band={viewportBand}

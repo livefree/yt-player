@@ -87,6 +87,14 @@
   --ytp-safe-right:           env(safe-area-inset-right, 0px);
   --ytp-safe-bottom:          env(safe-area-inset-bottom, 0px);
   --ytp-safe-left:            env(safe-area-inset-left, 0px);
+  --ytp-panel-bg:             rgba(28, 28, 28, 0.92);
+  --ytp-panel-border:         rgba(255, 255, 255, 0.08);
+  --ytp-panel-radius:         10px;
+  --ytp-panel-shadow:         0 10px 28px rgba(0, 0, 0, 0.38);
+  --ytp-panel-text-primary:   #ffffff;
+  --ytp-panel-text-secondary: rgba(255, 255, 255, 0.68);
+  --ytp-panel-hover-bg:       rgba(255, 255, 255, 0.08);
+  --ytp-panel-active-bg:      rgba(255, 255, 255, 0.16);
   /* bottom of tooltip bubble aligned with panel bottom (panels: bottom 54px;
      button sits ~8px above player bottom → 54 − 8 = 46px from button bottom) */
   --ytp-tooltip-bottom:       46px;
@@ -613,15 +621,21 @@
   position: absolute;
 }
 
+.ytpPanelSurface {
+  background: var(--ytp-panel-bg);
+  border: 1px solid var(--ytp-panel-border);
+  border-radius: var(--ytp-panel-radius);
+  box-shadow: var(--ytp-panel-shadow);
+  color: var(--ytp-panel-text-primary);
+  backdrop-filter: blur(18px);
+}
+
 .ytpSettingsMenu {
   bottom: calc(54px + var(--ytp-safe-bottom));
   right: calc(12px + var(--ytp-safe-right));
-  background: rgba(28, 28, 28, 0.95);
-  border-radius: 2px;
   min-width: 220px;
   max-width: 300px;
   max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   animation: ytpPanelIn 0.12s ease;
 }
@@ -629,12 +643,9 @@
 .ytpSpeedPanel {
   bottom: calc(54px + var(--ytp-safe-bottom));
   right: calc(12px + var(--ytp-safe-right));
-  background: rgba(28, 28, 28, 0.95);
-  border-radius: 2px;
   min-width: 280px;
   max-width: 340px;
   max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   animation: ytpPanelIn 0.12s ease;
 }
@@ -678,16 +689,16 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  color: #fff;
+  color: var(--ytp-panel-text-primary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--ytp-panel-border);
   margin-bottom: 4px;
 }
 
 .ytpMenuHeader:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--ytp-panel-hover-bg);
 }
 
 .ytpMenuHeader:focus-visible {
@@ -705,7 +716,7 @@
   align-items: center;
   gap: 0;
   padding: 10px 16px;
-  color: #fff;
+  color: var(--ytp-panel-text-primary);
   font-size: 13px;
   cursor: pointer;
   position: relative;
@@ -714,7 +725,7 @@
 }
 
 .ytpMenuItem:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--ytp-panel-hover-bg);
 }
 
 .ytpMenuItem:focus-visible {
@@ -729,11 +740,11 @@
 
 .ytpMenuItemLabel {
   flex: 1;
-  color: #fff;
+  color: var(--ytp-panel-text-primary);
 }
 
 .ytpMenuItemValue {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ytp-panel-text-secondary);
   font-size: 12px;
   margin-right: 4px;
 }
@@ -763,7 +774,7 @@
 }
 
 .ytpSpeedPanelValue {
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--ytp-panel-text-secondary);
   font-size: 12px;
 }
 
@@ -778,12 +789,12 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: #fff;
+  color: var(--ytp-panel-text-primary);
 }
 
 .ytpSpeedSliderLabel {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--ytp-panel-text-secondary);
 }
 
 .ytpSpeedRange {
@@ -795,7 +806,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--ytp-panel-text-secondary);
 }
 
 .ytpSpeedPresets {
@@ -806,17 +817,17 @@
 
 .ytpSpeedPreset {
   min-height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid color-mix(in srgb, var(--ytp-panel-border) 100%, white 25%);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  color: var(--ytp-panel-text-primary);
   font-size: 12px;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .ytpSpeedPreset:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--ytp-panel-hover-bg);
 }
 
 .ytpSpeedPreset:focus-visible {
@@ -825,12 +836,12 @@
 }
 
 .ytpSpeedPresetActive {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.38);
+  background: var(--ytp-panel-active-bg);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .ytpSpeedHelp {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ytp-panel-text-secondary);
   font-size: 11px;
   line-height: 1.45;
 }
@@ -1363,10 +1374,7 @@
   position: absolute;
   bottom: calc(54px + var(--ytp-safe-bottom));
   left: var(--ytp-safe-left);
-  background: rgba(28, 28, 28, 0.95);
-  border-radius: 4px;
   padding: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
   width: min(
     calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right)),
     calc(var(--_ep-cols, 6) * 40px + (var(--_ep-cols, 6) - 1) * 4px + 16px)
@@ -1412,7 +1420,7 @@
   background: transparent;
   border: none;
   border-radius: 999px;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--ytp-panel-text-secondary);
   font-size: 13px;
   letter-spacing: 0.3px;
   cursor: pointer;
@@ -1420,14 +1428,14 @@
 }
 
 .ytpEpisodeItem:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: var(--ytp-panel-hover-bg);
+  color: var(--ytp-panel-text-primary);
 }
 
 .ytpEpisodeItem:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
-  color: #fff;
+  color: var(--ytp-panel-text-primary);
 }
 
 /* Currently playing episode — brand colour + bold */
@@ -1439,8 +1447,8 @@
 /* Keyboard-focused episode (also synced to mouse hover via onMouseEnter).
    Pill highlight: stronger fill replaces rectangular outline for consistency. */
 .ytpEpisodeFocused {
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
+  background: var(--ytp-panel-active-bg);
+  color: var(--ytp-panel-text-primary);
 }
 
 .ytpMuteButton {

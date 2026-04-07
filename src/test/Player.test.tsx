@@ -1474,6 +1474,28 @@ describe("YTPlayer — speed control contracts", () => {
   });
 });
 
+describe("YTPlayer — panel surface contracts", () => {
+  it("applies the shared panel surface class to settings, speed, and episodes dialogs", async () => {
+    render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
+    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass(
+      "ytpPanelSurface",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
+    await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
+    expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveClass(
+      "ytpPanelSurface",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
+    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveClass(
+      "ytpPanelSurface",
+    );
+  });
+});
+
 describe("YTPlayer — progress and gesture regressions", () => {
   it("seeks on progress-bar click based on pointer position", () => {
     const { container } = render(<YTPlayer src={TEST_SRC} />);

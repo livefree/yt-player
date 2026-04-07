@@ -134,7 +134,7 @@ export function SettingsPanel({
     <div
       ref={panelRef}
       id={panelId}
-      className={`${s.ytpSettingsMenu} ${s.ytpPopup}`}
+      className={`${s.ytpSettingsMenu} ${s.ytpPanelSurface} ${s.ytpPopup}`}
       data-layer="5"
       data-placement={placement}
       role="dialog"
