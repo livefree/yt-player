@@ -1447,7 +1447,7 @@ describe("YTPlayer — speed control contracts", () => {
     expect(bottomRight.querySelector('[data-ytp-component="speed-btn"]')).toBe(
       speedButton,
     );
-    expect(speedButton).toHaveTextContent("1x");
+    expect(speedButton).toHaveTextContent("1.00x");
     expect(speedButton).toHaveAttribute("aria-haspopup", "dialog");
     expect(speedButton).toHaveAttribute("aria-expanded", "false");
 
@@ -1503,14 +1503,14 @@ describe("YTPlayer — speed control contracts", () => {
     const speedSlider = screen.getByRole("slider", { name: "Playback speed" });
 
     fireEvent.change(speedSlider, { target: { value: "2.5" } });
-    expect(speedButton).toHaveTextContent("2.5x");
+    expect(speedButton).toHaveTextContent("2.50x");
 
     fireEvent.keyDown(window, { key: "]" });
     expect(speedButton).toHaveTextContent("2.55x");
 
     fireEvent.change(speedSlider, { target: { value: "3" } });
     fireEvent.keyDown(window, { key: "]" });
-    expect(speedButton).toHaveTextContent("3x");
+    expect(speedButton).toHaveTextContent("3.00x");
 
     fireEvent.keyDown(speedDialog, { key: "Escape" });
     await waitFor(() => {
@@ -1518,6 +1518,16 @@ describe("YTPlayer — speed control contracts", () => {
         screen.queryByRole("dialog", { name: "Playback speed" }),
       ).not.toBeInTheDocument();
     });
+  });
+
+  it("keeps a fixed two-decimal speed badge format for stable button width", () => {
+    render(<YTPlayer src={TEST_SRC} />);
+
+    const speedButton = screen.getByRole("button", { name: /playback speed/i });
+    const speedValue = speedButton.querySelector(".ytpSpeedButtonValue");
+
+    expect(speedValue).toHaveTextContent("1.00x");
+    expect(speedValue).toHaveClass("ytpSpeedButtonValue");
   });
 });
 

@@ -1326,9 +1326,9 @@
 }
 
 .ytpSpeedButton {
-  --_bg-w: 74px;
-  --_hover-w: 74px;
-  width: auto;
+  --_bg-w: 88px;
+  --_hover-w: 88px;
+  width: 88px;
   gap: 4px;
   padding: 0 10px 0 8px;
   border-radius: 999px;
@@ -1341,6 +1341,9 @@
   font-weight: 500;
   color: #fff;
   letter-spacing: 0.01em;
+  min-width: 4.75ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .ytpNextButton {

@@ -45,5 +45,5 @@ export function formatRate(rate: number): string {
 }
 
 export function formatRateBadge(rate: number): string {
-  return `${rate.toFixed(2).replace(/\.?0+$/, "")}x`;
+  return `${rate.toFixed(2)}x`;
 }

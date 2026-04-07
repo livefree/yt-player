@@ -454,3 +454,14 @@
 - 新增 `docs/player-settings-ia-plan.md`，定义 speed 移出后的 settings 信息架构
 - 文档已明确 `Playback / Captions / Quality / Audio-Language` 的建议分组，并把 `Loop / Autoplay next / Sleep timer / Caption styling` 定为后续优先项
 - `SEQ-20260407-26` 至此整体完成
+
+# 2026-04-07 13:30
+
+- 新增 `SEQ-20260407-27`
+- 第二轮收口聚焦 5 个问题：speed 按钮稳定宽度、speed panel 紧凑化、统一弹窗遮挡约束、顶部控件间距、phone-touch 的 `next` 右侧布局
+
+# 2026-04-07 13:49
+
+- 完成 `SEQ-20260407-27 / PLAYER-49`
+- speed button 数值已统一为两位小数，按钮本体改为固定宽度并使用 tabular-nums，避免速度变化时宽度跳动
+- 回归测试扩到 79 个，补充了 speed badge 固定格式契约
