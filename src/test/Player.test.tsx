@@ -563,6 +563,12 @@ describe("YTPlayer — layout decision contracts", () => {
       topRight.querySelector('[data-ytp-component="episodes-btn"]'),
     ).toBeInTheDocument();
     expect(
+      topRight.querySelector('[data-ytp-component="settings-btn"]'),
+    ).toBeInTheDocument();
+    expect(
+      topRight.querySelector('[data-ytp-component="subtitles-btn"]'),
+    ).not.toBeInTheDocument();
+    expect(
       container.querySelector('[data-ytp-component="volume-area"]'),
     ).not.toBeInTheDocument();
     expect(
@@ -571,6 +577,57 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(
       screen.queryByRole("button", { name: /theater mode/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("keeps time and subtitles directly visible on tablet-touch layouts", async () => {
+    coarsePointer = true;
+
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 1024,
+    });
+
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 768,
+    });
+
+    const { container } = render(
+      <YTPlayer
+        src={TEST_SRC}
+        episodes={EPISODES_3}
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/en.vtt" }]}
+      />,
+    );
+
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-interaction-policy",
+        "tablet-touch",
+      );
+    });
+
+    const topRight = container.querySelector(
+      '[data-control-slot="top-right"]',
+    ) as HTMLDivElement;
+    const bottomLeft = container.querySelector(
+      '[data-control-slot="bottom-left"]',
+    ) as HTMLDivElement;
+
+    expect(
+      topRight.querySelector('[data-ytp-component="episodes-btn"]'),
+    ).toBeInTheDocument();
+    expect(
+      topRight.querySelector('[data-ytp-component="settings-btn"]'),
+    ).toBeInTheDocument();
+    expect(
+      topRight.querySelector('[data-ytp-component="subtitles-btn"]'),
+    ).toBeInTheDocument();
+    expect(bottomLeft.textContent).toContain("0:00");
   });
 });
 

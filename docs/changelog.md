@@ -313,3 +313,13 @@
   - `src/player/Player.tsx` 已通过 `data-interaction-policy` 与 `data-chrome-policy` 暴露移动端策略元数据
   - `src/test/Player.test.tsx` 已补充 phone-touch policy 与暂停态 chrome 可见的契约测试，当前回归测试总数为 59
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 21:45
+
+- **任务**：PLAYER-31 — 分化 tablet / phone 的 touch 控件入口
+- **所属序列**：SEQ-20260406-15
+- **结果**：
+  - `src/player/hooks/useLayoutDecision.ts` 已拆分 `createTabletTouchSlots` 与 `createPhoneTouchSlots`，让平板与手机不再共享同一组 touch 控件入口
+  - 平板端现在显式保留 `episodes/settings/subtitles` 顶部入口和 `time` 底部展示；手机端则收缩为 `episodes/settings` 顶部入口，把字幕切回设置面板二级入口
+  - `src/test/Player.test.tsx` 已补充 phone-touch 与 tablet-touch 的差异契约测试，当前回归测试总数为 60
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

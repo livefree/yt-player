@@ -424,3 +424,21 @@
    - 实际开始：2026-04-06 20:23
    - 完成时间：2026-04-06 21:36
    - 验收要点：`useLayoutDecision` 输出显式 interaction/chrome policy；手机端暂停态 chrome 保持可见；补对应契约测试
+
+## [SEQ-20260406-15] YTPlayer touch slots 分化
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 21:40
+- **最后更新时间**：2026-04-06 21:45
+- **目标**：让 `tablet-touch` 与 `phone-touch` 不再共享同一组控件入口，先落地 touch-first 的可见控制策略
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于已存在的 `interactionPolicy`；本轮不引入新的次级面板或 sheet
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-31 — 分化 tablet / phone 的 touch 控件入口（状态：✅）
+   - 创建时间：2026-04-06 21:40
+   - 计划开始：2026-04-06 21:40
+   - 实际开始：2026-04-06 21:40
+   - 完成时间：2026-04-06 21:45
+   - 验收要点：平板端显式保留 `time/subtitles`；手机端保留 `episodes/settings` 主入口并收缩字幕按钮；补对应契约测试
