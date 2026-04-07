@@ -549,6 +549,9 @@ export function YTPlayer({
     chromeVisible,
     loadingState,
     error,
+    hasTopChrome:
+      (layoutDecision.slots["top-left"].includes("title") && !!(title || author)) ||
+      layoutDecision.slots["top-right"].length > 0,
     showBezel: bezelVisible,
     seekVisible: seekDir !== null,
     showTouchSeekIndicator: false,
@@ -580,12 +583,16 @@ export function YTPlayer({
   const {
     captionPlacement,
     blocksGestures,
+    promptPlacement,
     topOverlay,
     isVisible: isOverlayVisible,
   } = useOverlayManager({
     chromeVisible,
     loadingState,
     error,
+    hasTopChrome:
+      (layoutDecision.slots["top-left"].includes("title") && !!(title || author)) ||
+      layoutDecision.slots["top-right"].length > 0,
     showBezel: bezelVisible,
     seekVisible: seekDir !== null,
     showTouchSeekIndicator: touchSeekDelta !== null,
@@ -952,6 +959,7 @@ export function YTPlayer({
       data-overlay-top={topOverlay ?? undefined}
       data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
       data-overlay-caption-placement={captionPlacement}
+      data-overlay-prompt-placement={promptPlacement}
       data-input-device-policy={inputRouter.devicePolicy}
       data-input-zones={inputRouter.zones.join(",")}
       data-top-controls-interactive={hasTopInteractiveControls ? "true" : "false"}
@@ -1046,7 +1054,17 @@ export function YTPlayer({
 
       {/* ── Layer 5: muted-autoplay unmute prompt ─────────────────────────── */}
       {isOverlayVisible("unmute-prompt") && (
-        <div className={s.ytpUnmutePrompt} data-layer="5">
+        <div
+          className={[
+            s.ytpUnmutePrompt,
+            promptPlacement === "below-top-chrome"
+              ? s.ytpUnmutePromptBelowTopChrome
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          data-layer="5"
+        >
           <button
             className={s.ytpUnmuteButton}
             aria-label="Unmute"

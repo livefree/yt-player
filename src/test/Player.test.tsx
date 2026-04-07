@@ -839,7 +839,37 @@ describe("YTPlayer — overlay manager contracts", () => {
 
     expect(root).toHaveAttribute("data-overlay-top", "unmute-prompt");
     expect(root).toHaveAttribute("data-overlay-gestures-blocked", "false");
+    expect(root).toHaveAttribute("data-overlay-prompt-placement", "top-edge");
     expect(gestureLayer).toHaveAttribute("data-gestures-blocked", "false");
+  });
+
+  it("drops the unmute prompt below top chrome on phone-touch layouts", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    mockPlay
+      .mockRejectedValueOnce(new Error("blocked"))
+      .mockResolvedValueOnce(undefined);
+
+    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+    fireEvent(window, new Event("resize"));
+
+    await screen.findByRole("button", { name: /^unmute$/i });
+
+    const root = container.firstElementChild as HTMLDivElement;
+    expect(root).toHaveAttribute(
+      "data-overlay-prompt-placement",
+      "below-top-chrome",
+    );
   });
 
   it("promotes the error banner to the top blocking overlay", () => {

@@ -22,11 +22,13 @@ export type OverlayCaptionPlacement =
   | "default"
   | "above-chrome"
   | "raised-for-bottom-overlay";
+export type OverlayPromptPlacement = "below-top-chrome" | "top-edge";
 
 type UseOverlayManagerParams = {
   chromeVisible: boolean;
   error: string | null;
   episodesPlacement: "bottom-left" | "bottom-right" | "top-right";
+  hasTopChrome: boolean;
   isEpisodesOpen: boolean;
   loadingState: "idle" | "initial" | "buffering";
   openPanel: boolean;
@@ -136,6 +138,9 @@ export function useOverlayManager(params: UseOverlayManagerParams) {
     const blockingPanelVisible =
       (entryMap.get("settings")?.visible ?? false) ||
       (entryMap.get("episodes")?.visible ?? false);
+    const topPanelVisible =
+      (params.openPanel && params.settingsPlacement === "top-right") ||
+      (params.isEpisodesOpen && params.episodesPlacement === "top-right");
     const bottomPanelVisible =
       (params.openPanel && params.settingsPlacement === "bottom-right") ||
       (params.isEpisodesOpen && params.episodesPlacement !== "top-right");
@@ -169,10 +174,13 @@ export function useOverlayManager(params: UseOverlayManagerParams) {
         : params.chromeVisible
           ? "above-chrome"
           : "default";
+    const promptPlacement: OverlayPromptPlacement =
+      params.hasTopChrome || topPanelVisible ? "below-top-chrome" : "top-edge";
 
     return {
       entries,
       captionPlacement,
+      promptPlacement,
       visibleEntries,
       interactiveOverlayVisible: visibleEntries.some((entry) => entry.interactive),
       blocksGestures: visibleEntries.some((entry) => entry.blocksGestures),

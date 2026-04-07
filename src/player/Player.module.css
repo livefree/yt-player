@@ -255,6 +255,10 @@
   pointer-events: auto;
 }
 
+.ytpUnmutePromptBelowTopChrome {
+  top: 56px;
+}
+
 .ytpUnmuteButton {
   display: flex;
   align-items: center;

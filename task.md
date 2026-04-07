@@ -532,3 +532,21 @@
    - 实际开始：2026-04-07 00:33
    - 完成时间：2026-04-07 00:39
    - 验收要点：overlay 层输出 caption placement；底部 panel 会抬高 captions；fatal error 抑制 spinner；panel 打开时抑制 bezel/seek/touch-seek；补对应契约测试
+
+## [SEQ-20260407-21] YTPlayer overlay orchestration 第二阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:47
+- **最后更新时间**：2026-04-07 00:56
+- **目标**：继续将 overlay 编排从局部抬高推进到 placement policy，先收口 unmute prompt 与 top chrome / top panel 的空间关系
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续 `overlay orchestration` 第一阶段；本轮不改 prompt 文案、不新增动画
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-37 — 为 unmute prompt 引入 placement policy（状态：✅）
+   - 创建时间：2026-04-07 00:47
+   - 计划开始：2026-04-07 00:47
+   - 实际开始：2026-04-07 00:47
+   - 完成时间：2026-04-07 00:56
+   - 验收要点：overlay 层输出 prompt placement；phone-touch / top chrome 场景下 prompt 下移；desktop 无 top chrome 时保持贴顶；补对应契约测试
