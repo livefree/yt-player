@@ -542,6 +542,7 @@ export function YTPlayer({
     handleTouchEnd,
     handleGestureClick,
   } = useGestureControls({
+    allowVolumeGesture: !layoutDecision.mode.startsWith("mobile"),
     playerRef,
     chromeVisible,
     gesturesBlocked: gestureBlockingOverlayVisible,
@@ -570,7 +571,6 @@ export function YTPlayer({
   });
   const inputRouter = useInputRouter({
     blocksGestures,
-    layoutMode: layoutDecision.mode,
   });
 
   useKeyboardShortcuts({

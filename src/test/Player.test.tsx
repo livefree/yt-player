@@ -400,7 +400,7 @@ describe("YTPlayer — layout decision contracts", () => {
     );
   });
 
-  it("switches to mobile layout on coarse pointers and hides desktop-only controls", async () => {
+  it("switches to mobile layout on coarse pointers and promotes episodes into a visible phone entry point", async () => {
     coarsePointer = true;
 
     Object.defineProperty(window, "innerWidth", {
@@ -426,10 +426,17 @@ describe("YTPlayer — layout decision contracts", () => {
       );
     });
 
+    const topRight = container.querySelector(
+      '[data-control-slot="top-right"]',
+    ) as HTMLDivElement;
+
     expect(
-      screen.queryByRole("button", { name: /episodes/i }),
-    ).not.toBeInTheDocument();
+      topRight.querySelector('[data-ytp-component="episodes-btn"]'),
+    ).toBeInTheDocument();
     expect(screen.queryByLabelText("Volume")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /next/i }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /theater mode/i }),
     ).not.toBeInTheDocument();
@@ -511,7 +518,7 @@ describe("YTPlayer — input router contracts", () => {
     expect(zones).toHaveLength(3);
   });
 
-  it("renders a single center gesture zone for mobile portrait layouts", async () => {
+  it("renders three gesture zones for mobile portrait layouts to support double-tap seek", async () => {
     coarsePointer = true;
 
     Object.defineProperty(window, "innerWidth", {
@@ -531,13 +538,14 @@ describe("YTPlayer — input router contracts", () => {
     await waitFor(() => {
       expect(container.firstElementChild).toHaveAttribute(
         "data-input-zones",
-        "center",
+        "left,center,right",
       );
     });
 
     const zones = container.querySelectorAll('[data-input-route="gesture-zone"]');
-    expect(zones).toHaveLength(1);
-    expect(zones[0]).toHaveAttribute("data-input-zone", "center");
+    expect(zones).toHaveLength(3);
+    expect(zones[0]).toHaveAttribute("data-input-zone", "left");
+    expect(zones[2]).toHaveAttribute("data-input-zone", "right");
   });
 });
 
@@ -726,6 +734,83 @@ describe("YTPlayer — progress and gesture regressions", () => {
     fireEvent.click(rightZone);
 
     expect(video.currentTime).toBe(30);
+  });
+
+  it("double-clicking the right zone also seeks forward on mobile portrait", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "mobile-portrait",
+      );
+    });
+
+    const rightZone = container.querySelector(
+      '[data-input-zone="right"]',
+    ) as HTMLDivElement;
+
+    setVideoDuration(video, 120);
+    setVideoCurrentTime(video, 20);
+
+    fireEvent.click(rightZone);
+    fireEvent.click(rightZone);
+
+    expect(video.currentTime).toBe(30);
+  });
+
+  it("does not change volume on vertical right-side swipes in mobile portrait", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const video = container.querySelector("video") as HTMLVideoElement;
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "mobile-portrait",
+      );
+    });
+
+    const initialVolume = video.volume;
+    const gestureSurface = container.querySelector('[data-layer="3"]') as HTMLDivElement;
+
+    fireEvent.touchStart(gestureSurface, {
+      touches: [{ clientX: 320, clientY: 500 }],
+    });
+    fireEvent.touchMove(gestureSurface, {
+      touches: [{ clientX: 322, clientY: 380 }],
+    });
+    fireEvent.touchEnd(gestureSurface);
+
+    await waitFor(() => {
+      expect(video.volume).toBe(initialVolume);
+    });
   });
 });
 

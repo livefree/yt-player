@@ -11,18 +11,14 @@ export type InputRoute = {
 
 type UseInputRouterParams = {
   blocksGestures: boolean;
-  layoutMode: string;
 };
 
 export function useInputRouter({
   blocksGestures,
-  layoutMode,
 }: UseInputRouterParams) {
   return useMemo(() => {
-    const useThreeZones = layoutMode !== "mobile-portrait";
-    const zones: InputZone[] = useThreeZones
-      ? ["left", "center", "right"]
-      : ["center"];
+    const useThreeZones = true;
+    const zones: InputZone[] = ["left", "center", "right"];
 
     const routes: InputRoute[] = zones.map((zone) => ({
       kind: "gesture-zone",
@@ -37,5 +33,5 @@ export function useInputRouter({
       useThreeZones,
       gestureSurfaceDisabled: blocksGestures,
     };
-  }, [blocksGestures, layoutMode]);
+  }, [blocksGestures]);
 }

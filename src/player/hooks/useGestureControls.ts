@@ -4,6 +4,7 @@ import { type SeekDirection } from "../types";
 import type { InputZone } from "./useInputRouter";
 
 interface UseGestureControlsParams {
+  allowVolumeGesture: boolean;
   playerRef: React.RefObject<HTMLDivElement>;
   chromeVisible: boolean;
   gesturesBlocked: boolean;
@@ -16,6 +17,7 @@ interface UseGestureControlsParams {
 }
 
 export function useGestureControls({
+  allowVolumeGesture,
   playerRef,
   chromeVisible,
   gesturesBlocked,
@@ -59,12 +61,14 @@ export function useGestureControls({
       if (!touchGestureRef.current) {
         if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
           touchGestureRef.current = "seek";
-        } else if (Math.abs(dy) > 12) {
+        } else if (allowVolumeGesture && Math.abs(dy) > 12) {
           const rect = playerRef.current?.getBoundingClientRect();
           touchGestureRef.current =
             rect && touch.clientX > rect.left + rect.width / 2
               ? "volume"
               : "none";
+        } else if (Math.abs(dy) > 12) {
+          touchGestureRef.current = "none";
         }
       }
 
@@ -82,7 +86,7 @@ export function useGestureControls({
         };
       }
     },
-    [changeVolume, gesturesBlocked, playerRef, volume],
+    [allowVolumeGesture, changeVolume, gesturesBlocked, playerRef, volume],
   );
 
   const handleTouchEnd = useCallback(() => {

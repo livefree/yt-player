@@ -281,3 +281,21 @@
    - 实际开始：2026-04-06 17:16
    - 完成时间：2026-04-06 17:18
    - 验收要点：明确桌面/平板/手机的输入模型、控件优先级、折叠策略、`episodes` 终端定位与建议执行顺序
+
+## [SEQ-20260406-09] YTPlayer Focused Hardening Strategy Alignment
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 17:23
+- **最后更新时间**：2026-04-06 17:32
+- **目标**：把现有播放器先拉回已确认的多终端策略方向，优先修正手机端 `episodes` 入口、portrait 双击 seek 和移动端伪音量手势
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：以 `docs/player-post-refactor-gap-audit.md` 和 `docs/player-device-interaction-strategy.md` 为基线；仅做 focused hardening，不开启新一轮大架构改造
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-20 — 对齐手机端入口与手势策略（状态：✅）
+   - 创建时间：2026-04-06 17:23
+   - 计划开始：2026-04-06 17:23
+   - 实际开始：2026-04-06 17:23
+   - 完成时间：2026-04-06 17:32
+   - 验收要点：手机端显式提供 `episodes` 入口；portrait 恢复左右双击 seek；移动端禁用伪音量手势；补对应回归测试

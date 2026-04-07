@@ -194,3 +194,14 @@
   - 明确 `episodes` 在本项目中的产品地位高于普通附加按钮，尤其在手机端和平板端应作为核心内容导航入口处理
   - 给出面向后续开发的近期开产品决策建议，包括手机端 `next` 是否常驻、是否恢复双击左右 seek、是否保留移动端伪音量手势等
   - 本次为纯文档任务，未运行 `typecheck/lint/test/build`
+
+## 2026-04-06 17:32
+
+- **任务**：PLAYER-20 — 对齐手机端入口与手势策略
+- **所属序列**：SEQ-20260406-09
+- **结果**：
+  - `useLayoutDecision` 已调整手机端 slot 策略：`episodes` 升入 `top-right` 显式入口，底部仅保留 `play` 与 `fullscreen` 作为主控制
+  - `useInputRouter` 已为 `mobile-portrait` 恢复左右 gesture zones，使手机端支持左右双击 seek
+  - `useGestureControls` 已新增移动端伪音量手势禁用逻辑，不再在 coarse pointer 模式下把右侧纵向滑动解释为音量控制
+  - `src/test/Player.test.tsx` 扩展到 48 个回归测试，新增手机端 `episodes` 入口、portrait 三分区输入、portrait 右侧双击 seek 与移动端禁用伪音量手势验证
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

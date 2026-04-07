@@ -90,16 +90,16 @@ function createDesktopCompactSlots(hasEpisodes: boolean, hasNext: boolean) {
   } satisfies Record<ControlSlot, ControlId[]>;
 }
 
-function createMobileSlots(hasNext: boolean) {
-  const bottomLeft: ControlId[] = ["play"];
-  if (hasNext) bottomLeft.push("next");
-  bottomLeft.push("time");
-
+function createMobileSlots(hasEpisodes: boolean) {
   return {
     "top-left": ["title"],
-    "top-right": ["settings", "subtitles"],
-    "bottom-left": bottomLeft,
-    "bottom-right": ["airplay", "pip", "fullscreen"],
+    "top-right": [
+      ...(hasEpisodes ? (["episodes"] as ControlId[]) : []),
+      "settings",
+      "subtitles",
+    ],
+    "bottom-left": ["play"],
+    "bottom-right": ["fullscreen"],
     "center-overlay": [],
     "edge-left": [],
     "edge-right": [],
@@ -184,7 +184,7 @@ export function useLayoutDecision({
         ? createDesktopDefaultSlots(hasEpisodes, hasNext)
         : mode === "desktop-compact"
           ? createDesktopCompactSlots(hasEpisodes, hasNext)
-          : createMobileSlots(hasNext);
+          : createMobileSlots(hasEpisodes);
 
     const visibleControls = new Set(
       Object.values(slots).flatMap((slotControls) => slotControls),
