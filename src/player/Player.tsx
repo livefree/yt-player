@@ -929,6 +929,7 @@ export function YTPlayer({
       data-layout-mode={layoutDecision.mode}
       data-layout-panels={layoutDecision.compactPanels ? "compact" : "default"}
       data-layout-density={layoutDecision.density}
+      data-layout-profile={layoutDecision.profile}
       data-layout-width={layoutDecision.constraints.width}
       data-layout-height={layoutDecision.constraints.height}
       data-loading-state={loadingState}

@@ -279,3 +279,14 @@
   - `src/player/Player.tsx` 已通过 `data-layout-density`、`data-layout-width`、`data-layout-height` 暴露当前布局约束，便于视图层和测试消费
   - `src/test/Player.test.tsx` 已补充 desktop short-height / narrow-width 布局契约测试，当前回归测试总数为 56
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 20:09
+
+- **任务**：PLAYER-28 — 扩展桌面端 control priority / collapse policy
+- **所属序列**：SEQ-20260406-12
+- **结果**：
+  - `src/player/hooks/useLayoutDecision.ts` 已新增 `profile` 输出，并将桌面端布局收口从单一 `density` 升级为 `default / short-height / medium-width / narrow-width` 四类 profile
+  - 桌面端现在统一从同一组基础 slots 出发，再按尺寸特化策略应用差异化优先级：`short-height` 保留音量但移除 `theater`，`medium-width` 收起音量但保留 `theater`，`narrow-width` 再进一步收起 `airplay/pip`
+  - `src/player/Player.tsx` 已通过 `data-layout-profile` 暴露当前布局 profile，便于视图层和测试消费
+  - `src/test/Player.test.tsx` 已补充 `medium-width / short-height` 差异契约测试，当前回归测试总数为 57
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

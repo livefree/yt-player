@@ -404,6 +404,10 @@ describe("YTPlayer — layout decision contracts", () => {
       "data-layout-density",
       "comfortable",
     );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-profile",
+      "default",
+    );
     expect(container.firstElementChild).toHaveAttribute("data-layout-width", "wide");
     expect(container.firstElementChild).toHaveAttribute("data-layout-height", "tall");
   });
@@ -412,7 +416,7 @@ describe("YTPlayer — layout decision contracts", () => {
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
       writable: true,
-      value: 560,
+      value: 700,
     });
 
     const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
@@ -427,7 +431,11 @@ describe("YTPlayer — layout decision contracts", () => {
     });
     expect(container.firstElementChild).toHaveAttribute(
       "data-layout-density",
-      "collapsed",
+      "condensed",
+    );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-profile",
+      "medium-width",
     );
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
@@ -464,6 +472,10 @@ describe("YTPlayer — layout decision contracts", () => {
       "data-layout-density",
       "condensed",
     );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-profile",
+      "short-height",
+    );
     expect(container.firstElementChild).toHaveAttribute("data-layout-height", "short");
 
     const topRight = container.querySelector(
@@ -476,10 +488,37 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(
       topRight.querySelector('[data-ytp-component="episodes-btn"]'),
     ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-ytp-component="volume-area"]'),
+    ).toBeInTheDocument();
     expect(container.querySelector(".ytpChapterContainer")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /theater mode/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("uses a width-driven compact policy that hides volume but keeps theater", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 700,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-profile",
+        "medium-width",
+      );
+    });
+
+    expect(
+      container.querySelector('[data-ytp-component="volume-area"]'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /theater mode/i })).toBeInTheDocument();
+    expect(container.querySelector(".ytpChapterContainer")).not.toBeInTheDocument();
   });
 
   it("switches to mobile layout on coarse pointers and promotes episodes into a visible phone entry point", async () => {
@@ -515,7 +554,9 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(
       topRight.querySelector('[data-ytp-component="episodes-btn"]'),
     ).toBeInTheDocument();
-    expect(screen.queryByLabelText("Volume")).not.toBeInTheDocument();
+    expect(
+      container.querySelector('[data-ytp-component="volume-area"]'),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /next/i }),
     ).not.toBeInTheDocument();
@@ -655,7 +696,7 @@ describe("YTPlayer — slot composition contracts", () => {
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
       writable: true,
-      value: 560,
+      value: 700,
     });
 
     const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
@@ -704,7 +745,12 @@ describe("YTPlayer — slot composition contracts", () => {
       );
     });
 
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-profile",
+      "narrow-width",
+    );
     expect(container.querySelector(".ytpChapterContainer")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Volume")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /theater mode/i }),
     ).not.toBeInTheDocument();

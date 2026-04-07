@@ -32,6 +32,11 @@ export type ControlSlot =
   | "edge-right";
 
 export type PanelPlacement = "bottom-left" | "bottom-right" | "top-right";
+export type LayoutProfile =
+  | "default"
+  | "short-height"
+  | "medium-width"
+  | "narrow-width";
 
 type UseLayoutDecisionParams = {
   hasEpisodes: boolean;
@@ -50,6 +55,7 @@ export type LayoutDecision = {
   density: "collapsed" | "comfortable" | "condensed";
   hiddenControls: ControlId[];
   mode: LayoutMode;
+  profile: LayoutProfile;
   placements: {
     episodesPanel: PanelPlacement;
     settingsPanel: PanelPlacement;
@@ -72,25 +78,6 @@ function createDesktopDefaultSlots(hasEpisodes: boolean, hasNext: boolean) {
     "top-right": [],
     "bottom-left": bottomLeft,
     "bottom-right": ["subtitles", "settings", "theater", "airplay", "pip", "fullscreen"],
-    "center-overlay": [],
-    "edge-left": [],
-    "edge-right": [],
-  } satisfies Record<ControlSlot, ControlId[]>;
-}
-
-function createDesktopCompactSlots(hasEpisodes: boolean, hasNext: boolean) {
-  const topRight: ControlId[] = ["settings"];
-  if (hasEpisodes) topRight.push("episodes");
-
-  const bottomLeft: ControlId[] = ["play"];
-  if (hasNext) bottomLeft.push("next");
-  bottomLeft.push("time", "chapter");
-
-  return {
-    "top-left": ["title"],
-    "top-right": topRight,
-    "bottom-left": bottomLeft,
-    "bottom-right": ["subtitles", "airplay", "pip", "fullscreen", "theater"],
     "center-overlay": [],
     "edge-left": [],
     "edge-right": [],
@@ -142,24 +129,35 @@ function ensureControlInSlot(
 
 function applyDesktopCollapsePolicy({
   slots,
-  density,
+  profile,
   hasEpisodes,
 }: {
-  density: LayoutDecision["density"];
+  profile: LayoutProfile;
   hasEpisodes: boolean;
   slots: Record<ControlSlot, ControlId[]>;
 }) {
-  if (density === "comfortable") return slots;
+  if (profile === "default") return slots;
 
-  removeControl(slots, "chapter");
-  removeControl(slots, "theater");
-  ensureControlInSlot(slots, "settings", "top-right");
+  const promoteCompactControls = () => {
+    ensureControlInSlot(slots, "settings", "top-right");
+    if (hasEpisodes) {
+      ensureControlInSlot(slots, "episodes", "top-right");
+    }
+  };
 
-  if (hasEpisodes) {
-    ensureControlInSlot(slots, "episodes", "top-right");
+  if (profile === "short-height") {
+    removeControl(slots, "chapter");
+    removeControl(slots, "theater");
+    promoteCompactControls();
+    return slots;
   }
 
-  if (density === "collapsed") {
+  removeControl(slots, "volume");
+  removeControl(slots, "chapter");
+  promoteCompactControls();
+
+  if (profile === "narrow-width") {
+    removeControl(slots, "theater");
     removeControl(slots, "airplay");
     removeControl(slots, "pip");
   }
@@ -236,6 +234,7 @@ export function useLayoutDecision({
         : "wide";
     const heightBand = viewport.height > 0 && viewport.height <= SHORT_HEIGHT ? "short" : "tall";
     let density: LayoutDecision["density"] = "comfortable";
+    let profile: LayoutProfile = "default";
 
     if (isFullscreen) {
       mode = "fullscreen-immersive";
@@ -251,21 +250,21 @@ export function useLayoutDecision({
     if (!isCoarsePointer && !isFullscreen) {
       if (widthBand === "narrow") {
         density = "collapsed";
+        profile = "narrow-width";
       } else if (widthBand === "medium" || heightBand === "short") {
         density = "condensed";
+        profile = widthBand === "medium" ? "medium-width" : "short-height";
       }
     }
 
     const baseSlots =
-      mode === "desktop-default"
+      !isCoarsePointer && !isFullscreen
         ? createDesktopDefaultSlots(hasEpisodes, hasNext)
-        : mode === "desktop-compact"
-          ? createDesktopCompactSlots(hasEpisodes, hasNext)
-          : createMobileSlots(hasEpisodes);
+        : createMobileSlots(hasEpisodes);
     const slots =
       !isCoarsePointer && !isFullscreen
         ? applyDesktopCollapsePolicy({
-            density,
+            profile,
             hasEpisodes,
             slots: cloneSlots(baseSlots),
           })
@@ -299,6 +298,7 @@ export function useLayoutDecision({
 
     return {
       mode,
+      profile,
       hiddenControls,
       density,
       constraints: {
