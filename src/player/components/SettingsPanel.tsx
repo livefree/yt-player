@@ -9,6 +9,7 @@ import { MenuBackIcon, MenuCheckIcon, MenuChevronIcon } from "./icons";
 type SettingsPanelProps = {
   activeQualityId?: string;
   activeSubId: string | null;
+  panelId: string;
   onOpenPanel: (panel: Panel) => void;
   onPlaybackRateChange: (rate: number) => void;
   onRequestClose: () => void;
@@ -89,6 +90,7 @@ function MenuHeader({
 export function SettingsPanel({
   activeQualityId,
   activeSubId,
+  panelId,
   onOpenPanel,
   onPlaybackRateChange,
   onRequestClose,
@@ -120,11 +122,13 @@ export function SettingsPanel({
   return (
     <div
       ref={panelRef}
+      id={panelId}
       className={`${s.ytpSettingsMenu} ${s.ytpPopup}`}
       data-layer="5"
       data-placement={placement}
       role="dialog"
       aria-label="Settings"
+      aria-modal="false"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
       onKeyDown={(event) => {
         if (event.key === "Escape") {

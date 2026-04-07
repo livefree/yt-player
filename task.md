@@ -286,7 +286,7 @@
 
 - **状态**：✅ 已完成
 - **创建时间**：2026-04-06 17:23
-- **最后更新时间**：2026-04-06 19:09
+- **最后更新时间**：2026-04-06 19:16
 - **目标**：把现有播放器先拉回已确认的多终端策略方向，优先修正手机端 `episodes` 入口、portrait 双击 seek 和移动端伪音量手势
 - **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
 - **依赖**：以 `docs/player-post-refactor-gap-audit.md` 和 `docs/player-device-interaction-strategy.md` 为基线；仅做 focused hardening，不开启新一轮大架构改造
@@ -320,3 +320,10 @@
    - 实际开始：2026-04-06 17:58
    - 完成时间：2026-04-06 19:09
    - 验收要点：播放器从二元 loading 状态收敛为 `initial / buffering / idle`；切源和等待态有明确区分；fatal error 不再和过渡态混淆；补对应回归测试
+
+5. PLAYER-24 — 补齐 controls / panel 语义与 focus-visible 反馈（状态：✅）
+   - 创建时间：2026-04-06 19:16
+   - 计划开始：2026-04-06 19:16
+   - 实际开始：2026-04-06 19:16
+   - 完成时间：2026-04-06 19:16
+   - 验收要点：settings / episodes 等触发器补齐 `aria-haspopup/expanded/controls`；panel 内可聚焦项与关键按钮具备清晰 `focus-visible` 反馈；补对应回归测试

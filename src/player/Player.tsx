@@ -169,6 +169,8 @@ export function YTPlayer({
   const [showRemaining, setShowRemaining] = useState(false);
 
   const sliderId = useId();
+  const settingsPanelId = useId();
+  const episodesPanelId = useId();
 
   const { isFullscreen, airPlayAvailable } = useSystemIntegrations({
     videoRef,
@@ -715,10 +717,13 @@ export function YTPlayer({
             <YtpButton
               tooltip="Episodes (E)"
               ariaLabel="Episodes"
-            onClick={toggleEpisodes}
-            className={s.ytpEpisodesButton}
-            data-ytp-component="episodes-btn"
-            ref={episodesButtonRef}
+              onClick={toggleEpisodes}
+              className={s.ytpEpisodesButton}
+              data-ytp-component="episodes-btn"
+              ref={episodesButtonRef}
+              aria-haspopup="dialog"
+              aria-expanded={isEpisodesOpen}
+              aria-controls={episodesPanelId}
           >
               <EpisodesIcon />
             </YtpButton>
@@ -834,6 +839,9 @@ export function YTPlayer({
             className={openPanel ? s.ytpSettingsButtonActive : ""}
             data-ytp-component="settings-btn"
             ref={settingsButtonRef}
+            aria-haspopup="dialog"
+            aria-expanded={!!openPanel}
+            aria-controls={settingsPanelId}
           >
             <SettingsIcon />
           </YtpButton>
@@ -1103,6 +1111,7 @@ export function YTPlayer({
       {/* ── Layer 5: episodes panel (bottom-left, desktop only) ───────────── */}
       <EpisodesPanel
         panelRef={episodesPanelRef}
+        panelId={episodesPanelId}
         episodes={episodes}
         isOpen={isEpisodesOpen}
         placement={layoutDecision.placements.episodesPanel}
@@ -1117,6 +1126,7 @@ export function YTPlayer({
       {/* ── Layer 5: settings panel ───────────────────────────────────────── */}
       <SettingsPanel
         panelRef={settingsPanelRef}
+        panelId={settingsPanelId}
         openPanel={openPanel}
         placement={layoutDecision.placements.settingsPanel}
         qualities={qualities}

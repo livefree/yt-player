@@ -705,6 +705,23 @@ describe("YTPlayer — panel toggle contracts", () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  it("links the settings trigger and panel with dialog aria attributes", async () => {
+    render(<YTPlayer src={TEST_SRC} />);
+
+    const settingsButton = screen.getByRole("button", { name: "Settings" });
+    expect(settingsButton).toHaveAttribute("aria-haspopup", "dialog");
+    expect(settingsButton).toHaveAttribute("aria-expanded", "false");
+
+    await userEvent.click(settingsButton);
+
+    const settingsDialog = screen.getByRole("dialog", { name: "Settings" });
+    expect(settingsButton).toHaveAttribute("aria-expanded", "true");
+    expect(settingsButton).toHaveAttribute(
+      "aria-controls",
+      settingsDialog.getAttribute("id"),
+    );
+  });
 });
 
 describe("YTPlayer — progress and gesture regressions", () => {
@@ -980,6 +997,23 @@ describe("YTPlayer — Episodes panel", () => {
       expect(screen.queryByRole("dialog", { name: /episodes/i })).not.toBeInTheDocument();
       expect(document.activeElement).toBe(episodesButton);
     });
+  });
+
+  it("links the episodes trigger and panel with dialog aria attributes", async () => {
+    render(<YTPlayer episodes={EPISODES_3} />);
+
+    const episodesButton = screen.getByRole("button", { name: /episodes/i });
+    expect(episodesButton).toHaveAttribute("aria-haspopup", "dialog");
+    expect(episodesButton).toHaveAttribute("aria-expanded", "false");
+
+    await userEvent.click(episodesButton);
+
+    const episodesDialog = screen.getByRole("dialog", { name: /episodes/i });
+    expect(episodesButton).toHaveAttribute("aria-expanded", "true");
+    expect(episodesButton).toHaveAttribute(
+      "aria-controls",
+      episodesDialog.getAttribute("id"),
+    );
   });
 
   it("renders all 15 episode items for a large list", async () => {

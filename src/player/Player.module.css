@@ -274,6 +274,11 @@
   background: rgba(0, 0, 0, 0.9);
 }
 
+.ytpUnmuteButton:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
 .ytpUnmuteLabel {
   white-space: nowrap;
 }
@@ -646,6 +651,12 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+.ytpMenuHeader:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .ytpMenuBack {
   opacity: 0.8;
 }
@@ -665,6 +676,12 @@
 
 .ytpMenuItem:hover {
   background: rgba(255, 255, 255, 0.08);
+}
+
+.ytpMenuItem:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .ytpMenuItemActive {
@@ -1223,6 +1240,12 @@
 
 .ytpEpisodeItem:hover {
   background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.ytpEpisodeItem:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
   color: #fff;
 }
 

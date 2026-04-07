@@ -237,3 +237,14 @@
   - `src/player/hooks/useOverlayManager.ts` 与 `src/player/components/Spinner.tsx` 已接入三态 loading；spinner 在 initial/buffering 下会给出不同的可访问性标签和提示文案
   - `src/test/Player.test.tsx` 扩展到 51 个回归测试，新增 initial -> buffering -> idle 状态流验证，并覆盖 direct source error 会从 buffering 回落到 idle + error banner
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 19:16
+
+- **任务**：PLAYER-24 — 补齐 controls / panel 语义与 focus-visible 反馈
+- **所属序列**：SEQ-20260406-09
+- **结果**：
+  - `src/player/Player.tsx` 已为 settings / episodes 触发器补齐 `aria-haspopup="dialog"`、`aria-expanded` 和 `aria-controls`，并为对应 panel 分配稳定 id
+  - `src/player/components/SettingsPanel.tsx` 与 `src/player/components/EpisodesPanel.tsx` 已接入 `panelId`，dialog 语义现在和触发器形成明确关系
+  - `src/player/Player.module.css` 已为 menu header、menu item、episode item 和 unmute button 补充 `focus-visible` 视觉反馈，键盘导航时的命中位置更清晰
+  - `src/test/Player.test.tsx` 扩展到 53 个回归测试，新增 settings / episodes trigger 与 panel 的 aria 关系覆盖
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

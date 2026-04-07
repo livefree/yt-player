@@ -8,6 +8,7 @@ type EpisodesPanelProps = {
   episodesCols: number;
   focusedEpisodeIndex: number;
   isOpen: boolean;
+  panelId: string;
   onClose: () => void;
   onEpisodeChange?: (index: number) => void;
   onFocusEpisode: (index: number) => void;
@@ -22,6 +23,7 @@ export function EpisodesPanel({
   episodesCols,
   focusedEpisodeIndex,
   isOpen,
+  panelId,
   onClose,
   onEpisodeChange,
   onFocusEpisode,
@@ -40,11 +42,13 @@ export function EpisodesPanel({
   return (
     <div
       ref={panelRef}
+      id={panelId}
       className={s.ytpEpisodesPanel}
       data-layer="5"
       data-placement={placement}
       role="dialog"
       aria-label="Episodes"
+      aria-modal="false"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
         if (event.key === "Escape") {
