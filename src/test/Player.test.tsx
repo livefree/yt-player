@@ -352,13 +352,40 @@ describe("YTPlayer — source loading and fallback", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it("still shows the generic error banner for direct video source errors", () => {
+  it("distinguishes initial loading from buffering during playback", async () => {
     const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const root = container.firstElementChild as HTMLDivElement;
     const video = container.querySelector("video") as HTMLVideoElement;
 
+    await waitFor(() => {
+      expect(root).toHaveAttribute("data-loading-state", "initial");
+    });
+    expect(screen.getByRole("status", { name: /loading video/i })).toBeInTheDocument();
+
+    fireEvent.canPlay(video);
+    expect(root).toHaveAttribute("data-loading-state", "idle");
+
+    fireEvent.waiting(video);
+    expect(root).toHaveAttribute("data-loading-state", "buffering");
+    expect(
+      screen.getByRole("status", { name: /buffering video/i }),
+    ).toBeInTheDocument();
+
+    fireEvent.playing(video);
+    expect(root).toHaveAttribute("data-loading-state", "idle");
+  });
+
+  it("still shows the generic error banner for direct video source errors", () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    const root = container.firstElementChild as HTMLDivElement;
+    const video = container.querySelector("video") as HTMLVideoElement;
+
+    fireEvent.waiting(video);
     fireEvent.error(video);
 
+    expect(root).toHaveAttribute("data-loading-state", "idle");
     expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: /buffering video/i })).not.toBeInTheDocument();
   });
 });
 

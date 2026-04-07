@@ -7,7 +7,9 @@ interface UseSourceLoaderParams {
   startTime?: number;
   autoplay: boolean;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  setLoadingState: React.Dispatch<
+    React.SetStateAction<"idle" | "initial" | "buffering">
+  >;
   setCurrentTime: React.Dispatch<React.SetStateAction<number>>;
   setDuration: React.Dispatch<React.SetStateAction<number>>;
   setBuffered: React.Dispatch<React.SetStateAction<number>>;
@@ -23,7 +25,7 @@ export function useSourceLoader({
   startTime,
   autoplay,
   setError,
-  setIsLoading,
+  setLoadingState,
   setCurrentTime,
   setDuration,
   setBuffered,
@@ -94,7 +96,7 @@ export function useSourceLoader({
     let disposed = false;
 
     setError(null);
-    setIsLoading(true);
+    setLoadingState("initial");
     setCurrentTime(startTime ?? 0);
     setDuration(0);
     setBuffered(0);
@@ -126,7 +128,7 @@ export function useSourceLoader({
           });
           hls.on(Hls.Events.ERROR, (_event, data) => {
             if (disposed || !data.fatal) return;
-            setIsLoading(false);
+            setLoadingState("idle");
             setError("视频加载失败，请检查网络或刷新重试");
           });
         })
@@ -151,7 +153,7 @@ export function useSourceLoader({
     setCurrentTime,
     setDuration,
     setError,
-    setIsLoading,
+    setLoadingState,
     setIsPlaying,
     setShowUnmute,
     src,
@@ -164,14 +166,14 @@ export function useSourceLoader({
     if (!video || !src) return;
 
     setError(null);
-    setIsLoading(true);
+    setLoadingState("initial");
     if (hlsRef.current) {
       hlsRef.current.startLoad(-1);
       return;
     }
 
     loadDirectSource(video, src);
-  }, [loadDirectSource, setError, setIsLoading, src, videoRef]);
+  }, [loadDirectSource, setError, setLoadingState, src, videoRef]);
 
   return { retrySourceLoad };
 }

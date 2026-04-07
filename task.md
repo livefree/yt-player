@@ -286,7 +286,7 @@
 
 - **状态**：✅ 已完成
 - **创建时间**：2026-04-06 17:23
-- **最后更新时间**：2026-04-06 17:49
+- **最后更新时间**：2026-04-06 19:09
 - **目标**：把现有播放器先拉回已确认的多终端策略方向，优先修正手机端 `episodes` 入口、portrait 双击 seek 和移动端伪音量手势
 - **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
 - **依赖**：以 `docs/player-post-refactor-gap-audit.md` 和 `docs/player-device-interaction-strategy.md` 为基线；仅做 focused hardening，不开启新一轮大架构改造
@@ -313,3 +313,10 @@
    - 实际开始：2026-04-06 17:40
    - 完成时间：2026-04-06 17:49
    - 验收要点：settings / episodes 打开后焦点进入面板；Escape 可稳定关闭；关闭后焦点回到触发按钮；补对应回归测试
+
+4. PLAYER-23 — 细化 loading / buffering / fatal error 状态（状态：✅）
+   - 创建时间：2026-04-06 17:58
+   - 计划开始：2026-04-06 17:58
+   - 实际开始：2026-04-06 17:58
+   - 完成时间：2026-04-06 19:09
+   - 验收要点：播放器从二元 loading 状态收敛为 `initial / buffering / idle`；切源和等待态有明确区分；fatal error 不再和过渡态混淆；补对应回归测试

@@ -311,6 +311,11 @@
   transform: translate(-50%, -50%);
   width: 60px;
   height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
 }
 
 .ytpSpinnerContainer {
@@ -352,6 +357,14 @@
 .ytpSpinnerRight .ytpSpinnerCircle {
   left: -100%;
   animation-name: ytpSpinnerRight;
+}
+
+.ytpSpinnerLabel {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 @keyframes ytpSpinnerRotate {

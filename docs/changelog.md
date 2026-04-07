@@ -226,3 +226,14 @@
   - settings 菜单项与面板头部返回项已补齐 `Space` 键激活，episodes 项在聚焦时会同步当前焦点态，形成更完整的键盘交互路径
   - `src/test/Player.test.tsx` 扩展到 50 个回归测试，新增 settings / episodes 的焦点进入、`Escape` 关闭和焦点回落覆盖
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 19:09
+
+- **任务**：PLAYER-23 — 细化 loading / buffering / fatal error 状态
+- **所属序列**：SEQ-20260406-09
+- **结果**：
+  - `src/player/Player.tsx` 已将播放器 loading 表达从单一布尔值收敛为 `initial / buffering / idle` 三态，并通过 `data-loading-state` 暴露给视图和测试
+  - `src/player/hooks/useSourceLoader.ts` 在切源、重试和 HLS fatal error 路径上同步更新 loading state，避免把 fatal error 和过渡态混在一起
+  - `src/player/hooks/useOverlayManager.ts` 与 `src/player/components/Spinner.tsx` 已接入三态 loading；spinner 在 initial/buffering 下会给出不同的可访问性标签和提示文案
+  - `src/test/Player.test.tsx` 扩展到 51 个回归测试，新增 initial -> buffering -> idle 状态流验证，并覆盖 direct source error 会从 buffering 回落到 idle + error banner
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

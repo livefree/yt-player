@@ -76,6 +76,8 @@ import {
   EpisodesIcon,
 } from "./components/icons";
 
+type LoadingState = "idle" | "initial" | "buffering";
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function YTPlayer({
@@ -120,7 +122,7 @@ export function YTPlayer({
   const [currentTime, setCurrentTime] = useState(startTime ?? 0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingState, setLoadingState] = useState<LoadingState>("idle");
   const [error, setError] = useState<string | null>(null);
 
   // ── Volume ─────────────────────────────────────────────────────────────────
@@ -256,7 +258,7 @@ export function YTPlayer({
     startTime,
     autoplay,
     setError,
-    setIsLoading,
+    setLoadingState,
     setCurrentTime,
     setDuration,
     setBuffered,
@@ -542,7 +544,7 @@ export function YTPlayer({
   }
 
   const gestureBlockingOverlayVisible = buildOverlayEntries({
-    isLoading,
+    loadingState,
     error,
     showBezel: bezelVisible,
     seekVisible: seekDir !== null,
@@ -577,7 +579,7 @@ export function YTPlayer({
     topOverlay,
     isVisible: isOverlayVisible,
   } = useOverlayManager({
-    isLoading,
+    loadingState,
     error,
     showBezel: bezelVisible,
     seekVisible: seekDir !== null,
@@ -918,6 +920,7 @@ export function YTPlayer({
       className={playerClass}
       data-layout-mode={layoutDecision.mode}
       data-layout-panels={layoutDecision.compactPanels ? "compact" : "default"}
+      data-loading-state={loadingState}
       data-overlay-top={topOverlay ?? undefined}
       data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
       data-input-zones={inputRouter.zones.join(",")}
@@ -933,12 +936,22 @@ export function YTPlayer({
           className={s.html5MainVideo}
           playsInline
           poster={poster}
-          onPlay={() => setIsPlaying(true)}
+          onPlay={() => {
+            setIsPlaying(true);
+            setLoadingState("idle");
+          }}
+          onPlaying={() => {
+            setIsPlaying(true);
+            setLoadingState("idle");
+          }}
           onPause={() => setIsPlaying(false)}
+          onLoadStart={() => {
+            setLoadingState("initial");
+            setError(null);
+          }}
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
             setDuration(v.duration);
-            setIsLoading(false);
             if (startTime) v.currentTime = startTime;
           }}
           onTimeUpdate={(e) => {
@@ -950,12 +963,16 @@ export function YTPlayer({
             const b = e.currentTarget.buffered;
             if (b.length > 0) setBuffered(b.end(b.length - 1));
           }}
-          onWaiting={() => setIsLoading(true)}
-          onCanPlay={() => setIsLoading(false)}
+          onWaiting={() =>
+            setLoadingState((value) =>
+              value === "initial" ? value : "buffering",
+            )
+          }
+          onCanPlay={() => setLoadingState("idle")}
           onError={() => {
             if (isManagedHlsSource) return;
             setError("Video failed to load. Please try again.");
-            setIsLoading(false);
+            setLoadingState("idle");
           }}
           onEnded={() => {
             setIsPlaying(false);
@@ -1018,7 +1035,7 @@ export function YTPlayer({
       )}
 
       {/* ── Layer 4: spinner ──────────────────────────────────────────────── */}
-      <Spinner visible={isOverlayVisible("spinner")} />
+      <Spinner visible={isOverlayVisible("spinner")} state={loadingState} />
 
       {/* ── Layer 4: seek overlay animation ──────────────────────────────── */}
       <SeekOverlay

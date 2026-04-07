@@ -22,7 +22,7 @@ export type OverlayEntry = {
 type UseOverlayManagerParams = {
   error: string | null;
   isEpisodesOpen: boolean;
-  isLoading: boolean;
+  loadingState: "idle" | "initial" | "buffering";
   openPanel: boolean;
   seekVisible: boolean;
   showCaptions: boolean;
@@ -46,7 +46,7 @@ const OVERLAY_PRIORITY: Record<OverlayKind, number> = {
 export function buildOverlayEntries({
   error,
   isEpisodesOpen,
-  isLoading,
+  loadingState,
   openPanel,
   seekVisible,
   showCaptions,
@@ -57,7 +57,7 @@ export function buildOverlayEntries({
   return [
     {
       kind: "spinner",
-      visible: isLoading,
+      visible: loadingState !== "idle",
       interactive: false,
       priority: OVERLAY_PRIORITY.spinner,
       blocksGestures: false,
