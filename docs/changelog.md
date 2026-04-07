@@ -205,3 +205,13 @@
   - `useGestureControls` 已新增移动端伪音量手势禁用逻辑，不再在 coarse pointer 模式下把右侧纵向滑动解释为音量控制
   - `src/test/Player.test.tsx` 扩展到 48 个回归测试，新增手机端 `episodes` 入口、portrait 三分区输入、portrait 右侧双击 seek 与移动端禁用伪音量手势验证
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 17:35
+
+- **任务**：PLAYER-21 — 收口移动端 safe-area 与 panel/chrome 兼容
+- **所属序列**：SEQ-20260406-09
+- **结果**：
+  - `Player.module.css` 已为 player root 增加统一的 `--ytp-safe-*` 变量，并将 top/bottom chrome 的 padding 与左右边距接入安全区避让
+  - settings / episodes 面板已接入 top-right 安全区偏移，并增加基于可用高度的 `max-height` 约束，减少异形屏和 fullscreen 下贴边或过高的问题
+  - fullscreen 下 panel 高度限制已统一收口，不再只对 bottom chrome 单独补 `safe-area-inset-bottom`
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

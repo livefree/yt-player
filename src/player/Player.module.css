@@ -83,6 +83,10 @@
   --ytp-tooltip-bg:           #1c1c1c; /* solid color; opacity controlled separately */
   --ytp-tooltip-bg-opacity:   0.75;    /* background-only opacity (0–1) */
   --ytp-tooltip-color:        #ffffff;
+  --ytp-safe-top:             env(safe-area-inset-top, 0px);
+  --ytp-safe-right:           env(safe-area-inset-right, 0px);
+  --ytp-safe-bottom:          env(safe-area-inset-bottom, 0px);
+  --ytp-safe-left:            env(safe-area-inset-left, 0px);
   /* bottom of tooltip bubble aligned with panel bottom (panels: bottom 54px;
      button sits ~8px above player bottom → 54 − 8 = 46px from button bottom) */
   --ytp-tooltip-bottom:       46px;
@@ -184,7 +188,11 @@
   top: 0;
   left: 0;
   right: 0;
-  padding: 12px 12px 8px;
+  padding:
+    calc(12px + var(--ytp-safe-top))
+    calc(12px + var(--ytp-safe-right))
+    8px
+    calc(12px + var(--ytp-safe-left));
   opacity: 0;
   transition: opacity 0.25s ease;
   pointer-events: none;
@@ -568,20 +576,21 @@
 }
 
 .ytpSettingsMenu {
-  bottom: 54px;
-  right: 12px;
+  bottom: calc(54px + var(--ytp-safe-bottom));
+  right: calc(12px + var(--ytp-safe-right));
   background: rgba(28, 28, 28, 0.95);
   border-radius: 2px;
   min-width: 220px;
   max-width: 300px;
+  max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   animation: ytpPanelIn 0.12s ease;
 }
 
 .ytpSettingsMenu[data-placement="top-right"] {
-  top: 52px;
-  right: 12px;
+  top: calc(52px + var(--ytp-safe-top));
+  right: calc(12px + var(--ytp-safe-right));
   bottom: auto;
 }
 
@@ -697,8 +706,9 @@
 .ytpChromeBottom {
   position: absolute;
   bottom: 0;
-  left: 12px;
-  right: 12px;
+  left: calc(12px + var(--ytp-safe-left));
+  right: calc(12px + var(--ytp-safe-right));
+  padding-bottom: calc(6px + var(--ytp-safe-bottom));
   opacity: 0;
   transition: opacity 0.25s ease;
   /* Pointer events only when visible */
@@ -1158,20 +1168,20 @@
 
 .ytpEpisodesPanel {
   position: absolute;
-  bottom: 54px;
-  left: 0;
+  bottom: calc(54px + var(--ytp-safe-bottom));
+  left: var(--ytp-safe-left);
   background: rgba(28, 28, 28, 0.95);
   border-radius: 4px;
   padding: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-  max-height: 260px;
+  max-height: min(260px, calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom)));
   overflow-y: auto;
   animation: ytpPanelIn 0.12s ease; /* reuse existing panel-in animation */
 }
 
 .ytpEpisodesPanel[data-placement="top-right"] {
-  top: 52px;
-  right: 12px;
+  top: calc(52px + var(--ytp-safe-top));
+  right: calc(12px + var(--ytp-safe-right));
   bottom: auto;
   left: auto;
 }
@@ -1478,11 +1488,11 @@
   }
 }
 
-/* ─── Fullscreen – safe area insets (iPhone Home Bar) ───────────────────────── */
+/* ─── Fullscreen / mobile panel fit ─────────────────────────────────────────── */
 
-.ytpFullscreen .ytpChromeBottom {
-  /* Push controls above the Home Bar on notched iPhones */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+.ytpFullscreen .ytpSettingsMenu,
+.ytpFullscreen .ytpEpisodesPanel {
+  max-height: calc(100% - 88px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
 }
 
 /* ─── Responsive – small player ─────────────────────────────────────────────── */
