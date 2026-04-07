@@ -1,7 +1,11 @@
 import { useCallback, useEffect } from "react";
 import type { KeyboardEvent, PointerEvent, ReactNode, RefObject } from "react";
 import s from "../Player.module.css";
-import type { PanelPlacement, ViewportBand } from "../hooks/useLayoutDecision";
+import type {
+  PanelPlacement,
+  PanelSizingMode,
+  ViewportBand,
+} from "../hooks/useLayoutDecision";
 import type { Panel, QualityLevel, SubtitleTrack } from "../types";
 import { MenuBackIcon, MenuCheckIcon, MenuChevronIcon } from "./icons";
 
@@ -15,6 +19,7 @@ type SettingsPanelProps = {
   onSubtitleChange: (subtitleId: string | null) => void;
   openPanel: Panel;
   panelRef: RefObject<HTMLDivElement>;
+  panelSizingMode: PanelSizingMode;
   placement: PanelPlacement;
   viewportBand: ViewportBand;
   qualities: QualityLevel[];
@@ -95,6 +100,7 @@ export function SettingsPanel({
   onSubtitleChange,
   openPanel,
   panelRef,
+  panelSizingMode,
   placement,
   viewportBand,
   qualities,
@@ -138,6 +144,7 @@ export function SettingsPanel({
       id={panelId}
       className={`${s.ytpSettingsMenu} ${s.ytpPanelSurface} ${s.ytpPopup}`}
       data-layer="5"
+      data-panel-sizing={panelSizingMode}
       data-placement={placement}
       data-viewport-band={viewportBand}
       role="dialog"

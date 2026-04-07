@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import type { CSSProperties, KeyboardEvent, PointerEvent, RefObject } from "react";
 import s from "../Player.module.css";
-import type { PanelPlacement, ViewportBand } from "../hooks/useLayoutDecision";
+import type {
+  PanelPlacement,
+  PanelSizingMode,
+  ViewportBand,
+} from "../hooks/useLayoutDecision";
 
 type EpisodesPanelProps = {
   activeEpisodeIndex: number;
@@ -14,6 +18,7 @@ type EpisodesPanelProps = {
   onEpisodeChange?: (index: number) => void;
   onFocusEpisode: (index: number) => void;
   panelRef: RefObject<HTMLDivElement>;
+  panelSizingMode: PanelSizingMode;
   placement: PanelPlacement;
   viewportBand: ViewportBand;
   episodes?: Array<{ title?: string }>;
@@ -31,6 +36,7 @@ export function EpisodesPanel({
   onEpisodeChange,
   onFocusEpisode,
   panelRef,
+  panelSizingMode,
   placement,
   viewportBand,
 }: EpisodesPanelProps) {
@@ -61,6 +67,7 @@ export function EpisodesPanel({
       id={panelId}
       className={`${s.ytpEpisodesPanel} ${s.ytpPanelSurface}`}
       data-layer="5"
+      data-panel-sizing={panelSizingMode}
       data-placement={placement}
       data-viewport-band={viewportBand}
       role="dialog"

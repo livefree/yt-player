@@ -1585,6 +1585,7 @@ describe("YTPlayer — speed control contracts", () => {
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
     expect(speedDialog).toHaveAttribute("data-viewport-band", "phone-portrait");
+    expect(speedDialog).toHaveAttribute("data-panel-sizing", "compact");
     expect(speedDialog.querySelector(".ytpPanelScroller")).toBeInTheDocument();
     expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
   });
@@ -1616,6 +1617,7 @@ describe("YTPlayer — speed control contracts", () => {
     await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
+    expect(speedDialog).toHaveAttribute("data-panel-sizing", "stable");
     expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toHaveTextContent("1.00x");
   });
 });
@@ -1625,20 +1627,18 @@ describe("YTPlayer — panel surface contracts", () => {
     render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass(
-      "ytpPanelSurface",
+    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass("ytpPanelSurface");
+    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveAttribute(
+      "data-panel-sizing",
+      "stable",
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Settings" }));
     await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
-    expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveClass(
-      "ytpPanelSurface",
-    );
+    expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveClass("ytpPanelSurface");
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
-    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveClass(
-      "ytpPanelSurface",
-    );
+    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveClass("ytpPanelSurface");
   });
 
   it("applies the shared small-window popup contract to the settings panel on phone-portrait", async () => {

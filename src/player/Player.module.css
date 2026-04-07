@@ -725,28 +725,20 @@
   scrollbar-width: thin;
 }
 
-.ytpSettingsMenu[data-viewport-band="compact"],
-.ytpSettingsMenu[data-viewport-band="narrow"],
-.ytpSettingsMenu[data-viewport-band="phone-portrait"],
-.ytpEpisodesPanel[data-viewport-band="compact"],
-.ytpEpisodesPanel[data-viewport-band="narrow"],
-.ytpEpisodesPanel[data-viewport-band="phone-portrait"] {
+.ytpSettingsMenu[data-panel-sizing="compact"],
+.ytpSpeedPanel[data-panel-sizing="compact"],
+.ytpEpisodesPanel[data-panel-sizing="compact"] {
   bottom: calc(84px + var(--ytp-safe-bottom));
   max-height: calc(100% - 112px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
 }
 
-.ytpSettingsMenu[data-placement="top-right"][data-viewport-band="compact"],
-.ytpSettingsMenu[data-placement="top-right"][data-viewport-band="narrow"],
-.ytpSettingsMenu[data-placement="top-right"][data-viewport-band="phone-portrait"],
-.ytpEpisodesPanel[data-placement="top-right"][data-viewport-band="compact"],
-.ytpEpisodesPanel[data-placement="top-right"][data-viewport-band="narrow"],
-.ytpEpisodesPanel[data-placement="top-right"][data-viewport-band="phone-portrait"] {
+.ytpSettingsMenu[data-placement="top-right"][data-panel-sizing="compact"],
+.ytpSpeedPanel[data-placement="top-right"][data-panel-sizing="compact"],
+.ytpEpisodesPanel[data-placement="top-right"][data-panel-sizing="compact"] {
   top: calc(48px + var(--ytp-safe-top));
 }
 
-.ytpSettingsMenu[data-viewport-band="compact"],
-.ytpSettingsMenu[data-viewport-band="narrow"],
-.ytpSettingsMenu[data-viewport-band="phone-portrait"] {
+.ytpSettingsMenu[data-panel-sizing="compact"] {
   width: min(
     calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right)),
     296px

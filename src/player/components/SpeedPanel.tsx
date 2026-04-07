@@ -1,7 +1,11 @@
 import { useCallback, useEffect } from "react";
 import type { KeyboardEvent, PointerEvent, RefObject } from "react";
 import s from "../Player.module.css";
-import type { PanelPlacement, ViewportBand } from "../hooks/useLayoutDecision";
+import type {
+  PanelPlacement,
+  PanelSizingMode,
+  ViewportBand,
+} from "../hooks/useLayoutDecision";
 import {
   SPEED_MAX,
   SPEED_MIN,
@@ -16,7 +20,9 @@ type SpeedPanelProps = {
   panelId: string;
   panelRef: RefObject<HTMLDivElement>;
   placement: PanelPlacement;
+  panelSizingMode: PanelSizingMode;
   playbackRate: number;
+  showHeader: boolean;
   viewportBand: ViewportBand;
   onPlaybackRateChange: (rate: number) => void;
   onRequestClose: () => void;
@@ -26,14 +32,13 @@ export function SpeedPanel({
   panelId,
   panelRef,
   placement,
+  panelSizingMode,
   playbackRate,
+  showHeader,
   viewportBand,
   onPlaybackRateChange,
   onRequestClose,
 }: SpeedPanelProps) {
-  const isCompactViewport = ["compact", "narrow", "phone-portrait"].includes(
-    viewportBand,
-  );
   const speedPct = ((playbackRate - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) * 100;
   const nudgePlaybackRate = useCallback(
     (delta: number) => {
@@ -71,6 +76,7 @@ export function SpeedPanel({
       className={`${s.ytpSpeedPanel} ${s.ytpPanelSurface} ${s.ytpPopup}`}
       data-layer="5"
       data-placement={placement}
+      data-panel-sizing={panelSizingMode}
       data-viewport-band={viewportBand}
       role="dialog"
       aria-label="Playback speed"
@@ -117,14 +123,14 @@ export function SpeedPanel({
       />
       <div className={s.ytpPanelScroller}>
         <div className={s.ytpPanelMenu}>
-          {!isCompactViewport ? (
+          {showHeader ? (
             <div className={s.ytpSpeedPanelHeader}>
               <span className={s.ytpSpeedPanelValue}>{formatRateBadge(playbackRate)}</span>
             </div>
           ) : null}
           <div
             className={s.ytpSpeedPanelBody}
-            data-density={isCompactViewport ? "compact" : "default"}
+            data-density={panelSizingMode}
           >
             <div className={s.ytpSpeedSliderRow}>
               <YtpButton

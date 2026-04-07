@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState, type RefObject } from "react";
 import {
   CHROME_HIDE_DELAY,
+  EPISODES_COLS_COMPACT,
+  EPISODES_COLS_LARGE,
+  EPISODES_COLS_MEDIUM,
+  EPISODES_COLS_NARROW,
+  EPISODES_COLS_SMALL,
+  EPISODES_COLS_THRESHOLD,
+  EPISODES_PANEL_HEIGHT_COMPACT,
+  EPISODES_PANEL_HEIGHT_DEFAULT,
+  EPISODES_PANEL_HEIGHT_NARROW,
   IMMERSIVE_HIDE_DELAY,
   TOUCH_CHROME_HIDE_DELAY,
 } from "../utils/format";
@@ -61,8 +70,10 @@ export interface ChromeVisibilityPolicy {
   id: ChromePolicy;
   pausedBehavior: "autohide" | "persistent";
 }
+export type PanelSizingMode = "compact" | "stable";
 
 type UseLayoutDecisionParams = {
+  episodesCount: number;
   hasEpisodes: boolean;
   hasNext: boolean;
   isFullscreen: boolean;
@@ -88,6 +99,17 @@ export type LayoutDecision = {
     episodesPanel: PanelPlacement;
     speedPanel: PanelPlacement;
     settingsPanel: PanelPlacement;
+  };
+  panels: {
+    episodes: {
+      cols: number;
+      maxHeight: string;
+    };
+    sizingMode: PanelSizingMode;
+    speed: {
+      showButtonIcon: boolean;
+      showHeader: boolean;
+    };
   };
   slots: Record<ControlSlot, ControlId[]>;
 };
@@ -214,6 +236,7 @@ function applyDesktopCollapsePolicy({
 }
 
 export function useLayoutDecision({
+  episodesCount,
   hasEpisodes,
   hasNext,
   isFullscreen,
@@ -288,6 +311,7 @@ export function useLayoutDecision({
       isCoarsePointer && viewport.width > 0 && viewport.width <= viewport.height
         ? "phone-portrait"
         : widthBand;
+    const compactPanelBands: ViewportBand[] = ["compact", "narrow", "phone-portrait"];
     let density: LayoutDecision["density"] = "comfortable";
     let profile: LayoutProfile = "default";
     let interactionPolicy: InteractionPolicy = "desktop-pointer";
@@ -382,6 +406,29 @@ export function useLayoutDecision({
         chromePolicy === "touch-persistent-paused" ? "persistent" : "autohide",
       hideCursorOnAutohide: isImmersive,
     };
+    const panelSizingMode: PanelSizingMode = compactPanelBands.includes(viewportBand)
+      ? "compact"
+      : "stable";
+    const speedPolicy = {
+      showButtonIcon: !compactPanelBands.includes(viewportBand),
+      showHeader: !compactPanelBands.includes(viewportBand),
+    };
+    const episodesCols =
+      viewportBand === "phone-portrait" || viewportBand === "narrow"
+        ? EPISODES_COLS_NARROW
+        : viewportBand === "compact"
+          ? EPISODES_COLS_COMPACT
+          : viewportBand === "medium"
+            ? EPISODES_COLS_MEDIUM
+            : episodesCount > EPISODES_COLS_THRESHOLD
+              ? EPISODES_COLS_LARGE
+              : EPISODES_COLS_SMALL;
+    const episodesMaxHeight =
+      viewportBand === "phone-portrait" || viewportBand === "narrow"
+        ? EPISODES_PANEL_HEIGHT_NARROW
+        : viewportBand === "compact"
+          ? EPISODES_PANEL_HEIGHT_COMPACT
+          : EPISODES_PANEL_HEIGHT_DEFAULT;
 
     return {
       mode,
@@ -410,10 +457,19 @@ export function useLayoutDecision({
           ? "top-right"
           : "bottom-right",
       },
+      panels: {
+        sizingMode: panelSizingMode,
+        speed: speedPolicy,
+        episodes: {
+          cols: episodesCols,
+          maxHeight: episodesMaxHeight,
+        },
+      },
       compactPanels: density !== "comfortable" || mode !== "desktop-default",
     } satisfies LayoutDecision;
   }, [
     hasEpisodes,
+    episodesCount,
     hasNext,
     isCoarsePointer,
     isFullscreen,

@@ -34,15 +34,6 @@ import {
   formatRateBadge,
   SEEK_STEP,
   SEEK_OVERLAY_DURATION,
-  EPISODES_COLS_COMPACT,
-  EPISODES_COLS_MEDIUM,
-  EPISODES_COLS_NARROW,
-  EPISODES_COLS_SMALL,
-  EPISODES_COLS_LARGE,
-  EPISODES_PANEL_HEIGHT_COMPACT,
-  EPISODES_PANEL_HEIGHT_DEFAULT,
-  EPISODES_PANEL_HEIGHT_NARROW,
-  EPISODES_COLS_THRESHOLD,
 } from "./utils/format";
 import { useThumbnails } from "./hooks/useThumbnails";
 import { useSourceLoader } from "./hooks/useSourceLoader";
@@ -205,27 +196,10 @@ export function YTPlayer({
     playerRef,
     isFullscreen,
     isTheater,
+    episodesCount: episodes?.length ?? 0,
     hasEpisodes,
     hasNext,
   });
-  const episodesCols =
-    layoutDecision.viewportBand === "phone-portrait" ||
-    layoutDecision.viewportBand === "narrow"
-      ? EPISODES_COLS_NARROW
-      : layoutDecision.viewportBand === "compact"
-        ? EPISODES_COLS_COMPACT
-        : layoutDecision.viewportBand === "medium"
-          ? EPISODES_COLS_MEDIUM
-          : (episodes?.length ?? 0) > EPISODES_COLS_THRESHOLD
-            ? EPISODES_COLS_LARGE
-            : EPISODES_COLS_SMALL;
-  const episodesPanelMaxHeight =
-    layoutDecision.viewportBand === "phone-portrait" ||
-    layoutDecision.viewportBand === "narrow"
-      ? EPISODES_PANEL_HEIGHT_NARROW
-      : layoutDecision.viewportBand === "compact"
-        ? EPISODES_PANEL_HEIGHT_COMPACT
-        : EPISODES_PANEL_HEIGHT_DEFAULT;
 
   const { chromeVisible, cursorHidden, revealChrome } = useChromeVisibility({
     chromeVisibilityPolicy: layoutDecision.chromeVisibilityPolicy,
@@ -646,7 +620,7 @@ export function YTPlayer({
     isEpisodesOpen,
     focusedEpisodeIndex,
     episodes,
-    episodesCols,
+    episodesCols: layoutDecision.panels.episodes.cols,
     activeEpisodeIndex,
     hasEpisodes,
     onEpisodeChange,
@@ -917,9 +891,7 @@ export function YTPlayer({
         );
       case "speed":
         {
-          const showSpeedIcon = !["compact", "narrow", "phone-portrait"].includes(
-            layoutDecision.viewportBand,
-          );
+          const showSpeedIcon = layoutDecision.panels.speed.showButtonIcon;
           return (
             <YtpButton
               key="speed"
@@ -1268,8 +1240,9 @@ export function YTPlayer({
         isOpen={isEpisodesOpen}
         placement={layoutDecision.placements.episodesPanel}
         viewportBand={layoutDecision.viewportBand}
-        episodesCols={episodesCols}
-        maxHeight={episodesPanelMaxHeight}
+        panelSizingMode={layoutDecision.panels.sizingMode}
+        episodesCols={layoutDecision.panels.episodes.cols}
+        maxHeight={layoutDecision.panels.episodes.maxHeight}
         activeEpisodeIndex={activeEpisodeIndex}
         focusedEpisodeIndex={focusedEpisodeIndex}
         onEpisodeChange={handleEpisodeChange}
@@ -1284,6 +1257,7 @@ export function YTPlayer({
         openPanel={openPanel}
         placement={layoutDecision.placements.settingsPanel}
         viewportBand={layoutDecision.viewportBand}
+        panelSizingMode={layoutDecision.panels.sizingMode}
         qualities={qualities}
         activeQualityId={activeQualityId}
         onQualityChange={onQualityChange}
@@ -1301,6 +1275,8 @@ export function YTPlayer({
           placement={layoutDecision.placements.speedPanel}
           playbackRate={playbackRate}
           viewportBand={layoutDecision.viewportBand}
+          panelSizingMode={layoutDecision.panels.sizingMode}
+          showHeader={layoutDecision.panels.speed.showHeader}
           onPlaybackRateChange={setPlaybackRate}
           onRequestClose={() => setOpenPanel(null)}
         />
