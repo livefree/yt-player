@@ -722,6 +722,42 @@ describe("YTPlayer — panel toggle contracts", () => {
       settingsDialog.getAttribute("id"),
     );
   });
+
+  it("supports arrow and tab traversal inside the settings panel", async () => {
+    render(
+      <YTPlayer
+        src={TEST_SRC}
+        qualities={[
+          { id: "auto", label: "Auto", src: `${TEST_SRC}?quality=auto` },
+          { id: "1080p", label: "1080p", src: `${TEST_SRC}?quality=1080` },
+        ]}
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
+
+    const settingsDialog = screen.getByRole("dialog", { name: "Settings" });
+
+    await waitFor(() => {
+      expect(document.activeElement).toHaveTextContent("Quality");
+    });
+
+    fireEvent.keyDown(settingsDialog, { key: "ArrowDown" });
+    await waitFor(() => {
+      expect(document.activeElement).toHaveTextContent("Subtitles/CC");
+    });
+
+    fireEvent.keyDown(settingsDialog, { key: "End" });
+    await waitFor(() => {
+      expect(document.activeElement).toHaveTextContent("Playback speed");
+    });
+
+    fireEvent.keyDown(settingsDialog, { key: "Tab" });
+    await waitFor(() => {
+      expect(document.activeElement).toHaveTextContent("Quality");
+    });
+  });
 });
 
 describe("YTPlayer — progress and gesture regressions", () => {

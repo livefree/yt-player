@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import type { KeyboardEvent, PointerEvent, ReactNode, RefObject } from "react";
 import s from "../Player.module.css";
 import type { PanelPlacement } from "../hooks/useLayoutDecision";
@@ -109,13 +109,29 @@ export function SettingsPanel({
     ? (subtitles.find((subtitle) => subtitle.id === activeSubId)?.label ?? "Off")
     : "Off";
 
+  const getFocusableItems = useCallback(
+    () =>
+      Array.from(
+        panelRef.current?.querySelectorAll<HTMLElement>(
+          '[role="menuitem"], [role="menuitemradio"]',
+        ) ?? [],
+      ),
+    [panelRef],
+  );
+
+  const focusItemAt = useCallback(
+    (index: number) => {
+      const items = getFocusableItems();
+      if (!items.length) return;
+      items[(index + items.length) % items.length]?.focus();
+    },
+    [getFocusableItems],
+  );
+
   useEffect(() => {
     if (!openPanel) return;
-    const firstFocusable = panelRef.current?.querySelector<HTMLElement>(
-      '[role="menuitem"], [role="menuitemradio"]',
-    );
-    firstFocusable?.focus();
-  }, [openPanel, panelRef]);
+    focusItemAt(0);
+  }, [focusItemAt, openPanel]);
 
   if (!openPanel) return null;
 
@@ -131,13 +147,58 @@ export function SettingsPanel({
       aria-modal="false"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
       onKeyDown={(event) => {
+        const items = getFocusableItems();
+        const currentIndex = items.findIndex((item) => item === document.activeElement);
+
         if (event.key === "Escape") {
           event.preventDefault();
+          event.stopPropagation();
           onRequestClose();
+          return;
+        }
+
+        if (!items.length) return;
+
+        if (event.key === "Tab") {
+          event.preventDefault();
+          event.stopPropagation();
+          focusItemAt(currentIndex + (event.shiftKey ? -1 : 1));
+          return;
+        }
+
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          event.stopPropagation();
+          focusItemAt(currentIndex + 1);
+          return;
+        }
+
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          event.stopPropagation();
+          focusItemAt(currentIndex - 1);
+          return;
+        }
+
+        if (event.key === "Home") {
+          event.preventDefault();
+          event.stopPropagation();
+          focusItemAt(0);
+          return;
+        }
+
+        if (event.key === "End") {
+          event.preventDefault();
+          event.stopPropagation();
+          focusItemAt(items.length - 1);
         }
       }}
     >
-      <div className={s.ytpFocusTrap} tabIndex={0} />
+      <div
+        className={s.ytpFocusTrap}
+        tabIndex={0}
+        onFocus={() => focusItemAt(-1)}
+      />
       <div className={s.ytpPanelMenu} role="menu">
         {openPanel === "settings" && (
           <>
@@ -252,7 +313,11 @@ export function SettingsPanel({
           </>
         )}
       </div>
-      <div className={s.ytpFocusTrap} tabIndex={0} />
+      <div
+        className={s.ytpFocusTrap}
+        tabIndex={0}
+        onFocus={() => focusItemAt(0)}
+      />
     </div>
   );
 }

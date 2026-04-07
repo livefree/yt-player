@@ -248,3 +248,13 @@
   - `src/player/Player.module.css` 已为 menu header、menu item、episode item 和 unmute button 补充 `focus-visible` 视觉反馈，键盘导航时的命中位置更清晰
   - `src/test/Player.test.tsx` 扩展到 53 个回归测试，新增 settings / episodes trigger 与 panel 的 aria 关系覆盖
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 19:32
+
+- **任务**：PLAYER-25 — 补全 panel 内 keyboard traversal 与 roving focus
+- **所属序列**：SEQ-20260406-09
+- **结果**：
+  - `src/player/components/SettingsPanel.tsx` 已为 panel 内 menu items 建立本地 keyboard traversal：支持 `ArrowUp/ArrowDown/Home/End/Tab`，并通过 focus trap 保持面板内循环
+  - `src/player/components/EpisodesPanel.tsx` 已补充本地 `Tab` 循环和 button 级 `Home/End/Enter/Space` 处理，为 episodes 面板提供更完整的键盘入口
+  - `src/test/Player.test.tsx` 现在包含 settings panel traversal 回归，整体测试数为 54
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

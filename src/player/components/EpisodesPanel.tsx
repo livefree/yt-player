@@ -30,6 +30,18 @@ export function EpisodesPanel({
   panelRef,
   placement,
 }: EpisodesPanelProps) {
+  const totalEpisodes = episodes?.length ?? 0;
+
+  const focusEpisodeAt = (index: number) => {
+    if (!totalEpisodes) return;
+    const safeIndex = Math.max(0, Math.min(index, totalEpisodes - 1));
+    onFocusEpisode(safeIndex);
+    const items = Array.from(
+      panelRef.current?.querySelectorAll<HTMLElement>('[role="option"]') ?? [],
+    );
+    items[safeIndex]?.focus();
+  };
+
   useEffect(() => {
     if (!isOpen || !episodes?.length) return;
     panelRef.current
@@ -51,8 +63,42 @@ export function EpisodesPanel({
       aria-modal="false"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+        if (!totalEpisodes) return;
+
         if (event.key === "Escape") {
           event.preventDefault();
+          event.stopPropagation();
+          onClose();
+          return;
+        }
+
+        if (event.key === "Tab") {
+          event.preventDefault();
+          event.stopPropagation();
+          focusEpisodeAt(
+            focusedEpisodeIndex + (event.shiftKey ? -1 : 1),
+          );
+          return;
+        }
+
+        if (event.key === "Home") {
+          event.preventDefault();
+          event.stopPropagation();
+          focusEpisodeAt(0);
+          return;
+        }
+
+        if (event.key === "End") {
+          event.preventDefault();
+          event.stopPropagation();
+          focusEpisodeAt(totalEpisodes - 1);
+          return;
+        }
+
+        if (event.key === " " || event.key === "Enter") {
+          event.preventDefault();
+          event.stopPropagation();
+          onEpisodeChange?.(focusedEpisodeIndex);
           onClose();
         }
       }}
@@ -72,6 +118,35 @@ export function EpisodesPanel({
             onClick={() => {
               onEpisodeChange?.(index);
               onClose();
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Home") {
+                event.preventDefault();
+                event.stopPropagation();
+                focusEpisodeAt(0);
+                return;
+              }
+
+              if (event.key === "End") {
+                event.preventDefault();
+                event.stopPropagation();
+                focusEpisodeAt(totalEpisodes - 1);
+                return;
+              }
+
+              if (event.key === "Tab") {
+                event.preventDefault();
+                event.stopPropagation();
+                focusEpisodeAt(index + (event.shiftKey ? -1 : 1));
+                return;
+              }
+
+              if (event.key === " " || event.key === "Enter") {
+                event.preventDefault();
+                event.stopPropagation();
+                onEpisodeChange?.(index);
+                onClose();
+              }
             }}
             onMouseEnter={() => onFocusEpisode(index)}
             onFocus={() => onFocusEpisode(index)}

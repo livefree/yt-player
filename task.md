@@ -286,7 +286,7 @@
 
 - **状态**：✅ 已完成
 - **创建时间**：2026-04-06 17:23
-- **最后更新时间**：2026-04-06 19:16
+- **最后更新时间**：2026-04-06 19:32
 - **目标**：把现有播放器先拉回已确认的多终端策略方向，优先修正手机端 `episodes` 入口、portrait 双击 seek 和移动端伪音量手势
 - **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
 - **依赖**：以 `docs/player-post-refactor-gap-audit.md` 和 `docs/player-device-interaction-strategy.md` 为基线；仅做 focused hardening，不开启新一轮大架构改造
@@ -327,3 +327,10 @@
    - 实际开始：2026-04-06 19:16
    - 完成时间：2026-04-06 19:16
    - 验收要点：settings / episodes 等触发器补齐 `aria-haspopup/expanded/controls`；panel 内可聚焦项与关键按钮具备清晰 `focus-visible` 反馈；补对应回归测试
+
+6. PLAYER-25 — 补全 panel 内 keyboard traversal 与 roving focus（状态：✅）
+   - 创建时间：2026-04-06 19:24
+   - 计划开始：2026-04-06 19:24
+   - 实际开始：2026-04-06 19:24
+   - 完成时间：2026-04-06 19:32
+   - 验收要点：settings 菜单支持 Arrow/Home/End/Tab 导航；episodes 面板支持 Home/End/Tab 和本地选择；panel 内键盘流转不再依赖全局 shortcut 兜底
