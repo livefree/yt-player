@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CHROME_HIDE_DELAY, IMMERSIVE_HIDE_DELAY } from "../utils/format";
+import {
+  CHROME_HIDE_DELAY,
+  IMMERSIVE_HIDE_DELAY,
+  TOUCH_CHROME_HIDE_DELAY,
+} from "../utils/format";
 import type { ChromePolicy } from "./useLayoutDecision";
 
 interface UseChromeVisibilityParams {
@@ -22,6 +26,12 @@ export function useChromeVisibility({
   const [chromeVisible, setChromeVisible] = useState(true);
   const [cursorHidden, setCursorHidden] = useState(false);
   const chromeTimerRef = useRef<number | null>(null);
+  const hideDelay =
+    isImmersive
+      ? IMMERSIVE_HIDE_DELAY
+      : chromePolicy === "touch-autohide"
+        ? TOUCH_CHROME_HIDE_DELAY
+        : CHROME_HIDE_DELAY;
 
   const revealChrome = useCallback(() => {
     setChromeVisible(true);
@@ -34,9 +44,9 @@ export function useChromeVisibility({
         setChromeVisible(false);
         if (isImmersive) setCursorHidden(true);
       },
-      isImmersive ? IMMERSIVE_HIDE_DELAY : CHROME_HIDE_DELAY,
+      hideDelay,
     );
-  }, [isEpisodesOpen, isImmersive, keepControlsVisible, openPanel]);
+  }, [hideDelay, isEpisodesOpen, isImmersive, keepControlsVisible, openPanel]);
 
   useEffect(() => {
     if (openPanel || isEpisodesOpen) {

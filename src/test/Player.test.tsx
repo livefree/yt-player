@@ -710,6 +710,27 @@ describe("YTPlayer — mobile chrome policy contracts", () => {
         vi.advanceTimersByTime(2500);
       });
 
+      expect(container.firstElementChild).not.toHaveClass("ytpAutohide");
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(container.firstElementChild).toHaveClass("ytpAutohide");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps desktop pointer autohide timing shorter than tablet-touch", async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<YTPlayer src={TEST_SRC} />);
+
+      await act(async () => {
+        vi.advanceTimersByTime(2500);
+      });
+
       expect(container.firstElementChild).toHaveClass("ytpAutohide");
     } finally {
       vi.useRealTimers();

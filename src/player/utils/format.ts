@@ -5,6 +5,7 @@ export const VOLUME_STEP = 0.05;
 export const SPEED_STEP = 0.05;
 export const SPEED_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 export const CHROME_HIDE_DELAY = 2000; // ms
+export const TOUCH_CHROME_HIDE_DELAY = 3200; // ms for touch-autohide layouts
 export const IMMERSIVE_HIDE_DELAY = 3000; // ms
 export const SEEK_OVERLAY_DURATION = 600; // ms the seek animation stays visible
 export const DOUBLE_TAP_THRESHOLD = 250; // ms for double-tap detection

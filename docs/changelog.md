@@ -344,3 +344,13 @@
   - `src/player/hooks/useChromeVisibility.ts` 继续复用统一策略入口，但现在会按终端策略区分平板与手机暂停态行为
   - `src/test/Player.test.tsx` 已补充 tablet-touch 的 `touch-autohide` 契约，并验证暂停态下平板可进入 `ytpAutohide`，当前回归测试总数为 61
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-07 00:23
+
+- **任务**：PLAYER-34 — 为 tablet-touch 引入更长的 autohide delay
+- **所属序列**：SEQ-20260406-18
+- **结果**：
+  - `src/player/utils/format.ts` 已新增 `TOUCH_CHROME_HIDE_DELAY`，为触摸自动隐藏策略提供独立时序常量
+  - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
+  - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
