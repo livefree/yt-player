@@ -447,3 +447,10 @@
 - `phone-touch` 布局已将 `play` / `next` 迁移到中央 `center-overlay` 主控区，底部左侧回归时间展示
 - 中央主控区已接入 autohide 契约，手机竖屏最窄场景下会出现更强的播放主控和显式 next 入口
 - 回归测试扩到 78 个，补充了 phone-touch 中央主控与 next 入口布局覆盖
+
+# 2026-04-07 13:22
+
+- 完成 `SEQ-20260407-26 / PLAYER-48`
+- 新增 `docs/player-settings-ia-plan.md`，定义 speed 移出后的 settings 信息架构
+- 文档已明确 `Playback / Captions / Quality / Audio-Language` 的建议分组，并把 `Loop / Autoplay next / Sleep timer / Caption styling` 定为后续优先项
+- `SEQ-20260407-26` 至此整体完成
