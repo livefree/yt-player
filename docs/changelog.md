@@ -354,6 +354,12 @@
   - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
   - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+# 2026-04-07 01:53
+
+- 完成 `SEQ-20260407-25 / PLAYER-41`
+- 新增 `docs/player-refactor-status-report.md`，汇总当前支线的重构完成度、架构状态、已修问题与剩余差距
+- 新增 `docs/player-feature-matrix.md`，整理 Desktop Pointer / Tablet Touch / Phone Touch 下的预期功能表现矩阵
+
 # 2026-04-07 01:51
 
 - 完成 `SEQ-20260407-24 / PLAYER-40`
