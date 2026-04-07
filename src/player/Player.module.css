@@ -1018,13 +1018,16 @@
 }
 
 /* ── Tooltip edge-pinning: prevent clipping by player overflow:hidden ─────── */
-/* Left-edge button (play): align tooltip left edge with button left edge */
-.ytpPlayButton .ytpTooltip {
+/* Pin the first visible control in left-anchored slots to the left edge. */
+[data-control-slot="bottom-left"] > :first-child .ytpTooltip,
+[data-control-slot="top-left"] > :first-child .ytpTooltip {
   left: 0;
   transform: none;
 }
-/* Right-edge button (last in right-controls-right, always fullscreen): right-align */
-.ytpRightControlsRight > :last-child .ytpTooltip {
+
+/* Pin the last visible control in right-anchored slots to the right edge. */
+[data-control-slot="bottom-right"] > :last-child .ytpTooltip,
+[data-control-slot="top-right"] > :last-child .ytpTooltip {
   left: auto;
   right: 0;
   transform: none;

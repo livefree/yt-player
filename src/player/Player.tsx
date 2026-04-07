@@ -873,8 +873,12 @@ export function YTPlayer({
     .map(renderControl)
     .filter(Boolean);
   const bottomLeftSlot = layoutDecision.slots["bottom-left"];
+  const playControl = bottomLeftSlot.includes("play") ? renderControl("play") : null;
   const bottomLeftControls = bottomLeftSlot
-    .filter((control) => control !== "next" && control !== "episodes")
+    .filter(
+      (control) =>
+        control !== "play" && control !== "next" && control !== "episodes",
+    )
     .map(renderControl)
     .filter(Boolean);
   const bottomRightControls = layoutDecision.slots["bottom-right"]
@@ -1151,6 +1155,7 @@ export function YTPlayer({
         {/* ── Controls ───────────────────────────────────────────────────── */}
         <div className={s.ytpChromeControls}>
           <ControlSlot className={s.ytpLeftControls} slot="bottom-left">
+            {playControl}
             {showNextEpisodesGroup && (
               <div
                 className={s.ytpNextEpisodesGroup}

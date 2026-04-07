@@ -164,3 +164,13 @@
   - 恢复 bottom-left 的 `next + episodes` 组合容器，修复控制栏选集按钮在 slot 重组后失去 reveal / hover 交互的问题
   - `src/test/Player.test.tsx` 扩展到 45 个回归测试，新增顶部交互契约、next/episodes 组合存在性、settings 二次点击关闭验证
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 17:10
+
+- **任务**：PLAYER-17 — 修复底部控件顺序与 tooltip 边缘裁切
+- **所属序列**：SEQ-20260406-06
+- **结果**：
+  - `Player.tsx` 恢复 bottom-left 的真实渲染顺序为 `play -> next/episodes group -> trailing controls`，修复播放键与下一集键顺序颠倒
+  - `Player.module.css` 将 tooltip 边缘钉住规则从 `play/fullscreen` 特例改为基于 `data-control-slot` 的左右槽位通用规则，避免边缘按钮提示被播放器边界裁切
+  - `src/test/Player.test.tsx` 扩展到 46 个回归测试，新增 bottom-left 子元素顺序契约验证
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

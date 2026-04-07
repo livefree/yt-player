@@ -623,6 +623,30 @@ describe("YTPlayer — slot composition contracts", () => {
       bottomLeft.querySelector('[data-ytp-component="episodes-btn"]'),
     ).toBeInTheDocument();
   });
+
+  it("keeps play before the next/episodes group in the bottom-left slot", async () => {
+    const { container } = render(
+      <YTPlayer src={TEST_SRC} episodes={EPISODES_3} onNext={vi.fn()} />,
+    );
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "desktop-default",
+      );
+    });
+
+    const bottomLeft = container.querySelector(
+      '[data-control-slot="bottom-left"]',
+    ) as HTMLDivElement;
+
+    const childComponents = Array.from(bottomLeft.children).map((child) =>
+      child.getAttribute("data-ytp-component") ?? child.firstElementChild?.getAttribute("data-ytp-component"),
+    );
+
+    expect(childComponents[0]).toBe("play-btn");
+    expect(childComponents[1]).toBe("next-episodes-group");
+  });
 });
 
 describe("YTPlayer — panel toggle contracts", () => {
