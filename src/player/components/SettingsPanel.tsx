@@ -144,6 +144,7 @@ export function SettingsPanel({
       id={panelId}
       className={`${s.ytpSettingsMenu} ${s.ytpPanelSurface} ${s.ytpPopup}`}
       data-layer="5"
+      data-panel-height="content-driven"
       data-panel-sizing={panelSizingMode}
       data-placement={placement}
       data-viewport-band={viewportBand}

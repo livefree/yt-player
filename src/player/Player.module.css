@@ -656,9 +656,6 @@
   max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
   overflow: hidden;
   animation: ytpPanelIn 0.12s ease;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
 }
 
 .ytpSpeedPanel {
@@ -676,9 +673,6 @@
   max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
   overflow: hidden;
   animation: ytpPanelIn 0.12s ease;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
 }
 
 .ytpSettingsMenu[data-placement="top-right"] {
@@ -717,8 +711,7 @@
 }
 
 .ytpPanelScroller {
-  flex: 1;
-  min-height: 0;
+  max-height: inherit;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: auto;
@@ -1520,8 +1513,6 @@
   );
   overflow: hidden;
   animation: ytpPanelIn 0.12s ease; /* reuse existing panel-in animation */
-  display: flex;
-  min-height: 0;
 }
 
 .ytpEpisodesPanel[data-placement="top-right"] {

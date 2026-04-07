@@ -75,6 +75,7 @@ export function SpeedPanel({
       id={panelId}
       className={`${s.ytpSpeedPanel} ${s.ytpPanelSurface} ${s.ytpPopup}`}
       data-layer="5"
+      data-panel-height="content-driven"
       data-placement={placement}
       data-panel-sizing={panelSizingMode}
       data-viewport-band={viewportBand}

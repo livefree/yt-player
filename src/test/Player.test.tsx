@@ -1654,13 +1654,25 @@ describe("YTPlayer — panel surface contracts", () => {
       "data-panel-sizing",
       "stable",
     );
+    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveAttribute(
+      "data-panel-height",
+      "content-driven",
+    );
 
     await userEvent.click(screen.getByRole("button", { name: "Settings" }));
     await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
     expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveClass("ytpPanelSurface");
+    expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveAttribute(
+      "data-panel-height",
+      "content-driven",
+    );
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
     expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveClass("ytpPanelSurface");
+    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveAttribute(
+      "data-panel-height",
+      "content-driven",
+    );
   });
 
   it("applies the shared small-window popup contract to the settings panel on phone-portrait", async () => {

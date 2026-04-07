@@ -530,3 +530,13 @@
 
 - 完成 `SEQ-20260407-31 / PLAYER-62`
 - speed panel header 现仅在 `wide` 级宽松桌面布局显示，PC 过渡宽度继续保持紧凑形态，避免再次出现无必要的空白膨胀
+
+# 2026-04-07 14:48
+
+- 新增 `SEQ-20260407-32`
+- 本轮统一浏览器内面板的内容驱动高度策略，目标是让 speed / settings / episodes 都只在超出上限时才滚动
+
+# 2026-04-07 14:52
+
+- 完成 `SEQ-20260407-32 / PLAYER-63`
+- settings / speed / episodes 已统一切到 `content-driven` 高度契约：按内容自然长高，只有超过上限时才在内部 scroller 中滚动
