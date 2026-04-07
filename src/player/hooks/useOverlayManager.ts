@@ -33,6 +33,11 @@ export type OverlayStackMode =
   | "prompt"
   | "panel"
   | "error";
+export interface OverlayLayoutContract {
+  captionPlacement: OverlayCaptionPlacement;
+  promptPlacement: OverlayPromptPlacement;
+  stackMode: OverlayStackMode;
+}
 
 type UseOverlayManagerParams = {
   chromeVisible: boolean;
@@ -212,12 +217,15 @@ export function useOverlayManager(params: UseOverlayManagerParams) {
                 )
               ? "playback-feedback"
               : "idle";
-
-    return {
-      entries,
+    const overlayLayout: OverlayLayoutContract = {
       captionPlacement,
       promptPlacement,
       stackMode,
+    };
+
+    return {
+      entries,
+      overlayLayout,
       visibleEntries,
       interactiveOverlayVisible: visibleEntries.some((entry) => entry.interactive),
       blocksGestures: visibleEntries.some((entry) => entry.blocksGestures),

@@ -920,6 +920,10 @@ describe("YTPlayer — overlay manager contracts", () => {
     expect(
       screen.queryByRole("button", { name: /^unmute$/i }),
     ).not.toBeInTheDocument();
+    expect(root).toHaveAttribute(
+      "data-overlay-layout",
+      "panel:raised-for-bottom-overlay:top-edge-right",
+    );
   });
 
   it("promotes the error banner to the top blocking overlay", () => {

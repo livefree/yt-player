@@ -581,10 +581,8 @@ export function YTPlayer({
   });
 
   const {
-    captionPlacement,
     blocksGestures,
-    promptPlacement,
-    stackMode,
+    overlayLayout,
     topOverlay,
     isVisible: isOverlayVisible,
   } = useOverlayManager({
@@ -958,10 +956,11 @@ export function YTPlayer({
       data-layout-height={layoutDecision.constraints.height}
       data-loading-state={loadingState}
       data-overlay-top={topOverlay ?? undefined}
-      data-overlay-stack={stackMode}
+      data-overlay-stack={overlayLayout.stackMode}
       data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
-      data-overlay-caption-placement={captionPlacement}
-      data-overlay-prompt-placement={promptPlacement}
+      data-overlay-caption-placement={overlayLayout.captionPlacement}
+      data-overlay-prompt-placement={overlayLayout.promptPlacement}
+      data-overlay-layout={`${overlayLayout.stackMode}:${overlayLayout.captionPlacement}:${overlayLayout.promptPlacement}`}
       data-input-device-policy={inputRouter.devicePolicy}
       data-input-zones={inputRouter.zones.join(",")}
       data-top-controls-interactive={hasTopInteractiveControls ? "true" : "false"}
@@ -1059,10 +1058,10 @@ export function YTPlayer({
         <div
           className={[
             s.ytpUnmutePrompt,
-            promptPlacement === "below-top-chrome-right"
+            overlayLayout.promptPlacement === "below-top-chrome-right"
               ? s.ytpUnmutePromptBelowTopChrome
               : "",
-            promptPlacement === "below-top-chrome-left"
+            overlayLayout.promptPlacement === "below-top-chrome-left"
               ? s.ytpUnmutePromptBelowTopChromeLeft
               : "",
           ]
@@ -1144,8 +1143,10 @@ export function YTPlayer({
         <div
           className={[
             s.ytpCaptionsWindow,
-            captionPlacement === "above-chrome" ? s.ytpCaptionsWindowAbove : "",
-            captionPlacement === "raised-for-bottom-overlay"
+            overlayLayout.captionPlacement === "above-chrome"
+              ? s.ytpCaptionsWindowAbove
+              : "",
+            overlayLayout.captionPlacement === "raised-for-bottom-overlay"
               ? s.ytpCaptionsWindowRaised
               : "",
           ]

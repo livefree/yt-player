@@ -586,3 +586,21 @@
    - 实际开始：2026-04-07 01:14
    - 完成时间：2026-04-07 01:25
    - 验收要点：overlay 层输出显式 `stackMode`；panel 打开时 prompt 被抑制；loading stack 抑制反馈类 overlay；补对应契约测试
+
+## [SEQ-20260407-24] YTPlayer overlay orchestration 第五阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 01:39
+- **最后更新时间**：2026-04-07 01:51
+- **目标**：将 overlay 编排字段收口成统一 layout contract，减少 manager 向视图层输出的平行状态
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `captionPlacement / promptPlacement / stackMode`；本轮不改视觉规则，仅收口契约形状
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-40 — 引入统一 overlay layout contract（状态：✅）
+   - 创建时间：2026-04-07 01:39
+   - 计划开始：2026-04-07 01:39
+   - 实际开始：2026-04-07 01:39
+   - 完成时间：2026-04-07 01:51
+   - 验收要点：manager 输出统一 `overlayLayout`；视图层只消费 layout contract；根节点补充统一 `data-overlay-layout` 观察点；补对应契约测试

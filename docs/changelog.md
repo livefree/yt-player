@@ -354,6 +354,13 @@
   - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
   - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+# 2026-04-07 01:51
+
+- 完成 `SEQ-20260407-24 / PLAYER-40`
+- overlay orchestration 新增统一 `overlayLayout` contract，将 `stackMode / captionPlacement / promptPlacement` 收口为单个布局对象
+- `Player` 已改为消费 `overlayLayout`，并新增统一 `data-overlay-layout` 观察点
+- 回归测试维持 70 个，新增了 `data-overlay-layout` 契约覆盖
+
 # 2026-04-07 01:25
 
 - 完成 `SEQ-20260407-23 / PLAYER-39`
