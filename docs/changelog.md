@@ -184,3 +184,13 @@
   - 将差距明确拆分为 `targeted bugfix / narrow improvement` 与 `下一阶段架构调整` 两类，避免已解决的架构问题重新混入下一轮决策
   - 输出建议执行顺序：先做 `Focused Hardening`，再进入 `Next Architecture Iteration`
   - 本次为纯文档任务，未运行 `typecheck/lint/test/build`
+
+## 2026-04-06 17:18
+
+- **任务**：PLAYER-19 — 输出多终端播放器交互策略草案
+- **所属序列**：SEQ-20260406-08
+- **结果**：
+  - 新增 `docs/player-device-interaction-strategy.md`，定义桌面、大尺寸平板、小尺寸手机三类终端的交互目标、输入模型、控件优先级和折叠策略
+  - 明确 `episodes` 在本项目中的产品地位高于普通附加按钮，尤其在手机端和平板端应作为核心内容导航入口处理
+  - 给出面向后续开发的近期开产品决策建议，包括手机端 `next` 是否常驻、是否恢复双击左右 seek、是否保留移动端伪音量手势等
+  - 本次为纯文档任务，未运行 `typecheck/lint/test/build`
