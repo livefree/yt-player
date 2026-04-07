@@ -558,16 +558,22 @@ describe("YTPlayer — layout decision contracts", () => {
     const topRight = container.querySelector(
       '[data-control-slot="top-right"]',
     ) as HTMLDivElement;
+    const bottomRight = container.querySelector(
+      '[data-control-slot="bottom-right"]',
+    ) as HTMLDivElement;
 
-    expect(
-      topRight.querySelector('[data-ytp-component="episodes-btn"]'),
-    ).toBeInTheDocument();
     expect(
       topRight.querySelector('[data-ytp-component="settings-btn"]'),
     ).toBeInTheDocument();
     expect(
       topRight.querySelector('[data-ytp-component="subtitles-btn"]'),
     ).not.toBeInTheDocument();
+    expect(
+      topRight.querySelector('[data-ytp-component="episodes-btn"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      bottomRight.querySelector('[data-ytp-component="episodes-btn"]'),
+    ).toBeInTheDocument();
     expect(
       container.querySelector('[data-ytp-component="volume-area"]'),
     ).not.toBeInTheDocument();
@@ -577,6 +583,12 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(
       screen.queryByRole("button", { name: /theater mode/i }),
     ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
+    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveAttribute(
+      "data-placement",
+      "bottom-right",
+    );
   });
 
   it("keeps time and subtitles directly visible on tablet-touch layouts", async () => {

@@ -1216,6 +1216,11 @@
   left: auto;
 }
 
+.ytpEpisodesPanel[data-placement="bottom-right"] {
+  right: calc(12px + var(--ytp-safe-right));
+  left: auto;
+}
+
 .ytpEpisodesGrid {
   display: grid;
   grid-template-columns: repeat(var(--_ep-cols, 6), 1fr);

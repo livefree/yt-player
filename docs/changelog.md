@@ -323,3 +323,14 @@
   - 平板端现在显式保留 `episodes/settings/subtitles` 顶部入口和 `time` 底部展示；手机端则收缩为 `episodes/settings` 顶部入口，把字幕切回设置面板二级入口
   - `src/test/Player.test.tsx` 已补充 phone-touch 与 tablet-touch 的差异契约测试，当前回归测试总数为 60
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-06 23:44
+
+- **任务**：PLAYER-32 — 提升 phone-touch 的 episodes 到底部主控区
+- **所属序列**：SEQ-20260406-16
+- **结果**：
+  - `src/player/hooks/useLayoutDecision.ts` 已将 `phone-touch` 的 `episodes` 从顶部动作区迁到底部右侧主控区，同时保留顶部 `settings`
+  - `src/player/hooks/useLayoutDecision.ts` 已让 phone-touch 下的 `episodesPanel` placement 跟随入口切换到 `bottom-right`
+  - `src/player/Player.module.css` 已补充 `ytpEpisodesPanel[data-placement="bottom-right"]`，确保手机端选集面板从右下方弹出
+  - `src/test/Player.test.tsx` 已补充 phone-touch 下 `episodes` 入口位置与 panel placement 的契约验证，当前回归测试总数保持 60
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

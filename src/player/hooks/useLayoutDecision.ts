@@ -107,12 +107,9 @@ function createTabletTouchSlots(hasEpisodes: boolean) {
 function createPhoneTouchSlots(hasEpisodes: boolean) {
   return {
     "top-left": ["title"],
-    "top-right": [
-      ...(hasEpisodes ? (["episodes"] as ControlId[]) : []),
-      "settings",
-    ],
+    "top-right": ["settings"],
     "bottom-left": ["play"],
-    "bottom-right": ["fullscreen"],
+    "bottom-right": [...(hasEpisodes ? (["episodes"] as ControlId[]) : []), "fullscreen"],
     "center-overlay": [],
     "edge-left": [],
     "edge-right": [],
@@ -342,7 +339,9 @@ export function useLayoutDecision({
       placements: {
         episodesPanel: slots["top-right"].includes("episodes")
           ? "top-right"
-          : "bottom-left",
+          : slots["bottom-right"].includes("episodes")
+            ? "bottom-right"
+            : "bottom-left",
         settingsPanel: slots["top-right"].includes("settings")
           ? "top-right"
           : "bottom-right",
