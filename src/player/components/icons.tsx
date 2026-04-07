@@ -90,6 +90,29 @@ export function SettingsIcon() {
   );
 }
 
+export function SpeedIcon() {
+  return (
+    <svg
+      fill="none"
+      height="24"
+      viewBox="0 0 24 24"
+      width="24"
+      aria-hidden="true"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4.5 15.5A8 8 0 1 1 19.5 15.5" />
+      <path d="M12 7.5V9.5" />
+      <path d="M7.8 11.1L9.2 12.1" />
+      <path d="M16.2 11.1L14.8 12.1" />
+      <path d="M12 15.5L16 11.5" />
+      <circle cx="12" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function SubtitlesIcon({ active }: { active: boolean }) {
   return (
     <svg

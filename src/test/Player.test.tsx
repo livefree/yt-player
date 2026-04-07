@@ -207,7 +207,7 @@ describe("YTPlayer", () => {
 
   it("renders Play button", () => {
     render(<YTPlayer />);
-    expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
   });
 
   it("renders Fullscreen button", () => {
@@ -493,6 +493,9 @@ describe("YTPlayer — layout decision contracts", () => {
     ) as HTMLDivElement;
 
     expect(
+      topRight.querySelector('[data-ytp-component="speed-btn"]'),
+    ).toBeInTheDocument();
+    expect(
       topRight.querySelector('[data-ytp-component="settings-btn"]'),
     ).toBeInTheDocument();
     expect(
@@ -585,6 +588,9 @@ describe("YTPlayer — layout decision contracts", () => {
     ) as HTMLDivElement;
 
     expect(
+      topRight.querySelector('[data-ytp-component="speed-btn"]'),
+    ).toBeInTheDocument();
+    expect(
       topRight.querySelector('[data-ytp-component="settings-btn"]'),
     ).toBeInTheDocument();
     expect(
@@ -658,6 +664,9 @@ describe("YTPlayer — layout decision contracts", () => {
 
     expect(
       topRight.querySelector('[data-ytp-component="episodes-btn"]'),
+    ).toBeInTheDocument();
+    expect(
+      topRight.querySelector('[data-ytp-component="speed-btn"]'),
     ).toBeInTheDocument();
     expect(
       topRight.querySelector('[data-ytp-component="settings-btn"]'),
@@ -1121,7 +1130,7 @@ describe("YTPlayer — input router contracts", () => {
 });
 
 describe("YTPlayer — slot composition contracts", () => {
-  it("keeps settings in the bottom-right slot for desktop-default layouts", async () => {
+  it("keeps speed and settings in the bottom-right slot for desktop-default layouts", async () => {
     const { container } = render(<YTPlayer src={TEST_SRC} />);
 
     await waitFor(() => {
@@ -1136,11 +1145,21 @@ describe("YTPlayer — slot composition contracts", () => {
     ) as HTMLDivElement;
 
     expect(
+      bottomRight.querySelector('[data-ytp-component="speed-btn"]'),
+    ).toBeInTheDocument();
+    expect(
       bottomRight.querySelector('[data-ytp-component="settings-btn"]'),
     ).toBeInTheDocument();
+
+    const childComponents = Array.from(bottomRight.children).map((child) =>
+      child.getAttribute("data-ytp-component"),
+    );
+    expect(childComponents.indexOf("speed-btn")).toBeLessThan(
+      childComponents.indexOf("settings-btn"),
+    );
   });
 
-  it("moves settings and episodes into the top-right slot for desktop-compact layouts", async () => {
+  it("moves speed, settings, and episodes into the top-right slot for desktop-compact layouts", async () => {
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
       writable: true,
@@ -1161,6 +1180,9 @@ describe("YTPlayer — slot composition contracts", () => {
       '[data-control-slot="top-right"]',
     ) as HTMLDivElement;
 
+    expect(
+      topRight.querySelector('[data-ytp-component="speed-btn"]'),
+    ).toBeInTheDocument();
     expect(
       topRight.querySelector('[data-ytp-component="settings-btn"]'),
     ).toBeInTheDocument();
@@ -1356,12 +1378,98 @@ describe("YTPlayer — panel toggle contracts", () => {
 
     fireEvent.keyDown(settingsDialog, { key: "End" });
     await waitFor(() => {
-      expect(document.activeElement).toHaveTextContent("Playback speed");
+      expect(document.activeElement).toHaveTextContent("Subtitles/CC");
     });
 
     fireEvent.keyDown(settingsDialog, { key: "Tab" });
     await waitFor(() => {
       expect(document.activeElement).toHaveTextContent("Quality");
+    });
+  });
+});
+
+describe("YTPlayer — speed control contracts", () => {
+  it("renders speed as a first-level control and opens a dedicated speed dialog", async () => {
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+
+    const bottomRight = container.querySelector(
+      '[data-control-slot="bottom-right"]',
+    ) as HTMLDivElement;
+    const speedButton = screen.getByRole("button", { name: /playback speed/i });
+
+    expect(bottomRight.querySelector('[data-ytp-component="speed-btn"]')).toBe(
+      speedButton,
+    );
+    expect(speedButton).toHaveTextContent("1x");
+    expect(speedButton).toHaveAttribute("aria-haspopup", "dialog");
+    expect(speedButton).toHaveAttribute("aria-expanded", "false");
+
+    await userEvent.click(speedButton);
+
+    const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
+    expect(speedButton).toHaveAttribute("aria-expanded", "true");
+    expect(speedDialog).toHaveAttribute("data-placement", "bottom-right");
+    expect(speedButton).toHaveAttribute(
+      "aria-controls",
+      speedDialog.getAttribute("id"),
+    );
+  });
+
+  it("surfaces the speed button in top-right touch layouts", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} />);
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "mobile-portrait",
+      );
+    });
+
+    const topRight = container.querySelector(
+      '[data-control-slot="top-right"]',
+    ) as HTMLDivElement;
+    expect(
+      topRight.querySelector('[data-ytp-component="speed-btn"]'),
+    ).toBeInTheDocument();
+  });
+
+  it("supports slider and keyboard speed changes up to 3x", async () => {
+    render(<YTPlayer src={TEST_SRC} />);
+
+    const speedButton = screen.getByRole("button", { name: /playback speed/i });
+    await userEvent.click(speedButton);
+
+    const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
+    const speedSlider = screen.getByRole("slider", { name: "Playback speed" });
+
+    fireEvent.change(speedSlider, { target: { value: "2.5" } });
+    expect(speedButton).toHaveTextContent("2.5x");
+
+    fireEvent.keyDown(window, { key: "]" });
+    expect(speedButton).toHaveTextContent("2.55x");
+
+    fireEvent.change(speedSlider, { target: { value: "3" } });
+    fireEvent.keyDown(window, { key: "]" });
+    expect(speedButton).toHaveTextContent("3x");
+
+    fireEvent.keyDown(speedDialog, { key: "Escape" });
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Playback speed" }),
+      ).not.toBeInTheDocument();
     });
   });
 });

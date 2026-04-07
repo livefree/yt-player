@@ -31,6 +31,7 @@ import { type PlayerProps, type SeekDirection, type Panel } from "./types";
 import {
   clamp,
   formatTime,
+  formatRateBadge,
   SEEK_STEP,
   SEEK_OVERLAY_DURATION,
   EPISODES_COLS_COMPACT,
@@ -65,6 +66,7 @@ import { Bezel } from "./components/Bezel";
 import { YtpButton } from "./components/Button";
 import { EpisodesPanel } from "./components/EpisodesPanel";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { SpeedPanel } from "./components/SpeedPanel";
 import { ProgressBar } from "./components/ProgressBar";
 import { ControlSlot } from "./components/ControlSlot";
 import {
@@ -80,6 +82,7 @@ import {
   NextIcon,
   AirPlayIcon,
   EpisodesIcon,
+  SpeedIcon,
 } from "./components/icons";
 
 type LoadingState = "idle" | "initial" | "buffering";
@@ -115,6 +118,7 @@ export function YTPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoplayContextRef = useRef<"implicit" | "user-initiated">("implicit");
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const speedButtonRef = useRef<HTMLButtonElement>(null);
   const episodesButtonRef = useRef<HTMLButtonElement>(null);
   const prevOpenPanelRef = useRef<Panel | null>(null);
   const prevEpisodesOpenRef = useRef(false);
@@ -122,6 +126,7 @@ export function YTPlayer({
   // ── Panels ─────────────────────────────────────────────────────────────────
   const [openPanel, setOpenPanel] = useState<Panel>(null);
   const settingsPanelRef = useRef<HTMLDivElement>(null);
+  const speedPanelRef = useRef<HTMLDivElement>(null);
 
   // ── Playback state ─────────────────────────────────────────────────────────
   const [isPlaying, setIsPlaying] = useState(false);
@@ -176,6 +181,7 @@ export function YTPlayer({
 
   const sliderId = useId();
   const settingsPanelId = useId();
+  const speedPanelId = useId();
   const episodesPanelId = useId();
 
   const { isFullscreen, airPlayAvailable } = useSystemIntegrations({
@@ -346,7 +352,9 @@ export function YTPlayer({
       const target = e.target as HTMLElement;
       if (
         !settingsPanelRef.current?.contains(target) &&
-        !target.closest('[data-ytp-component="settings-btn"]')
+        !speedPanelRef.current?.contains(target) &&
+        !target.closest('[data-ytp-component="settings-btn"]') &&
+        !target.closest('[data-ytp-component="speed-btn"]')
       ) {
         setOpenPanel(null);
       }
@@ -381,7 +389,11 @@ export function YTPlayer({
 
   useEffect(() => {
     if (prevOpenPanelRef.current && !openPanel) {
-      settingsButtonRef.current?.focus();
+      if (prevOpenPanelRef.current === "speed") {
+        speedButtonRef.current?.focus();
+      } else {
+        settingsButtonRef.current?.focus();
+      }
     }
     prevOpenPanelRef.current = openPanel;
   }, [openPanel]);
@@ -883,16 +895,45 @@ export function YTPlayer({
             key="settings"
             tooltip="Settings"
             tooltipPlacement={getTooltipPlacement("settings")}
-            onClick={() => setOpenPanel((panel) => (panel ? null : "settings"))}
-            ariaPressed={!!openPanel}
-            className={openPanel ? s.ytpSettingsButtonActive : ""}
+            onClick={() =>
+              setOpenPanel((panel) => (panel === "settings" ? null : "settings"))
+            }
+            ariaPressed={openPanel === "settings"}
+            className={openPanel === "settings" ? s.ytpSettingsButtonActive : ""}
             data-ytp-component="settings-btn"
             ref={settingsButtonRef}
             aria-haspopup="dialog"
-            aria-expanded={!!openPanel}
+            aria-expanded={openPanel === "settings"}
             aria-controls={settingsPanelId}
           >
             <SettingsIcon />
+          </YtpButton>
+        );
+      case "speed":
+        return (
+          <YtpButton
+            key="speed"
+            tooltip={`Playback speed (${formatRateBadge(playbackRate)})`}
+            tooltipPlacement={getTooltipPlacement("speed")}
+            onClick={() =>
+              setOpenPanel((panel) => (panel === "speed" ? null : "speed"))
+            }
+            ariaPressed={openPanel === "speed"}
+            ariaLabel={`Playback speed ${formatRateBadge(playbackRate)}`}
+            className={[
+              s.ytpSpeedButton,
+              openPanel === "speed" ? s.ytpSettingsButtonActive : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            data-ytp-component="speed-btn"
+            ref={speedButtonRef}
+            aria-haspopup="dialog"
+            aria-expanded={openPanel === "speed"}
+            aria-controls={speedPanelId}
+          >
+            <SpeedIcon />
+            <span className={s.ytpSpeedButtonValue}>{formatRateBadge(playbackRate)}</span>
           </YtpButton>
         );
       case "theater":
@@ -1233,11 +1274,20 @@ export function YTPlayer({
         subtitles={subtitles}
         activeSubId={activeSubId}
         onSubtitleChange={setActiveSubId}
-        playbackRate={playbackRate}
-        onPlaybackRateChange={setPlaybackRate}
         onOpenPanel={setOpenPanel}
         onRequestClose={() => setOpenPanel(null)}
       />
+
+      {openPanel === "speed" && (
+        <SpeedPanel
+          panelRef={speedPanelRef}
+          panelId={speedPanelId}
+          placement={layoutDecision.placements.speedPanel}
+          playbackRate={playbackRate}
+          onPlaybackRateChange={setPlaybackRate}
+          onRequestClose={() => setOpenPanel(null)}
+        />
+      )}
 
       {/* ── Layer 9: gradient bottom ──────────────────────────────────────── */}
       <div className={s.ytpGradientBottom} data-layer="9" aria-hidden="true" />

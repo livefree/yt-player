@@ -3,7 +3,6 @@ import type { KeyboardEvent, PointerEvent, ReactNode, RefObject } from "react";
 import s from "../Player.module.css";
 import type { PanelPlacement } from "../hooks/useLayoutDecision";
 import type { Panel, QualityLevel, SubtitleTrack } from "../types";
-import { SPEED_PRESETS, formatRate } from "../utils/format";
 import { MenuBackIcon, MenuCheckIcon, MenuChevronIcon } from "./icons";
 
 type SettingsPanelProps = {
@@ -11,14 +10,12 @@ type SettingsPanelProps = {
   activeSubId: string | null;
   panelId: string;
   onOpenPanel: (panel: Panel) => void;
-  onPlaybackRateChange: (rate: number) => void;
   onRequestClose: () => void;
   onQualityChange?: (id: string) => void;
   onSubtitleChange: (subtitleId: string | null) => void;
   openPanel: Panel;
   panelRef: RefObject<HTMLDivElement>;
   placement: PanelPlacement;
-  playbackRate: number;
   qualities: QualityLevel[];
   subtitles: SubtitleTrack[];
 };
@@ -92,14 +89,12 @@ export function SettingsPanel({
   activeSubId,
   panelId,
   onOpenPanel,
-  onPlaybackRateChange,
   onRequestClose,
   onQualityChange,
   onSubtitleChange,
   openPanel,
   panelRef,
   placement,
-  playbackRate,
   qualities,
   subtitles,
 }: SettingsPanelProps) {
@@ -133,7 +128,7 @@ export function SettingsPanel({
     focusItemAt(0);
   }, [focusItemAt, openPanel]);
 
-  if (!openPanel) return null;
+  if (!openPanel || openPanel === "speed") return null;
 
   return (
     <div
@@ -216,11 +211,6 @@ export function SettingsPanel({
                 <MenuChevronIcon className={s.ytpMenuChevron} />
               </MenuItem>
             )}
-            <MenuItem onActivate={() => onOpenPanel("speed")}>
-              <span className={s.ytpMenuItemLabel}>Playback speed</span>
-              <span className={s.ytpMenuItemValue}>{formatRate(playbackRate)}</span>
-              <MenuChevronIcon className={s.ytpMenuChevron} />
-            </MenuItem>
           </>
         )}
 
@@ -283,33 +273,6 @@ export function SettingsPanel({
                 <span className={s.ytpMenuItemLabel}>{subtitle.label}</span>
               </MenuItem>
             ))}
-          </>
-        )}
-
-        {openPanel === "speed" && (
-          <>
-            <MenuHeader
-              label="Playback speed"
-              onBack={() => onOpenPanel("settings")}
-            />
-            {SPEED_PRESETS.map((rate) => {
-              const isActive = Math.abs(playbackRate - rate) < 0.01;
-              return (
-                <MenuItem
-                  key={rate}
-                  className={isActive ? s.ytpMenuItemActive : ""}
-                  role="menuitemradio"
-                  ariaChecked={isActive}
-                  onActivate={() => {
-                    onPlaybackRateChange(rate);
-                    onOpenPanel("settings");
-                  }}
-                >
-                  {isActive && <MenuCheckIcon className={s.ytpMenuCheck} />}
-                  <span className={s.ytpMenuItemLabel}>{formatRate(rate)}</span>
-                </MenuItem>
-              );
-            })}
           </>
         )}
       </div>

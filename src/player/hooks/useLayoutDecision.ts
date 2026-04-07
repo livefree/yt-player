@@ -21,6 +21,7 @@ export type ControlId =
   | "time"
   | "chapter"
   | "subtitles"
+  | "speed"
   | "settings"
   | "theater"
   | "airplay"
@@ -85,6 +86,7 @@ export type LayoutDecision = {
   viewportBand: ViewportBand;
   placements: {
     episodesPanel: PanelPlacement;
+    speedPanel: PanelPlacement;
     settingsPanel: PanelPlacement;
   };
   slots: Record<ControlSlot, ControlId[]>;
@@ -105,7 +107,7 @@ function createDesktopDefaultSlots(hasEpisodes: boolean, hasNext: boolean) {
     "top-left": ["title"],
     "top-right": [],
     "bottom-left": bottomLeft,
-    "bottom-right": ["subtitles", "settings", "theater", "airplay", "pip", "fullscreen"],
+    "bottom-right": ["subtitles", "speed", "settings", "theater", "airplay", "pip", "fullscreen"],
     "center-overlay": [],
     "edge-left": [],
     "edge-right": [],
@@ -117,6 +119,7 @@ function createTabletTouchSlots(hasEpisodes: boolean) {
     "top-left": ["title"],
     "top-right": [
       ...(hasEpisodes ? (["episodes"] as ControlId[]) : []),
+      "speed",
       "settings",
       "subtitles",
     ],
@@ -131,7 +134,7 @@ function createTabletTouchSlots(hasEpisodes: boolean) {
 function createPhoneTouchSlots(hasEpisodes: boolean) {
   return {
     "top-left": ["title"],
-    "top-right": ["settings"],
+    "top-right": ["speed", "settings"],
     "bottom-left": ["play"],
     "bottom-right": [...(hasEpisodes ? (["episodes"] as ControlId[]) : []), "fullscreen"],
     "center-overlay": [],
@@ -179,6 +182,7 @@ function applyDesktopCollapsePolicy({
   if (profile === "default") return slots;
 
   const promoteCompactControls = () => {
+    ensureControlInSlot(slots, "speed", "top-right");
     ensureControlInSlot(slots, "settings", "top-right");
     if (hasEpisodes) {
       ensureControlInSlot(slots, "episodes", "top-right");
@@ -349,6 +353,7 @@ export function useLayoutDecision({
       "time",
       "chapter",
       "subtitles",
+      "speed",
       "settings",
       "theater",
       "airplay",
@@ -394,6 +399,9 @@ export function useLayoutDecision({
           : slots["bottom-right"].includes("episodes")
             ? "bottom-right"
             : "bottom-left",
+        speedPanel: slots["top-right"].includes("speed")
+          ? "top-right"
+          : "bottom-right",
         settingsPanel: slots["top-right"].includes("settings")
           ? "top-right"
           : "bottom-right",

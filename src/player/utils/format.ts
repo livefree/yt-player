@@ -2,8 +2,10 @@
 
 export const SEEK_STEP = 10; // seconds — keyboard and mobile double-tap
 export const VOLUME_STEP = 0.05;
+export const SPEED_MIN = 0.25;
+export const SPEED_MAX = 3;
 export const SPEED_STEP = 0.05;
-export const SPEED_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+export const SPEED_PRESETS = [0.5, 1, 1.5, 2];
 export const CHROME_HIDE_DELAY = 2000; // ms
 export const TOUCH_CHROME_HIDE_DELAY = 3200; // ms for touch-autohide layouts
 export const IMMERSIVE_HIDE_DELAY = 3000; // ms
@@ -40,4 +42,8 @@ export function formatTime(totalSeconds: number): string {
 
 export function formatRate(rate: number): string {
   return rate === 1 ? "Normal" : `${rate.toFixed(2).replace(/\.?0+$/, "")}x`;
+}
+
+export function formatRateBadge(rate: number): string {
+  return `${rate.toFixed(2).replace(/\.?0+$/, "")}x`;
 }

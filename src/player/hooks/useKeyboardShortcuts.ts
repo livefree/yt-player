@@ -1,5 +1,12 @@
 import { useEffect } from "react";
-import { SEEK_STEP, SPEED_STEP, VOLUME_STEP, clamp } from "../utils/format";
+import {
+  SEEK_STEP,
+  SPEED_MAX,
+  SPEED_MIN,
+  SPEED_STEP,
+  VOLUME_STEP,
+  clamp,
+} from "../utils/format";
 
 interface UseKeyboardShortcutsParams {
   volume: number;
@@ -148,11 +155,11 @@ export function useKeyboardShortcuts({
           break;
         case "[":
           e.preventDefault();
-          setPlaybackRate((r) => clamp(r - SPEED_STEP, 0.25, 2));
+          setPlaybackRate((r) => clamp(r - SPEED_STEP, SPEED_MIN, SPEED_MAX));
           break;
         case "]":
           e.preventDefault();
-          setPlaybackRate((r) => clamp(r + SPEED_STEP, 0.25, 2));
+          setPlaybackRate((r) => clamp(r + SPEED_STEP, SPEED_MIN, SPEED_MAX));
           break;
         default:
           break;

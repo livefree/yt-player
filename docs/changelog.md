@@ -426,3 +426,10 @@
 - 将 chrome visibility 从字符串分支升级为显式 policy object，布局层现在统一输出 `id / pausedBehavior / hideDelayMs / hideCursorOnAutohide`
 - `useChromeVisibility` 已改为直接消费 policy object，`Player` 暴露 `data-chrome-pause-behavior` 与 `data-chrome-hide-delay`
 - 回归测试扩到 63 个，补充了 desktop / tablet / phone / immersive 的 chrome policy 契约
+
+# 2026-04-07 13:13
+
+- 完成 `SEQ-20260407-26 / PLAYER-45`
+- 将 speed 从 settings 二级菜单提升为一级控制，桌面与触摸布局都新增了显式 `speed-btn`
+- 新增独立 `SpeedPanel`，提供 `0.25x-3x` 水平 slider、4 个常用 preset，以及 `[` / `]` 快捷键到 `3x` 的契约
+- 回归测试扩到 76 个，补充了一级 speed control、touch layout 可见性与 slider / keyboard 速度调整的覆盖

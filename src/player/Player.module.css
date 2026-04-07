@@ -626,7 +626,26 @@
   animation: ytpPanelIn 0.12s ease;
 }
 
+.ytpSpeedPanel {
+  bottom: calc(54px + var(--ytp-safe-bottom));
+  right: calc(12px + var(--ytp-safe-right));
+  background: rgba(28, 28, 28, 0.95);
+  border-radius: 2px;
+  min-width: 280px;
+  max-width: 340px;
+  max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  animation: ytpPanelIn 0.12s ease;
+}
+
 .ytpSettingsMenu[data-placement="top-right"] {
+  top: calc(52px + var(--ytp-safe-top));
+  right: calc(12px + var(--ytp-safe-right));
+  bottom: auto;
+}
+
+.ytpSpeedPanel[data-placement="top-right"] {
   top: calc(52px + var(--ytp-safe-top));
   right: calc(12px + var(--ytp-safe-right));
   bottom: auto;
@@ -727,6 +746,107 @@
   margin-right: 8px;
   opacity: 0.9;
   flex-shrink: 0;
+}
+
+.ytpSpeedPanelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 8px;
+  color: #fff;
+}
+
+.ytpSpeedPanelTitle {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ytpSpeedPanelValue {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+}
+
+.ytpSpeedPanelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 16px 16px;
+}
+
+.ytpSpeedSliderBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #fff;
+}
+
+.ytpSpeedSliderLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.ytpSpeedRange {
+  width: 100%;
+  accent-color: #fff;
+}
+
+.ytpSpeedScale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.ytpSpeedPresets {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ytpSpeedPreset {
+  min-height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.ytpSpeedPreset:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ytpSpeedPreset:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.ytpSpeedPresetActive {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.38);
+}
+
+.ytpSpeedHelp {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.ytpSpeedHelp kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin: 0 2px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 10px;
+  color: #fff;
 }
 
 /* ─── Layer 9: Gradient bottom ──────────────────────────────────────────────── */
@@ -1168,6 +1288,24 @@
   --_hover-w: var(--ytp-play-hover-width);
 }
 
+.ytpSpeedButton {
+  --_bg-w: 74px;
+  --_hover-w: 74px;
+  width: auto;
+  gap: 4px;
+  padding: 0 10px 0 8px;
+  border-radius: 999px;
+}
+
+.ytpSpeedButtonValue {
+  position: relative;
+  z-index: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
 .ytpNextButton {
   --_bg-w: var(--ytp-next-bg-width);
   --_hover-w: var(--ytp-next-hover-width);
@@ -1570,6 +1708,7 @@
 /* ─── Fullscreen / mobile panel fit ─────────────────────────────────────────── */
 
 .ytpFullscreen .ytpSettingsMenu,
+.ytpFullscreen .ytpSpeedPanel,
 .ytpFullscreen .ytpEpisodesPanel {
   max-height: calc(100% - 88px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
 }
