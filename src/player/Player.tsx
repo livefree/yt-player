@@ -584,6 +584,7 @@ export function YTPlayer({
     captionPlacement,
     blocksGestures,
     promptPlacement,
+    stackMode,
     topOverlay,
     isVisible: isOverlayVisible,
   } = useOverlayManager({
@@ -957,6 +958,7 @@ export function YTPlayer({
       data-layout-height={layoutDecision.constraints.height}
       data-loading-state={loadingState}
       data-overlay-top={topOverlay ?? undefined}
+      data-overlay-stack={stackMode}
       data-overlay-gestures-blocked={blocksGestures ? "true" : "false"}
       data-overlay-caption-placement={captionPlacement}
       data-overlay-prompt-placement={promptPlacement}

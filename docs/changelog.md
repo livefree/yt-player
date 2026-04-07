@@ -354,6 +354,13 @@
   - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
   - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+# 2026-04-07 01:25
+
+- 完成 `SEQ-20260407-23 / PLAYER-39`
+- overlay orchestration 新增显式 `stackMode`，统一输出 `idle / playback-feedback / loading / prompt / panel / error`
+- panel 打开时 `unmute prompt` 现在会被 stack 规则抑制；loading stack 会抑制 `bezel / seek-indicator / touch-seek`
+- 回归测试扩到 70 个，补充了 panel 抑制 prompt 与 loading stack 的契约
+
 # 2026-04-07 01:10
 
 - 完成 `SEQ-20260407-22 / PLAYER-38`

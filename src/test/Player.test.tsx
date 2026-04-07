@@ -905,6 +905,23 @@ describe("YTPlayer — overlay manager contracts", () => {
     );
   });
 
+  it("suppresses the unmute prompt once a blocking panel is open", async () => {
+    mockPlay
+      .mockRejectedValueOnce(new Error("blocked"))
+      .mockResolvedValueOnce(undefined);
+
+    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+
+    await screen.findByRole("button", { name: /^unmute$/i });
+    await userEvent.click(screen.getByRole("button", { name: /settings/i }));
+
+    const root = container.firstElementChild as HTMLDivElement;
+    expect(root).toHaveAttribute("data-overlay-stack", "panel");
+    expect(
+      screen.queryByRole("button", { name: /^unmute$/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("promotes the error banner to the top blocking overlay", () => {
     const { container } = render(<YTPlayer src={TEST_SRC} />);
     const video = container.querySelector("video") as HTMLVideoElement;
@@ -977,6 +994,34 @@ describe("YTPlayer — overlay manager contracts", () => {
       screen.queryByRole("status", { name: /loading video|buffering video/i }),
     ).not.toBeInTheDocument();
     expect(container.firstElementChild).toHaveAttribute("data-overlay-top", "error");
+  });
+
+  it("uses the loading stack and suppresses feedback overlays while spinner is visible", () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<YTPlayer src={TEST_SRC} />);
+      const root = container.firstElementChild as HTMLDivElement;
+      const rightZone = container.querySelector(
+        '[data-input-zone="right"]',
+      ) as HTMLDivElement;
+      const video = container.querySelector("video") as HTMLVideoElement;
+
+      fireEvent.loadStart(video);
+      expect(root).toHaveAttribute("data-overlay-stack", "loading");
+
+      fireEvent.click(rightZone);
+      fireEvent.click(rightZone);
+
+      expect(root).toHaveAttribute("data-overlay-stack", "loading");
+      expect(
+        container.querySelector('[data-ytp-component="seek-overlay"]'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("status", { name: /loading video/i }),
+      ).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

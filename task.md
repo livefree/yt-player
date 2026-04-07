@@ -568,3 +568,21 @@
    - 实际开始：2026-04-07 01:02
    - 完成时间：2026-04-07 01:10
    - 验收要点：top-right panel 打开时 prompt 切到左侧；默认状态仍保持右侧；补对应 orchestration 契约测试
+
+## [SEQ-20260407-23] YTPlayer overlay orchestration 第四阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 01:14
+- **最后更新时间**：2026-04-07 01:25
+- **目标**：把 overlay 组合关系收口成更稳定的 stack contract，先明确 panel / prompt / loading / error 的栈级语义
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `captionPlacement / promptPlacement`；本轮不新增视觉组件
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-39 — 引入 overlay stack mode 并抑制 panel 内 prompt（状态：✅）
+   - 创建时间：2026-04-07 01:14
+   - 计划开始：2026-04-07 01:14
+   - 实际开始：2026-04-07 01:14
+   - 完成时间：2026-04-07 01:25
+   - 验收要点：overlay 层输出显式 `stackMode`；panel 打开时 prompt 被抑制；loading stack 抑制反馈类 overlay；补对应契约测试

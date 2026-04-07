@@ -26,6 +26,13 @@ export type OverlayPromptPlacement =
   | "below-top-chrome-left"
   | "below-top-chrome-right"
   | "top-edge-right";
+export type OverlayStackMode =
+  | "idle"
+  | "playback-feedback"
+  | "loading"
+  | "prompt"
+  | "panel"
+  | "error";
 
 type UseOverlayManagerParams = {
   chromeVisible: boolean;
@@ -161,6 +168,16 @@ export function useOverlayManager(params: UseOverlayManagerParams) {
         if (entry) entry.visible = false;
       }
     } else if (blockingPanelVisible) {
+      for (const kind of [
+        "bezel",
+        "seek-indicator",
+        "touch-seek",
+        "unmute-prompt",
+      ] as const) {
+        const entry = entryMap.get(kind);
+        if (entry) entry.visible = false;
+      }
+    } else if (entryMap.get("spinner")?.visible) {
       for (const kind of ["bezel", "seek-indicator", "touch-seek"] as const) {
         const entry = entryMap.get(kind);
         if (entry) entry.visible = false;
@@ -182,11 +199,25 @@ export function useOverlayManager(params: UseOverlayManagerParams) {
       : params.hasTopChrome
         ? "below-top-chrome-right"
         : "top-edge-right";
+    const stackMode: OverlayStackMode = errorVisible
+      ? "error"
+      : blockingPanelVisible
+        ? "panel"
+        : (entryMap.get("unmute-prompt")?.visible ?? false)
+          ? "prompt"
+          : (entryMap.get("spinner")?.visible ?? false)
+            ? "loading"
+            : visibleEntries.some((entry) =>
+                  ["bezel", "seek-indicator", "touch-seek"].includes(entry.kind),
+                )
+              ? "playback-feedback"
+              : "idle";
 
     return {
       entries,
       captionPlacement,
       promptPlacement,
+      stackMode,
       visibleEntries,
       interactiveOverlayVisible: visibleEntries.some((entry) => entry.interactive),
       blocksGestures: visibleEntries.some((entry) => entry.blocksGestures),
