@@ -520,3 +520,13 @@
 - 完成 `SEQ-20260407-30 / PLAYER-60 / PLAYER-61`
 - `speed` 图标显隐、speed panel 标题显隐，以及 episodes panel 列数/高度已并回 `useLayoutDecision`，视图层不再直接枚举 compact/narrow/phone-portrait
 - settings / speed / episodes 已统一暴露 `data-panel-sizing`，panel 的小窗口间距与尺寸表达开始从局部 CSS 规则升级为显式契约
+
+# 2026-04-07 14:40
+
+- 新增 `SEQ-20260407-31`
+- 本轮修复聚焦 PC 浏览器尺寸过渡时 speed panel 的无必要形态放大与空白回归
+
+# 2026-04-07 14:38
+
+- 完成 `SEQ-20260407-31 / PLAYER-62`
+- speed panel header 现仅在 `wide` 级宽松桌面布局显示，PC 过渡宽度继续保持紧凑形态，避免再次出现无必要的空白膨胀

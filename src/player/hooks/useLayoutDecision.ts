@@ -411,7 +411,7 @@ export function useLayoutDecision({
       : "stable";
     const speedPolicy = {
       showButtonIcon: !compactPanelBands.includes(viewportBand),
-      showHeader: !compactPanelBands.includes(viewportBand),
+      showHeader: viewportBand === "wide",
     };
     const episodesCols =
       viewportBand === "phone-portrait" || viewportBand === "narrow"

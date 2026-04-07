@@ -1620,6 +1620,28 @@ describe("YTPlayer — speed control contracts", () => {
     expect(speedDialog).toHaveAttribute("data-panel-sizing", "stable");
     expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toHaveTextContent("1.00x");
   });
+
+  it("keeps the speed panel compact through medium desktop widths", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 900,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 640,
+    });
+
+    render(<YTPlayer src={TEST_SRC} />);
+    fireEvent(window, new Event("resize"));
+
+    await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
+
+    const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
+    expect(speedDialog).toHaveAttribute("data-viewport-band", "medium");
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
+  });
 });
 
 describe("YTPlayer — panel surface contracts", () => {
