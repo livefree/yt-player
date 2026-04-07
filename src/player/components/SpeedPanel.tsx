@@ -27,6 +27,7 @@ export function SpeedPanel({
   onPlaybackRateChange,
   onRequestClose,
 }: SpeedPanelProps) {
+  const speedPct = ((playbackRate - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) * 100;
   const getFocusableItems = useCallback(
     () =>
       Array.from(
@@ -50,8 +51,6 @@ export function SpeedPanel({
     focusItemAt(0);
   }, [focusItemAt]);
 
-  const helpTextId = `${panelId}-help`;
-
   return (
     <div
       ref={panelRef}
@@ -61,7 +60,6 @@ export function SpeedPanel({
       data-placement={placement}
       role="dialog"
       aria-label="Playback speed"
-      aria-describedby={helpTextId}
       aria-modal="false"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
@@ -105,12 +103,26 @@ export function SpeedPanel({
       />
       <div className={s.ytpPanelMenu}>
         <div className={s.ytpSpeedPanelHeader}>
-          <span className={s.ytpSpeedPanelTitle}>Playback speed</span>
           <span className={s.ytpSpeedPanelValue}>{formatRateBadge(playbackRate)}</span>
         </div>
         <div className={s.ytpSpeedPanelBody}>
           <label className={s.ytpSpeedSliderBlock}>
-            <span className={s.ytpSpeedSliderLabel}>Adjust speed</span>
+            <div className={s.ytpSpeedHelp} aria-hidden="true">
+              <kbd>[</kbd>
+              <span>slower</span>
+              <kbd>]</kbd>
+              <span>faster</span>
+            </div>
+            <div className={s.ytpSpeedSlider}>
+              <div
+                className={s.ytpSpeedSliderFill}
+                style={{ width: `${speedPct}%` }}
+              />
+              <div
+                className={s.ytpSpeedSliderHandle}
+                style={{ left: `${speedPct}%` }}
+              />
+            </div>
             <input
               className={s.ytpSpeedRange}
               type="range"
@@ -121,10 +133,6 @@ export function SpeedPanel({
               aria-label="Playback speed"
               onChange={(event) => onPlaybackRateChange(Number(event.currentTarget.value))}
             />
-            <div className={s.ytpSpeedScale}>
-              <span>{formatRateBadge(SPEED_MIN)}</span>
-              <span>{formatRateBadge(SPEED_MAX)}</span>
-            </div>
           </label>
           <div className={s.ytpSpeedPresets} role="group" aria-label="Speed presets">
             {SPEED_PRESETS.map((rate) => {
@@ -141,9 +149,6 @@ export function SpeedPanel({
                 </button>
               );
             })}
-          </div>
-          <div id={helpTextId} className={s.ytpSpeedHelp}>
-            Keyboard shortcuts: <kbd>[</kbd> slower, <kbd>]</kbd> faster
           </div>
         </div>
       </div>

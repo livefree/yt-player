@@ -465,3 +465,10 @@
 - 完成 `SEQ-20260407-27 / PLAYER-49`
 - speed button 数值已统一为两位小数，按钮本体改为固定宽度并使用 tabular-nums，避免速度变化时宽度跳动
 - 回归测试扩到 79 个，补充了 speed badge 固定格式契约
+
+# 2026-04-07 13:50
+
+- 完成 `SEQ-20260407-27 / PLAYER-50`
+- speed panel 已压成更紧凑形态：去掉冗余标题/说明文案，当前倍速改为置顶居中显示
+- speed slider 已切到与 volume slider 一致的轨道 / fill / handle 视觉语言，快捷键提示改为 hover tooltip
+- 回归测试扩到 80 个，补充了 compact speed panel 契约

@@ -1529,6 +1529,21 @@ describe("YTPlayer — speed control contracts", () => {
     expect(speedValue).toHaveTextContent("1.00x");
     expect(speedValue).toHaveClass("ytpSpeedButtonValue");
   });
+
+  it("uses the compact speed panel layout without redundant helper copy", async () => {
+    render(<YTPlayer src={TEST_SRC} />);
+
+    await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
+
+    const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
+
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toHaveTextContent("1.00x");
+    expect(screen.queryByText("Adjust speed")).not.toBeInTheDocument();
+    expect(screen.queryByText("0.25x")).not.toBeInTheDocument();
+    expect(screen.queryByText("3.00x")).not.toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedSlider")).toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedHelp")).toBeInTheDocument();
+  });
 });
 
 describe("YTPlayer — panel surface contracts", () => {
