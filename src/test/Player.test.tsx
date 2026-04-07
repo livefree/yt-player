@@ -399,9 +399,16 @@ describe("YTPlayer — layout decision contracts", () => {
         "desktop-default",
       );
     });
+
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-density",
+      "comfortable",
+    );
+    expect(container.firstElementChild).toHaveAttribute("data-layout-width", "wide");
+    expect(container.firstElementChild).toHaveAttribute("data-layout-height", "tall");
   });
 
-  it("switches to desktop-compact layout and moves the episodes panel to top-right", async () => {
+  it("switches to desktop-compact layout and promotes the episodes panel to top-right", async () => {
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
       writable: true,
@@ -418,6 +425,10 @@ describe("YTPlayer — layout decision contracts", () => {
         "desktop-compact",
       );
     });
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-density",
+      "collapsed",
+    );
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
 
@@ -425,6 +436,50 @@ describe("YTPlayer — layout decision contracts", () => {
       "data-placement",
       "top-right",
     );
+  });
+
+  it("condenses desktop layout on short heights and promotes priority controls", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 1000,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 420,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-mode",
+        "desktop-default",
+      );
+    });
+
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-layout-density",
+      "condensed",
+    );
+    expect(container.firstElementChild).toHaveAttribute("data-layout-height", "short");
+
+    const topRight = container.querySelector(
+      '[data-control-slot="top-right"]',
+    ) as HTMLDivElement;
+
+    expect(
+      topRight.querySelector('[data-ytp-component="settings-btn"]'),
+    ).toBeInTheDocument();
+    expect(
+      topRight.querySelector('[data-ytp-component="episodes-btn"]'),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".ytpChapterContainer")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /theater mode/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("switches to mobile layout on coarse pointers and promotes episodes into a visible phone entry point", async () => {
@@ -630,6 +685,30 @@ describe("YTPlayer — slot composition contracts", () => {
     expect(
       container.querySelector('[data-input-route="gesture-zone"]')?.parentElement,
     ).toHaveStyle({ "--ytp-gesture-top": "52px" });
+  });
+
+  it("collapses lower-priority desktop controls on very narrow widths", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 520,
+    });
+
+    const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-layout-density",
+        "collapsed",
+      );
+    });
+
+    expect(container.querySelector(".ytpChapterContainer")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /theater mode/i }),
+    ).not.toBeInTheDocument();
+    expect(container.firstElementChild).toHaveAttribute("data-layout-width", "narrow");
   });
 
   it("keeps the next/episodes reveal group in the bottom-left slot for desktop-default layouts", async () => {

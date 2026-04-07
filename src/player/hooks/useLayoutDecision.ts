@@ -43,6 +43,11 @@ type UseLayoutDecisionParams = {
 
 export type LayoutDecision = {
   compactPanels: boolean;
+  constraints: {
+    height: "short" | "tall";
+    width: "narrow" | "medium" | "wide";
+  };
+  density: "collapsed" | "comfortable" | "condensed";
   hiddenControls: ControlId[];
   mode: LayoutMode;
   placements: {
@@ -52,7 +57,9 @@ export type LayoutDecision = {
   slots: Record<ControlSlot, ControlId[]>;
 };
 
-const DESKTOP_COMPACT_WIDTH = 640;
+const DESKTOP_COLLAPSED_WIDTH = 560;
+const DESKTOP_COMPACT_WIDTH = 760;
+const SHORT_HEIGHT = 460;
 
 function createDesktopDefaultSlots(hasEpisodes: boolean, hasNext: boolean) {
   const bottomLeft: ControlId[] = ["play"];
@@ -104,6 +111,60 @@ function createMobileSlots(hasEpisodes: boolean) {
     "edge-left": [],
     "edge-right": [],
   } satisfies Record<ControlSlot, ControlId[]>;
+}
+
+function cloneSlots(
+  slots: Record<ControlSlot, ControlId[]>,
+): Record<ControlSlot, ControlId[]> {
+  return Object.fromEntries(
+    Object.entries(slots).map(([slot, controls]) => [slot, [...controls]]),
+  ) as Record<ControlSlot, ControlId[]>;
+}
+
+function removeControl(
+  slots: Record<ControlSlot, ControlId[]>,
+  control: ControlId,
+) {
+  Object.keys(slots).forEach((slot) => {
+    const typedSlot = slot as ControlSlot;
+    slots[typedSlot] = slots[typedSlot].filter((value) => value !== control);
+  });
+}
+
+function ensureControlInSlot(
+  slots: Record<ControlSlot, ControlId[]>,
+  control: ControlId,
+  slot: ControlSlot,
+) {
+  removeControl(slots, control);
+  slots[slot].push(control);
+}
+
+function applyDesktopCollapsePolicy({
+  slots,
+  density,
+  hasEpisodes,
+}: {
+  density: LayoutDecision["density"];
+  hasEpisodes: boolean;
+  slots: Record<ControlSlot, ControlId[]>;
+}) {
+  if (density === "comfortable") return slots;
+
+  removeControl(slots, "chapter");
+  removeControl(slots, "theater");
+  ensureControlInSlot(slots, "settings", "top-right");
+
+  if (hasEpisodes) {
+    ensureControlInSlot(slots, "episodes", "top-right");
+  }
+
+  if (density === "collapsed") {
+    removeControl(slots, "airplay");
+    removeControl(slots, "pip");
+  }
+
+  return slots;
 }
 
 export function useLayoutDecision({
@@ -167,6 +228,14 @@ export function useLayoutDecision({
 
   return useMemo(() => {
     let mode: LayoutMode = "desktop-default";
+    const widthBand =
+      viewport.width > 0 && viewport.width <= DESKTOP_COMPACT_WIDTH
+        ? viewport.width <= DESKTOP_COLLAPSED_WIDTH
+          ? "narrow"
+          : "medium"
+        : "wide";
+    const heightBand = viewport.height > 0 && viewport.height <= SHORT_HEIGHT ? "short" : "tall";
+    let density: LayoutDecision["density"] = "comfortable";
 
     if (isFullscreen) {
       mode = "fullscreen-immersive";
@@ -179,12 +248,28 @@ export function useLayoutDecision({
       mode = "desktop-compact";
     }
 
-    const slots =
+    if (!isCoarsePointer && !isFullscreen) {
+      if (widthBand === "narrow") {
+        density = "collapsed";
+      } else if (widthBand === "medium" || heightBand === "short") {
+        density = "condensed";
+      }
+    }
+
+    const baseSlots =
       mode === "desktop-default"
         ? createDesktopDefaultSlots(hasEpisodes, hasNext)
         : mode === "desktop-compact"
           ? createDesktopCompactSlots(hasEpisodes, hasNext)
           : createMobileSlots(hasEpisodes);
+    const slots =
+      !isCoarsePointer && !isFullscreen
+        ? applyDesktopCollapsePolicy({
+            density,
+            hasEpisodes,
+            slots: cloneSlots(baseSlots),
+          })
+        : baseSlots;
 
     const visibleControls = new Set(
       Object.values(slots).flatMap((slotControls) => slotControls),
@@ -214,13 +299,22 @@ export function useLayoutDecision({
 
     return {
       mode,
-      compactPanels: mode !== "desktop-default",
       hiddenControls,
+      density,
+      constraints: {
+        width: widthBand,
+        height: heightBand,
+      },
       slots,
       placements: {
-        episodesPanel: mode === "desktop-default" ? "bottom-left" : "top-right",
-        settingsPanel: mode === "desktop-default" ? "bottom-right" : "top-right",
+        episodesPanel: slots["top-right"].includes("episodes")
+          ? "top-right"
+          : "bottom-left",
+        settingsPanel: slots["top-right"].includes("settings")
+          ? "top-right"
+          : "bottom-right",
       },
+      compactPanels: density !== "comfortable" || mode !== "desktop-default",
     } satisfies LayoutDecision;
   }, [hasEpisodes, hasNext, isCoarsePointer, isFullscreen, viewport.height, viewport.width]);
 }

@@ -352,3 +352,21 @@
    - 实际开始：2026-04-06 19:41
    - 完成时间：2026-04-06 19:47
    - 验收要点：形成 Fullscreen / PiP / Media Session / Wake Lock / AirPlay / HLS 的支持矩阵；明确 capability detection、宿主前提和降级行为；避免对外形成不准确的“全平台支持”表述
+
+## [SEQ-20260406-11] YTPlayer 连续布局策略与控件优先级收口
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 19:42
+- **最后更新时间**：2026-04-06 19:46
+- **目标**：把当前离散 `layout mode` 决策推进为尺寸驱动的连续布局策略，并为后续 collapse policy 建立第一层控件优先级收口
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于现有 `useLayoutDecision` / slot 视图层；本轮不进入 input intent routing 和 overlay orchestration
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-27 — 为布局决策引入约束驱动和基础 collapse policy（状态：✅）
+   - 创建时间：2026-04-06 19:42
+   - 计划开始：2026-04-06 19:42
+   - 实际开始：2026-04-06 19:42
+   - 完成时间：2026-04-06 19:46
+   - 验收要点：`useLayoutDecision` 能表达宽度/高度约束和基础控件折叠；不再只靠离散模式切换；补布局契约测试

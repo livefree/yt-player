@@ -268,3 +268,14 @@
   - 文档明确了每项能力的检测方式、预期环境、可见行为、降级契约和宿主应用表述建议
   - 文档额外给出推荐 QA 矩阵，便于后续在桌面 Chromium / Safari、iPhone Safari、iPad Safari、Android Chrome 下统一验证
   - 本次为纯文档任务，未运行 `typecheck/lint/test/build`
+
+## 2026-04-06 19:46
+
+- **任务**：PLAYER-27 — 为布局决策引入约束驱动和基础 collapse policy
+- **所属序列**：SEQ-20260406-11
+- **结果**：
+  - `src/player/hooks/useLayoutDecision.ts` 已新增 `constraints` 与 `density` 输出，把布局决策从离散 `layout mode` 扩展为宽度/高度约束驱动
+  - 桌面端已建立第一层基础 collapse policy：在 `condensed/collapsed` 下收起 `chapter/theater`，并把 `settings/episodes` 提升到 `top-right`
+  - `src/player/Player.tsx` 已通过 `data-layout-density`、`data-layout-width`、`data-layout-height` 暴露当前布局约束，便于视图层和测试消费
+  - `src/test/Player.test.tsx` 已补充 desktop short-height / narrow-width 布局契约测试，当前回归测试总数为 56
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
