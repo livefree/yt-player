@@ -136,8 +136,12 @@ function createPhoneTouchSlots(hasEpisodes: boolean, hasNext: boolean) {
     "top-left": ["title"],
     "top-right": ["speed", "settings"],
     "bottom-left": ["time"],
-    "bottom-right": [...(hasEpisodes ? (["episodes"] as ControlId[]) : []), "fullscreen"],
-    "center-overlay": ["play", ...(hasNext ? (["next"] as ControlId[]) : [])],
+    "bottom-right": [
+      ...(hasNext ? (["next"] as ControlId[]) : []),
+      ...(hasEpisodes ? (["episodes"] as ControlId[]) : []),
+      "fullscreen",
+    ],
+    "center-overlay": ["play"],
     "edge-left": [],
     "edge-right": [],
   } satisfies Record<ControlSlot, ControlId[]>;

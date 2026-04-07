@@ -728,6 +728,12 @@ export function YTPlayer({
     }
     return "above";
   };
+  const topControlsGap =
+    layoutDecision.viewportBand === "compact" ||
+    layoutDecision.viewportBand === "narrow" ||
+    layoutDecision.viewportBand === "phone-portrait"
+      ? "10"
+      : "8";
 
   const renderControl = (control: ControlId) => {
     switch (control) {
@@ -1030,6 +1036,7 @@ export function YTPlayer({
       data-layout-band={layoutDecision.viewportBand}
       data-top-controls-anchor="top"
       data-top-tooltip-placement="below"
+      data-top-controls-gap={topControlsGap}
       data-interaction-policy={layoutDecision.interactionPolicy}
       data-chrome-policy={layoutDecision.chromePolicy}
       data-chrome-pause-behavior={

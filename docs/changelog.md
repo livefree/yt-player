@@ -479,3 +479,10 @@
 - settings / speed / episodes 已统一接入 compact / narrow / phone-portrait 的 popup 约束，包含底部抬升、顶部偏移和高度限制
 - settings / speed 面板现在也具备稳定的内部滚动契约，不再只靠外层固定盒子
 - 回归测试扩到 82 个，补充了 speed / settings 的 shared popup contract
+
+# 2026-04-07 13:55
+
+- 完成 `SEQ-20260407-27 / PLAYER-52 / PLAYER-53`
+- top-right controls 在 compact / narrow / phone-portrait 下已收口到明确的间距与不收缩 contract，避免按钮命中区互相重叠
+- phone-touch 的 `next` 已从中央主控区迁移到右侧 controls，中央保留放大的 `play` 主控
+- `SEQ-20260407-27` 至此整体完成

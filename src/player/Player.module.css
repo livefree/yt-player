@@ -210,6 +210,12 @@
   min-width: 0;
 }
 
+.moviePlayer[data-layout-band="compact"] .ytpChromeTop,
+.moviePlayer[data-layout-band="narrow"] .ytpChromeTop,
+.moviePlayer[data-layout-band="phone-portrait"] .ytpChromeTop {
+  gap: 8px;
+}
+
 .moviePlayer:not(.ytpAutohide) .ytpChromeTop {
   opacity: 1;
   pointer-events: auto;
@@ -234,6 +240,18 @@
   justify-content: flex-end;
   margin-left: auto;
   align-self: flex-start;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.ytpControlSlot[data-control-slot="top-right"] > * {
+  flex-shrink: 0;
+}
+
+.moviePlayer[data-layout-band="compact"] .ytpControlSlot[data-control-slot="top-right"],
+.moviePlayer[data-layout-band="narrow"] .ytpControlSlot[data-control-slot="top-right"],
+.moviePlayer[data-layout-band="phone-portrait"] .ytpControlSlot[data-control-slot="top-right"] {
+  gap: 10px;
 }
 
 .ytpTitleText {

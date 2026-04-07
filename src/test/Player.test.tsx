@@ -447,6 +447,10 @@ describe("YTPlayer — layout decision contracts", () => {
       "data-top-tooltip-placement",
       "below",
     );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-top-controls-gap",
+      "10",
+    );
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
 
@@ -579,6 +583,10 @@ describe("YTPlayer — layout decision contracts", () => {
       "data-chrome-hide-delay",
       "2000",
     );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-top-controls-gap",
+      "10",
+    );
 
     const topRight = container.querySelector(
       '[data-control-slot="top-right"]',
@@ -687,7 +695,7 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(bottomLeft.textContent).toContain("0:00");
   });
 
-  it("surfaces the next button beside the centered play control on phone-touch when next is available", async () => {
+  it("keeps play centered and moves next into the right-side phone controls when next is available", async () => {
     coarsePointer = true;
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
@@ -715,12 +723,18 @@ describe("YTPlayer — layout decision contracts", () => {
     const centerOverlay = container.querySelector(
       '[data-control-slot="center-overlay"]',
     ) as HTMLDivElement;
+    const bottomRight = container.querySelector(
+      '[data-control-slot="bottom-right"]',
+    ) as HTMLDivElement;
 
     expect(
       centerOverlay.querySelector('[data-ytp-component="play-btn"]'),
     ).toBeInTheDocument();
     expect(
       centerOverlay.querySelector('[data-ytp-component="next-btn"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      bottomRight.querySelector('[data-ytp-component="next-btn"]'),
     ).toBeInTheDocument();
   });
 });
