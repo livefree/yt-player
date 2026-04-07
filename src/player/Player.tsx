@@ -187,7 +187,6 @@ export function YTPlayer({
     setIsPlaying,
   });
 
-  const isImmersive = isTheater || isFullscreen;
   const hasEpisodes = (episodes?.length ?? 0) > 0;
   const hasNext = !!onNext;
   const episodesCols =
@@ -203,8 +202,7 @@ export function YTPlayer({
   });
 
   const { chromeVisible, cursorHidden, revealChrome } = useChromeVisibility({
-    chromePolicy: layoutDecision.chromePolicy,
-    isImmersive,
+    chromeVisibilityPolicy: layoutDecision.chromeVisibilityPolicy,
     isPlaying,
     openPanel,
     isEpisodesOpen,
@@ -935,6 +933,12 @@ export function YTPlayer({
       data-layout-profile={layoutDecision.profile}
       data-interaction-policy={layoutDecision.interactionPolicy}
       data-chrome-policy={layoutDecision.chromePolicy}
+      data-chrome-pause-behavior={
+        layoutDecision.chromeVisibilityPolicy.pausedBehavior
+      }
+      data-chrome-hide-delay={String(
+        layoutDecision.chromeVisibilityPolicy.hideDelayMs,
+      )}
       data-layout-width={layoutDecision.constraints.width}
       data-layout-height={layoutDecision.constraints.height}
       data-loading-state={loadingState}

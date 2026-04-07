@@ -496,3 +496,21 @@
    - 实际开始：2026-04-07 00:10
    - 完成时间：2026-04-07 00:23
    - 验收要点：tablet-touch 的 controls 在 2.5s 后仍可见、在更长延迟后隐藏；desktop 仍保持原有 2s 行为；补对应契约测试
+
+## [SEQ-20260407-19] YTPlayer chrome visibility policy engine 第一阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:24
+- **最后更新时间**：2026-04-07 00:31
+- **目标**：将 `useChromeVisibility` 从字符串分支升级为显式 policy engine，为后续继续细分 desktop/tablet/phone/immersive 行为提供稳定边界
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `interactionPolicy / chromePolicy` 输出；本轮不新增 UI 控件，不调整公开 API
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-35 — 显式化 chrome visibility policy 对象（状态：✅）
+   - 创建时间：2026-04-07 00:24
+   - 计划开始：2026-04-07 00:24
+   - 实际开始：2026-04-07 00:24
+   - 完成时间：2026-04-07 00:31
+   - 验收要点：布局层产出显式 `chromeVisibilityPolicy`；可见性 hook 不再自己推导 pause/hide delay；补 desktop/tablet/phone/immersive 契约测试

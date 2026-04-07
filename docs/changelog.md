@@ -354,3 +354,9 @@
   - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
   - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+# 2026-04-07 00:31
+
+- 完成 `SEQ-20260407-19 / PLAYER-35`
+- 将 chrome visibility 从字符串分支升级为显式 policy object，布局层现在统一输出 `id / pausedBehavior / hideDelayMs / hideCursorOnAutohide`
+- `useChromeVisibility` 已改为直接消费 policy object，`Player` 暴露 `data-chrome-pause-behavior` 与 `data-chrome-hide-delay`
+- 回归测试扩到 63 个，补充了 desktop / tablet / phone / immersive 的 chrome policy 契约

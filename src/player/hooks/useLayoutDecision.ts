@@ -1,4 +1,9 @@
 import { useEffect, useMemo, useState, type RefObject } from "react";
+import {
+  CHROME_HIDE_DELAY,
+  IMMERSIVE_HIDE_DELAY,
+  TOUCH_CHROME_HIDE_DELAY,
+} from "../utils/format";
 
 export type LayoutMode =
   | "desktop-default"
@@ -42,6 +47,12 @@ export type ChromePolicy =
   | "hover-autohide"
   | "touch-autohide"
   | "touch-persistent-paused";
+export interface ChromeVisibilityPolicy {
+  hideCursorOnAutohide: boolean;
+  hideDelayMs: number;
+  id: ChromePolicy;
+  pausedBehavior: "autohide" | "persistent";
+}
 
 type UseLayoutDecisionParams = {
   hasEpisodes: boolean;
@@ -53,6 +64,7 @@ type UseLayoutDecisionParams = {
 
 export type LayoutDecision = {
   chromePolicy: ChromePolicy;
+  chromeVisibilityPolicy: ChromeVisibilityPolicy;
   compactPanels: boolean;
   constraints: {
     height: "short" | "tall";
@@ -188,6 +200,7 @@ export function useLayoutDecision({
   hasEpisodes,
   hasNext,
   isFullscreen,
+  isTheater,
   playerRef,
 }: UseLayoutDecisionParams): LayoutDecision {
   const [isCoarsePointer, setIsCoarsePointer] = useState(false);
@@ -256,6 +269,7 @@ export function useLayoutDecision({
     let profile: LayoutProfile = "default";
     let interactionPolicy: InteractionPolicy = "desktop-pointer";
     let chromePolicy: ChromePolicy = "hover-autohide";
+    const isImmersive = isFullscreen || isTheater;
 
     if (isFullscreen) {
       mode = "fullscreen-immersive";
@@ -330,11 +344,24 @@ export function useLayoutDecision({
       return !visibleControls.has(control);
     });
 
+    const chromeVisibilityPolicy: ChromeVisibilityPolicy = {
+      id: chromePolicy,
+      hideDelayMs: isImmersive
+        ? IMMERSIVE_HIDE_DELAY
+        : chromePolicy === "touch-autohide"
+          ? TOUCH_CHROME_HIDE_DELAY
+          : CHROME_HIDE_DELAY,
+      pausedBehavior:
+        chromePolicy === "touch-persistent-paused" ? "persistent" : "autohide",
+      hideCursorOnAutohide: isImmersive,
+    };
+
     return {
       mode,
       profile,
       interactionPolicy,
       chromePolicy,
+      chromeVisibilityPolicy,
       hiddenControls,
       density,
       constraints: {
@@ -354,5 +381,13 @@ export function useLayoutDecision({
       },
       compactPanels: density !== "comfortable" || mode !== "desktop-default",
     } satisfies LayoutDecision;
-  }, [hasEpisodes, hasNext, isCoarsePointer, isFullscreen, viewport.height, viewport.width]);
+  }, [
+    hasEpisodes,
+    hasNext,
+    isCoarsePointer,
+    isFullscreen,
+    isTheater,
+    viewport.height,
+    viewport.width,
+  ]);
 }

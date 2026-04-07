@@ -554,6 +554,14 @@ describe("YTPlayer — layout decision contracts", () => {
       "data-chrome-policy",
       "touch-persistent-paused",
     );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-chrome-pause-behavior",
+      "persistent",
+    );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-chrome-hide-delay",
+      "2000",
+    );
 
     const topRight = container.querySelector(
       '[data-control-slot="top-right"]',
@@ -705,6 +713,14 @@ describe("YTPlayer — mobile chrome policy contracts", () => {
         "data-chrome-policy",
         "touch-autohide",
       );
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-chrome-pause-behavior",
+        "autohide",
+      );
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-chrome-hide-delay",
+        "3200",
+      );
 
       await act(async () => {
         vi.advanceTimersByTime(2500);
@@ -726,9 +742,49 @@ describe("YTPlayer — mobile chrome policy contracts", () => {
     vi.useFakeTimers();
     try {
       const { container } = render(<YTPlayer src={TEST_SRC} />);
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-chrome-pause-behavior",
+        "autohide",
+      );
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-chrome-hide-delay",
+        "2000",
+      );
 
       await act(async () => {
         vi.advanceTimersByTime(2500);
+      });
+
+      expect(container.firstElementChild).toHaveClass("ytpAutohide");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("uses immersive chrome policy timing when theater mode is enabled", async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<YTPlayer src={TEST_SRC} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /theater mode/i }));
+
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-chrome-hide-delay",
+        "3000",
+      );
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-chrome-pause-behavior",
+        "autohide",
+      );
+
+      await act(async () => {
+        vi.advanceTimersByTime(2700);
+      });
+
+      expect(container.firstElementChild).not.toHaveClass("ytpAutohide");
+
+      await act(async () => {
+        vi.advanceTimersByTime(400);
       });
 
       expect(container.firstElementChild).toHaveClass("ytpAutohide");

@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  CHROME_HIDE_DELAY,
-  IMMERSIVE_HIDE_DELAY,
-  TOUCH_CHROME_HIDE_DELAY,
-} from "../utils/format";
-import type { ChromePolicy } from "./useLayoutDecision";
+import type { ChromeVisibilityPolicy } from "./useLayoutDecision";
 
 interface UseChromeVisibilityParams {
-  chromePolicy: ChromePolicy;
-  isImmersive: boolean;
+  chromeVisibilityPolicy: ChromeVisibilityPolicy;
   isPlaying: boolean;
   openPanel: string | null;
   isEpisodesOpen: boolean;
@@ -16,8 +10,7 @@ interface UseChromeVisibilityParams {
 }
 
 export function useChromeVisibility({
-  chromePolicy,
-  isImmersive,
+  chromeVisibilityPolicy,
   isPlaying,
   openPanel,
   isEpisodesOpen,
@@ -26,12 +19,6 @@ export function useChromeVisibility({
   const [chromeVisible, setChromeVisible] = useState(true);
   const [cursorHidden, setCursorHidden] = useState(false);
   const chromeTimerRef = useRef<number | null>(null);
-  const hideDelay =
-    isImmersive
-      ? IMMERSIVE_HIDE_DELAY
-      : chromePolicy === "touch-autohide"
-        ? TOUCH_CHROME_HIDE_DELAY
-        : CHROME_HIDE_DELAY;
 
   const revealChrome = useCallback(() => {
     setChromeVisible(true);
@@ -42,11 +29,11 @@ export function useChromeVisibility({
       () => {
         if (openPanel || isEpisodesOpen) return;
         setChromeVisible(false);
-        if (isImmersive) setCursorHidden(true);
+        if (chromeVisibilityPolicy.hideCursorOnAutohide) setCursorHidden(true);
       },
-      hideDelay,
+      chromeVisibilityPolicy.hideDelayMs,
     );
-  }, [hideDelay, isEpisodesOpen, isImmersive, keepControlsVisible, openPanel]);
+  }, [chromeVisibilityPolicy, isEpisodesOpen, keepControlsVisible, openPanel]);
 
   useEffect(() => {
     if (openPanel || isEpisodesOpen) {
@@ -57,14 +44,24 @@ export function useChromeVisibility({
       setChromeVisible(true);
       setCursorHidden(false);
       if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
-    } else if (chromePolicy === "touch-persistent-paused" && !isPlaying) {
+    } else if (
+      chromeVisibilityPolicy.pausedBehavior === "persistent" &&
+      !isPlaying
+    ) {
       setChromeVisible(true);
       setCursorHidden(false);
       if (chromeTimerRef.current) window.clearTimeout(chromeTimerRef.current);
     } else {
       revealChrome();
     }
-  }, [chromePolicy, isEpisodesOpen, isPlaying, keepControlsVisible, openPanel, revealChrome]);
+  }, [
+    chromeVisibilityPolicy.pausedBehavior,
+    isEpisodesOpen,
+    isPlaying,
+    keepControlsVisible,
+    openPanel,
+    revealChrome,
+  ]);
 
   return { chromeVisible, cursorHidden, revealChrome };
 }
