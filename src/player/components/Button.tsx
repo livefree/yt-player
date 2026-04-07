@@ -6,6 +6,7 @@ type YtpButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   ariaLabel?: string;
   ariaPressed?: boolean;
   children: ReactNode;
+  tooltipPlacement?: "above" | "below";
 };
 
 /** YtpButton — control bar button with three-layer visual model:
@@ -20,6 +21,7 @@ export const YtpButton = forwardRef<HTMLButtonElement, YtpButtonProps>(function 
   ariaLabel,
   className = "",
   ariaPressed,
+  tooltipPlacement = "above",
   children,
   ...rest
 }, ref) {
@@ -32,6 +34,7 @@ export const YtpButton = forwardRef<HTMLButtonElement, YtpButtonProps>(function 
       onMouseEnter={onMouseEnter}
       aria-label={ariaLabel ?? tooltip}
       aria-pressed={ariaPressed}
+      data-tooltip-placement={tooltipPlacement}
       {...rest}
     >
       {children}

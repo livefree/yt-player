@@ -13,6 +13,12 @@ export const RESUME_EXCLUSION = 30; // seconds — don't resume near start/end
 export const EPISODES_COLS_SMALL = 4; // grid columns when ≤ threshold episodes
 export const EPISODES_COLS_LARGE = 6; // grid columns when > threshold episodes
 export const EPISODES_COLS_THRESHOLD = 12; // episode count breakpoint
+export const EPISODES_COLS_MEDIUM = 5; // medium desktop widths
+export const EPISODES_COLS_COMPACT = 4; // compact desktop widths
+export const EPISODES_COLS_NARROW = 3; // narrow widths / small panels
+export const EPISODES_PANEL_HEIGHT_DEFAULT = "260px";
+export const EPISODES_PANEL_HEIGHT_COMPACT = "220px";
+export const EPISODES_PANEL_HEIGHT_NARROW = "196px";
 export const THUMB_CLAMP_PX = 80; // px inset from rail edge for thumbnail tooltip
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────

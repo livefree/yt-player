@@ -439,6 +439,14 @@ describe("YTPlayer — layout decision contracts", () => {
       "compact-width",
     );
     expect(container.firstElementChild).toHaveAttribute("data-layout-band", "compact");
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-top-controls-anchor",
+      "top",
+    );
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-top-tooltip-placement",
+      "below",
+    );
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
 
@@ -1159,6 +1167,11 @@ describe("YTPlayer — slot composition contracts", () => {
     expect(
       topRight.querySelector('[data-ytp-component="episodes-btn"]'),
     ).toBeInTheDocument();
+    expect(
+      topRight
+        .querySelector('[data-ytp-component="settings-btn"]')
+        ?.getAttribute("data-tooltip-placement"),
+    ).toBe("below");
     expect(container.firstElementChild).toHaveAttribute(
       "data-top-controls-interactive",
       "true",
@@ -1545,6 +1558,32 @@ describe("YTPlayer — Episodes panel", () => {
     expect(screen.getByRole("dialog", { name: /episodes/i })).toBeInTheDocument();
   });
 
+  it("uses a narrower scrollable episodes panel contract on phone-portrait", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    render(<YTPlayer episodes={EPISODES_15} />);
+    fireEvent(window, new Event("resize"));
+    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /episodes/i });
+    expect(dialog).toHaveAttribute("data-placement", "bottom-right");
+    expect(dialog).toHaveAttribute("data-viewport-band", "phone-portrait");
+    expect(dialog).toHaveStyle({
+      "--_ep-cols": "3",
+      "--_ep-max-height": "196px",
+    });
+  });
+
   it("renders episode items with zero-padded numbers", async () => {
     render(<YTPlayer episodes={EPISODES_3} />);
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
@@ -1651,6 +1690,25 @@ describe("YTPlayer — Episodes panel", () => {
     const items = screen.getAllByRole("option");
     expect(items).toHaveLength(15);
     expect(items[14]).toHaveTextContent("15");
+  });
+
+  it("keeps a wider episodes panel contract on medium desktop widths", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 860,
+    });
+
+    render(<YTPlayer episodes={EPISODES_15} />);
+    fireEvent(window, new Event("resize"));
+    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /episodes/i });
+    expect(dialog).toHaveAttribute("data-viewport-band", "medium");
+    expect(dialog).toHaveStyle({
+      "--_ep-cols": "5",
+      "--_ep-max-height": "260px",
+    });
   });
 
   it("does NOT render Next button when only episodes provided (no onNext)", () => {

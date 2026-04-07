@@ -33,8 +33,14 @@ import {
   formatTime,
   SEEK_STEP,
   SEEK_OVERLAY_DURATION,
+  EPISODES_COLS_COMPACT,
+  EPISODES_COLS_MEDIUM,
+  EPISODES_COLS_NARROW,
   EPISODES_COLS_SMALL,
   EPISODES_COLS_LARGE,
+  EPISODES_PANEL_HEIGHT_COMPACT,
+  EPISODES_PANEL_HEIGHT_DEFAULT,
+  EPISODES_PANEL_HEIGHT_NARROW,
   EPISODES_COLS_THRESHOLD,
 } from "./utils/format";
 import { useThumbnails } from "./hooks/useThumbnails";
@@ -189,10 +195,6 @@ export function YTPlayer({
 
   const hasEpisodes = (episodes?.length ?? 0) > 0;
   const hasNext = !!onNext;
-  const episodesCols =
-    (episodes?.length ?? 0) > EPISODES_COLS_THRESHOLD
-      ? EPISODES_COLS_LARGE
-      : EPISODES_COLS_SMALL;
   const layoutDecision = useLayoutDecision({
     playerRef,
     isFullscreen,
@@ -200,6 +202,24 @@ export function YTPlayer({
     hasEpisodes,
     hasNext,
   });
+  const episodesCols =
+    layoutDecision.viewportBand === "phone-portrait" ||
+    layoutDecision.viewportBand === "narrow"
+      ? EPISODES_COLS_NARROW
+      : layoutDecision.viewportBand === "compact"
+        ? EPISODES_COLS_COMPACT
+        : layoutDecision.viewportBand === "medium"
+          ? EPISODES_COLS_MEDIUM
+          : (episodes?.length ?? 0) > EPISODES_COLS_THRESHOLD
+            ? EPISODES_COLS_LARGE
+            : EPISODES_COLS_SMALL;
+  const episodesPanelMaxHeight =
+    layoutDecision.viewportBand === "phone-portrait" ||
+    layoutDecision.viewportBand === "narrow"
+      ? EPISODES_PANEL_HEIGHT_NARROW
+      : layoutDecision.viewportBand === "compact"
+        ? EPISODES_PANEL_HEIGHT_COMPACT
+        : EPISODES_PANEL_HEIGHT_DEFAULT;
 
   const { chromeVisible, cursorHidden, revealChrome } = useChromeVisibility({
     chromeVisibilityPolicy: layoutDecision.chromeVisibilityPolicy,
@@ -687,6 +707,15 @@ export function YTPlayer({
       if (!value) setFocusedEpisodeIndex(activeEpisodeIndex);
       return !value;
     });
+  const getTooltipPlacement = (control: ControlId): "above" | "below" => {
+    if (
+      layoutDecision.slots["top-left"].includes(control) ||
+      layoutDecision.slots["top-right"].includes(control)
+    ) {
+      return "below";
+    }
+    return "above";
+  };
 
   const renderControl = (control: ControlId) => {
     switch (control) {
@@ -695,6 +724,7 @@ export function YTPlayer({
           <YtpButton
             key="play"
             tooltip={isPlaying ? "Pause (K)" : "Play (K)"}
+            tooltipPlacement={getTooltipPlacement("play")}
             onClick={togglePlay}
             ariaLabel={isPlaying ? "Pause" : "Play"}
             className={s.ytpPlayButton}
@@ -708,6 +738,7 @@ export function YTPlayer({
           <YtpButton
             key="next"
             tooltip="Next (SHIFT+N)"
+            tooltipPlacement={getTooltipPlacement("next")}
             ariaLabel="Next"
             onClick={onNext}
             className={s.ytpNextButton}
@@ -730,6 +761,7 @@ export function YTPlayer({
           >
             <YtpButton
               tooltip="Episodes (E)"
+              tooltipPlacement={getTooltipPlacement("episodes")}
               ariaLabel="Episodes"
               onClick={toggleEpisodes}
               className={s.ytpEpisodesButton}
@@ -754,6 +786,7 @@ export function YTPlayer({
             <div className={s.ytpMuteButton}>
               <YtpButton
                 tooltip={isMuted ? "Unmute (M)" : "Mute (M)"}
+                tooltipPlacement={getTooltipPlacement("volume")}
                 onClick={toggleMute}
                 onMouseEnter={revealVolumeSlider}
               >
@@ -836,6 +869,7 @@ export function YTPlayer({
           <YtpButton
             key="subtitles"
             tooltip="Subtitles/closed captions (C)"
+            tooltipPlacement={getTooltipPlacement("subtitles")}
             onClick={cycleSubtitles}
             ariaPressed={!!activeSubId}
             data-ytp-component="subtitles-btn"
@@ -848,6 +882,7 @@ export function YTPlayer({
           <YtpButton
             key="settings"
             tooltip="Settings"
+            tooltipPlacement={getTooltipPlacement("settings")}
             onClick={() => setOpenPanel((panel) => (panel ? null : "settings"))}
             ariaPressed={!!openPanel}
             className={openPanel ? s.ytpSettingsButtonActive : ""}
@@ -865,6 +900,7 @@ export function YTPlayer({
           <YtpButton
             key="theater"
             tooltip={isTheater ? "Default view (T)" : "Theater mode (T)"}
+            tooltipPlacement={getTooltipPlacement("theater")}
             onClick={toggleTheater}
             ariaPressed={isTheater}
             className={s.ytpTheaterButton}
@@ -878,6 +914,7 @@ export function YTPlayer({
           <YtpButton
             key="airplay"
             tooltip="AirPlay"
+            tooltipPlacement={getTooltipPlacement("airplay")}
             onClick={triggerAirPlay}
             data-ytp-component="airplay-btn"
           >
@@ -889,6 +926,7 @@ export function YTPlayer({
           <YtpButton
             key="pip"
             tooltip="Picture-in-picture"
+            tooltipPlacement={getTooltipPlacement("pip")}
             onClick={togglePip}
             data-ytp-component="pip-btn"
           >
@@ -900,6 +938,7 @@ export function YTPlayer({
           <YtpButton
             key="fullscreen"
             tooltip={isFullscreen ? "Exit full screen (F)" : "Full screen (F)"}
+            tooltipPlacement={getTooltipPlacement("fullscreen")}
             onClick={toggleFullscreen}
             ariaPressed={isFullscreen}
             data-ytp-component="fullscreen-btn"
@@ -945,6 +984,8 @@ export function YTPlayer({
       data-layout-density={layoutDecision.density}
       data-layout-profile={layoutDecision.profile}
       data-layout-band={layoutDecision.viewportBand}
+      data-top-controls-anchor="top"
+      data-top-tooltip-placement="below"
       data-interaction-policy={layoutDecision.interactionPolicy}
       data-chrome-policy={layoutDecision.chromePolicy}
       data-chrome-pause-behavior={
@@ -1170,7 +1211,9 @@ export function YTPlayer({
         episodes={episodes}
         isOpen={isEpisodesOpen}
         placement={layoutDecision.placements.episodesPanel}
+        viewportBand={layoutDecision.viewportBand}
         episodesCols={episodesCols}
+        maxHeight={episodesPanelMaxHeight}
         activeEpisodeIndex={activeEpisodeIndex}
         focusedEpisodeIndex={focusedEpisodeIndex}
         onEpisodeChange={handleEpisodeChange}

@@ -185,17 +185,21 @@
 
 .ytpChromeTop {
   position: absolute;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   top: 0;
   left: 0;
   right: 0;
   padding:
     calc(12px + var(--ytp-safe-top))
     calc(12px + var(--ytp-safe-right))
-    8px
+    0
     calc(12px + var(--ytp-safe-left));
   opacity: 0;
   transition: opacity 0.25s ease;
   pointer-events: none;
+  min-width: 0;
 }
 
 .moviePlayer:not(.ytpAutohide) .ytpChromeTop {
@@ -208,6 +212,7 @@
 }
 
 .ytpTitle {
+  min-width: 0;
 }
 
 .ytpControlSlot {
@@ -220,6 +225,7 @@
 .ytpControlSlot[data-control-slot="top-right"] {
   justify-content: flex-end;
   margin-left: auto;
+  align-self: flex-start;
 }
 
 .ytpTitleText {
@@ -1067,6 +1073,11 @@
   z-index: 100;
 }
 
+.ytpButton[data-tooltip-placement="below"] .ytpTooltip {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+
 .ytpButton:hover .ytpTooltip {
   opacity: 1;
 }
@@ -1218,8 +1229,16 @@
   border-radius: 4px;
   padding: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-  max-height: min(260px, calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom)));
+  width: min(
+    calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right)),
+    calc(var(--_ep-cols, 6) * 40px + (var(--_ep-cols, 6) - 1) * 4px + 16px)
+  );
+  max-height: min(
+    var(--_ep-max-height, 260px),
+    calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom))
+  );
   overflow-y: auto;
+  overflow-x: hidden;
   animation: ytpPanelIn 0.12s ease; /* reuse existing panel-in animation */
 }
 
@@ -1233,6 +1252,11 @@
 .ytpEpisodesPanel[data-placement="bottom-right"] {
   right: calc(12px + var(--ytp-safe-right));
   left: auto;
+}
+
+.ytpEpisodesPanel[data-viewport-band="phone-portrait"],
+.ytpEpisodesPanel[data-viewport-band="narrow"] {
+  bottom: calc(72px + var(--ytp-safe-bottom));
 }
 
 .ytpEpisodesGrid {

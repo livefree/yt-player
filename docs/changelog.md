@@ -354,6 +354,18 @@
   - `src/player/hooks/useChromeVisibility.ts` 已让 `touch-autohide` 使用更长的自动隐藏延迟，不再与桌面的 2s 节奏完全一致
   - `src/test/Player.test.tsx` 已补充 tablet-touch 延迟契约，并增加 desktop pointer 的对照测试，当前回归测试总数为 62
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+# 2026-04-07 04:40
+
+- 完成 `SEQ-20260407-26 / PLAYER-43`
+- 顶部 chrome 改为明确的 top row，新增 `tooltipPlacement` contract 与 `data-top-controls-anchor / data-top-tooltip-placement`
+- top slot controls 的 tooltip 现在默认向下展开，适配小窗口和过渡宽度
+
+# 2026-04-07 04:43
+
+- 完成 `SEQ-20260407-26 / PLAYER-44`
+- episodes panel 现在按 `viewportBand` 调整列数、最大高度和底部偏移，在 phone-portrait / narrow 下成为更稳定的滚动窗口
+- 新增 `data-viewport-band` 与对应 contract 测试，回归测试扩到 73 个
+
 # 2026-04-07 04:32
 
 - 完成 `SEQ-20260407-26 / PLAYER-42`

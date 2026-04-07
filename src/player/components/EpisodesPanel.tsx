@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import type { CSSProperties, KeyboardEvent, PointerEvent, RefObject } from "react";
 import s from "../Player.module.css";
-import type { PanelPlacement } from "../hooks/useLayoutDecision";
+import type { PanelPlacement, ViewportBand } from "../hooks/useLayoutDecision";
 
 type EpisodesPanelProps = {
   activeEpisodeIndex: number;
   episodesCols: number;
+  maxHeight: string;
   focusedEpisodeIndex: number;
   isOpen: boolean;
   panelId: string;
@@ -14,6 +15,7 @@ type EpisodesPanelProps = {
   onFocusEpisode: (index: number) => void;
   panelRef: RefObject<HTMLDivElement>;
   placement: PanelPlacement;
+  viewportBand: ViewportBand;
   episodes?: Array<{ title?: string }>;
 };
 
@@ -21,6 +23,7 @@ export function EpisodesPanel({
   activeEpisodeIndex,
   episodes,
   episodesCols,
+  maxHeight,
   focusedEpisodeIndex,
   isOpen,
   panelId,
@@ -29,6 +32,7 @@ export function EpisodesPanel({
   onFocusEpisode,
   panelRef,
   placement,
+  viewportBand,
 }: EpisodesPanelProps) {
   const totalEpisodes = episodes?.length ?? 0;
 
@@ -58,9 +62,16 @@ export function EpisodesPanel({
       className={s.ytpEpisodesPanel}
       data-layer="5"
       data-placement={placement}
+      data-viewport-band={viewportBand}
       role="dialog"
       aria-label="Episodes"
       aria-modal="false"
+      style={
+        {
+          "--_ep-cols": episodesCols,
+          "--_ep-max-height": maxHeight,
+        } as CSSProperties
+      }
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
         if (!totalEpisodes) return;
@@ -106,7 +117,6 @@ export function EpisodesPanel({
       <div
         className={s.ytpEpisodesGrid}
         role="listbox"
-        style={{ "--_ep-cols": episodesCols } as CSSProperties}
       >
         {episodes.map((_, index) => (
           <button
