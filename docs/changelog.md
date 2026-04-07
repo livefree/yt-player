@@ -334,3 +334,13 @@
   - `src/player/Player.module.css` 已补充 `ytpEpisodesPanel[data-placement="bottom-right"]`，确保手机端选集面板从右下方弹出
   - `src/test/Player.test.tsx` 已补充 phone-touch 下 `episodes` 入口位置与 panel placement 的契约验证，当前回归测试总数保持 60
   - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`
+
+## 2026-04-07 00:06
+
+- **任务**：PLAYER-33 — 分化 tablet / phone 的 chrome visibility policy
+- **所属序列**：SEQ-20260406-17
+- **结果**：
+  - `src/player/hooks/useLayoutDecision.ts` 已将 `tablet-touch` 的 chrome 策略切到 `touch-autohide`，同时保持 `phone-touch` 为 `touch-persistent-paused`
+  - `src/player/hooks/useChromeVisibility.ts` 继续复用统一策略入口，但现在会按终端策略区分平板与手机暂停态行为
+  - `src/test/Player.test.tsx` 已补充 tablet-touch 的 `touch-autohide` 契约，并验证暂停态下平板可进入 `ytpAutohide`，当前回归测试总数为 61
+  - 验证通过：`npm run typecheck`、`npm run lint`、`npm test`、`npm run build`

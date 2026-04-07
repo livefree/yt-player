@@ -622,6 +622,10 @@ describe("YTPlayer — layout decision contracts", () => {
         "tablet-touch",
       );
     });
+    expect(container.firstElementChild).toHaveAttribute(
+      "data-chrome-policy",
+      "touch-autohide",
+    );
 
     const topRight = container.querySelector(
       '[data-control-slot="top-right"]',
@@ -674,6 +678,39 @@ describe("YTPlayer — mobile chrome policy contracts", () => {
       });
 
       expect(container.firstElementChild).not.toHaveClass("ytpAutohide");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("allows chrome to auto-hide while paused on tablet-touch layouts", async () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 1024,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 768,
+    });
+
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+      fireEvent(window, new Event("resize"));
+
+      expect(container.firstElementChild).toHaveAttribute(
+        "data-chrome-policy",
+        "touch-autohide",
+      );
+
+      await act(async () => {
+        vi.advanceTimersByTime(2500);
+      });
+
+      expect(container.firstElementChild).toHaveClass("ytpAutohide");
     } finally {
       vi.useRealTimers();
     }

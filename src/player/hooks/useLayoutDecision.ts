@@ -38,7 +38,10 @@ export type LayoutProfile =
   | "medium-width"
   | "narrow-width";
 export type InteractionPolicy = "desktop-pointer" | "tablet-touch" | "phone-touch";
-export type ChromePolicy = "hover-autohide" | "touch-persistent-paused";
+export type ChromePolicy =
+  | "hover-autohide"
+  | "touch-autohide"
+  | "touch-persistent-paused";
 
 type UseLayoutDecisionParams = {
   hasEpisodes: boolean;
@@ -268,7 +271,10 @@ export function useLayoutDecision({
     if (isCoarsePointer) {
       interactionPolicy =
         viewport.width > viewport.height ? "tablet-touch" : "phone-touch";
-      chromePolicy = "touch-persistent-paused";
+      chromePolicy =
+        interactionPolicy === "phone-touch"
+          ? "touch-persistent-paused"
+          : "touch-autohide";
     }
 
     if (!isCoarsePointer && !isFullscreen) {

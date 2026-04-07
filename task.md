@@ -460,3 +460,21 @@
    - 实际开始：2026-04-06 21:49
    - 完成时间：2026-04-06 23:44
    - 验收要点：手机端 `episodes` 从顶部次级入口提升到底部主控区；episodes panel 锚点与之同步；补对应契约测试
+
+## [SEQ-20260406-17] YTPlayer mode-aware chrome visibility 第二阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:02
+- **最后更新时间**：2026-04-07 00:06
+- **目标**：让 `tablet-touch` 与 `phone-touch` 在 chrome visibility 上采用不同策略，推进 mode-aware policy
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于现有 `interactionPolicy/chromePolicy`；本轮不改 progress scrub 或 panel 逻辑
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-33 — 分化 tablet / phone 的 chrome visibility policy（状态：✅）
+   - 创建时间：2026-04-07 00:02
+   - 计划开始：2026-04-07 00:02
+   - 实际开始：2026-04-07 00:02
+   - 完成时间：2026-04-07 00:06
+   - 验收要点：phone-touch 暂停态持续显示 chrome；tablet-touch 暂停态允许自动隐藏；补对应策略契约测试
