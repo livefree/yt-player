@@ -916,32 +916,37 @@ export function YTPlayer({
           </YtpButton>
         );
       case "speed":
-        return (
-          <YtpButton
-            key="speed"
-            tooltip={`Playback speed (${formatRateBadge(playbackRate)})`}
-            tooltipPlacement={getTooltipPlacement("speed")}
-            onClick={() =>
-              setOpenPanel((panel) => (panel === "speed" ? null : "speed"))
-            }
-            ariaPressed={openPanel === "speed"}
-            ariaLabel={`Playback speed ${formatRateBadge(playbackRate)}`}
-            className={[
-              s.ytpSpeedButton,
-              openPanel === "speed" ? s.ytpSettingsButtonActive : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            data-ytp-component="speed-btn"
-            ref={speedButtonRef}
-            aria-haspopup="dialog"
-            aria-expanded={openPanel === "speed"}
-            aria-controls={speedPanelId}
-          >
-            <SpeedIcon />
-            <span className={s.ytpSpeedButtonValue}>{formatRateBadge(playbackRate)}</span>
-          </YtpButton>
-        );
+        {
+          const showSpeedIcon = !["compact", "narrow", "phone-portrait"].includes(
+            layoutDecision.viewportBand,
+          );
+          return (
+            <YtpButton
+              key="speed"
+              tooltip={`Playback speed (${formatRateBadge(playbackRate)})`}
+              tooltipPlacement={getTooltipPlacement("speed")}
+              onClick={() =>
+                setOpenPanel((panel) => (panel === "speed" ? null : "speed"))
+              }
+              ariaPressed={openPanel === "speed"}
+              ariaLabel={`Playback speed ${formatRateBadge(playbackRate)}`}
+              className={[
+                s.ytpSpeedButton,
+                openPanel === "speed" ? s.ytpSettingsButtonActive : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              data-ytp-component="speed-btn"
+              ref={speedButtonRef}
+              aria-haspopup="dialog"
+              aria-expanded={openPanel === "speed"}
+              aria-controls={speedPanelId}
+            >
+              {showSpeedIcon ? <SpeedIcon /> : null}
+              <span className={s.ytpSpeedButtonValue}>{formatRateBadge(playbackRate)}</span>
+            </YtpButton>
+          );
+        }
       case "theater":
         return (
           <YtpButton

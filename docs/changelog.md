@@ -486,3 +486,15 @@
 - top-right controls 在 compact / narrow / phone-portrait 下已收口到明确的间距与不收缩 contract，避免按钮命中区互相重叠
 - phone-touch 的 `next` 已从中央主控区迁移到右侧 controls，中央保留放大的 `play` 主控
 - `SEQ-20260407-27` 至此整体完成
+
+# 2026-04-07 14:05
+
+- 新增 `SEQ-20260407-28`
+- 第三轮修正聚焦 4 个问题：speed panel 居中与紧凑度、统一弹窗滚动壳层与底部安全间隔、step 按钮替代旧快捷键气泡、小屏 speed 图标收敛
+
+# 2026-04-07 14:13
+
+- 完成 `SEQ-20260407-28 / PLAYER-54 / PLAYER-55 / PLAYER-56 / PLAYER-57`
+- speed panel 已移除遮挡主值的旧快捷键气泡，改为 slider 两侧 `-` / `+` step 按钮，并继续收口主值与 slider 的居中布局
+- settings / speed / episodes 统一切到 `panel shell + inner scroller` 契约，滚动条不再直接切掉圆角外观，小窗口下底边与控制栏/进度条保持更明确的安全间隔
+- compact / narrow / phone-portrait 下的 speed button 已改为 numeric-only，避免小屏空间继续被图标挤占

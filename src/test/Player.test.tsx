@@ -1556,7 +1556,13 @@ describe("YTPlayer — speed control contracts", () => {
     expect(screen.queryByText("0.25x")).not.toBeInTheDocument();
     expect(screen.queryByText("3.00x")).not.toBeInTheDocument();
     expect(speedDialog.querySelector(".ytpSpeedSlider")).toBeInTheDocument();
-    expect(speedDialog.querySelector(".ytpSpeedHelp")).toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedHelp")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /decrease playback speed/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /increase playback speed/i }),
+    ).toBeInTheDocument();
   });
 
   it("applies the shared small-window popup contract to the speed panel on phone-portrait", async () => {
@@ -1579,6 +1585,28 @@ describe("YTPlayer — speed control contracts", () => {
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
     expect(speedDialog).toHaveAttribute("data-viewport-band", "phone-portrait");
+    expect(speedDialog.querySelector(".ytpPanelScroller")).toBeInTheDocument();
+  });
+
+  it("renders the speed button as numeric-only on phone-portrait", () => {
+    coarsePointer = true;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      writable: true,
+      value: 844,
+    });
+
+    render(<YTPlayer src={TEST_SRC} />);
+    fireEvent(window, new Event("resize"));
+
+    const speedButton = screen.getByRole("button", { name: /playback speed/i });
+    expect(speedButton).toHaveTextContent("1.00x");
+    expect(speedButton.querySelector("svg")).not.toBeInTheDocument();
   });
 });
 
@@ -1842,6 +1870,7 @@ describe("YTPlayer — Episodes panel", () => {
       "--_ep-cols": "3",
       "--_ep-max-height": "196px",
     });
+    expect(dialog.querySelector(".ytpPanelScroller")).toBeInTheDocument();
   });
 
   it("renders episode items with zero-padded numbers", async () => {

@@ -114,56 +114,58 @@ export function EpisodesPanel({
         }
       }}
     >
-      <div
-        className={s.ytpEpisodesGrid}
-        role="listbox"
-      >
-        {episodes.map((_, index) => (
-          <button
-            key={index}
-            role="option"
-            aria-selected={index === activeEpisodeIndex}
-            className={`${s.ytpEpisodeItem}${index === activeEpisodeIndex ? ` ${s.ytpEpisodeActive}` : ""}${index === focusedEpisodeIndex ? ` ${s.ytpEpisodeFocused}` : ""}`}
-            data-ep-focused={index === focusedEpisodeIndex ? "" : undefined}
-            onClick={() => {
-              onEpisodeChange?.(index);
-              onClose();
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Home") {
-                event.preventDefault();
-                event.stopPropagation();
-                focusEpisodeAt(0);
-                return;
-              }
-
-              if (event.key === "End") {
-                event.preventDefault();
-                event.stopPropagation();
-                focusEpisodeAt(totalEpisodes - 1);
-                return;
-              }
-
-              if (event.key === "Tab") {
-                event.preventDefault();
-                event.stopPropagation();
-                focusEpisodeAt(index + (event.shiftKey ? -1 : 1));
-                return;
-              }
-
-              if (event.key === " " || event.key === "Enter") {
-                event.preventDefault();
-                event.stopPropagation();
+      <div className={s.ytpPanelScroller}>
+        <div
+          className={s.ytpEpisodesGrid}
+          role="listbox"
+        >
+          {episodes.map((_, index) => (
+            <button
+              key={index}
+              role="option"
+              aria-selected={index === activeEpisodeIndex}
+              className={`${s.ytpEpisodeItem}${index === activeEpisodeIndex ? ` ${s.ytpEpisodeActive}` : ""}${index === focusedEpisodeIndex ? ` ${s.ytpEpisodeFocused}` : ""}`}
+              data-ep-focused={index === focusedEpisodeIndex ? "" : undefined}
+              onClick={() => {
                 onEpisodeChange?.(index);
                 onClose();
-              }
-            }}
-            onMouseEnter={() => onFocusEpisode(index)}
-            onFocus={() => onFocusEpisode(index)}
-          >
-            {String(index + 1).padStart(2, "0")}
-          </button>
-        ))}
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Home") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  focusEpisodeAt(0);
+                  return;
+                }
+
+                if (event.key === "End") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  focusEpisodeAt(totalEpisodes - 1);
+                  return;
+                }
+
+                if (event.key === "Tab") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  focusEpisodeAt(index + (event.shiftKey ? -1 : 1));
+                  return;
+                }
+
+                if (event.key === " " || event.key === "Enter") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onEpisodeChange?.(index);
+                  onClose();
+                }
+              }}
+              onMouseEnter={() => onFocusEpisode(index)}
+              onFocus={() => onFocusEpisode(index)}
+            >
+              {String(index + 1).padStart(2, "0")}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

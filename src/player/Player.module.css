@@ -706,10 +706,16 @@
 
 .ytpPanelMenu {
   padding: 8px 0;
+  min-height: min-content;
+}
+
+.ytpPanelScroller {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
+  scrollbar-width: thin;
 }
 
 .ytpSettingsMenu[data-viewport-band="compact"],
@@ -721,8 +727,8 @@
 .ytpEpisodesPanel[data-viewport-band="compact"],
 .ytpEpisodesPanel[data-viewport-band="narrow"],
 .ytpEpisodesPanel[data-viewport-band="phone-portrait"] {
-  bottom: calc(72px + var(--ytp-safe-bottom));
-  max-height: calc(100% - 96px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
+  bottom: calc(84px + var(--ytp-safe-bottom));
+  max-height: calc(100% - 112px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
 }
 
 .ytpSettingsMenu[data-placement="top-right"][data-viewport-band="compact"],
@@ -846,16 +852,24 @@
 .ytpSpeedPanelBody {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 0 14px 14px;
+  gap: 8px;
+  padding: 0 12px 10px;
+  align-items: stretch;
 }
 
 .ytpSpeedSliderBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  color: var(--ytp-panel-text-primary);
   position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.ytpSpeedSliderRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
 }
 
 .ytpSpeedRange {
@@ -866,6 +880,24 @@
   cursor: pointer;
   z-index: 2;
   margin: 0;
+}
+
+.ytpSpeedStepButton {
+  --_bg-w: 28px;
+  --_hover-w: 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.ytpSpeedStepGlyph {
+  position: relative;
+  z-index: 1;
+  min-width: 1ch;
+  text-align: center;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
 }
 
 .ytpSpeedSlider {
@@ -926,44 +958,6 @@
   background: var(--ytp-panel-active-bg);
   border-color: rgba(255, 255, 255, 0.3);
   color: var(--ytp-brand-color);
-}
-
-.ytpSpeedHelp {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(12, 12, 12, 0.9);
-  color: var(--ytp-panel-text-secondary);
-  font-size: 10px;
-  line-height: 1;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.12s ease;
-}
-
-.ytpSpeedSliderBlock:hover .ytpSpeedHelp,
-.ytpSpeedSliderBlock:focus-within .ytpSpeedHelp {
-  opacity: 1;
-}
-
-.ytpSpeedHelp kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 10px;
-  color: #fff;
 }
 
 /* ─── Layer 9: Gradient bottom ──────────────────────────────────────────────── */
@@ -1452,6 +1446,16 @@
   font-variant-numeric: tabular-nums;
 }
 
+.moviePlayer[data-layout-band="compact"] .ytpSpeedButton,
+.moviePlayer[data-layout-band="narrow"] .ytpSpeedButton,
+.moviePlayer[data-layout-band="phone-portrait"] .ytpSpeedButton {
+  --_bg-w: 66px;
+  --_hover-w: 66px;
+  width: 66px;
+  padding: 0 10px;
+  justify-content: center;
+}
+
 .ytpNextButton {
   --_bg-w: var(--ytp-next-bg-width);
   --_hover-w: var(--ytp-next-hover-width);
@@ -1518,9 +1522,10 @@
     var(--_ep-max-height, 260px),
     calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom))
   );
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   animation: ytpPanelIn 0.12s ease; /* reuse existing panel-in animation */
+  display: flex;
+  min-height: 0;
 }
 
 .ytpEpisodesPanel[data-placement="top-right"] {
