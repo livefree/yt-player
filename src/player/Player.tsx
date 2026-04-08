@@ -606,6 +606,9 @@ export function YTPlayer({
   const centerOverlayControls = layoutDecision.slots["center-overlay"]
     .map((c) => renderControl(c, controlCtx))
     .filter(Boolean);
+  const edgeRightControls = layoutDecision.slots["edge-right"]
+    .map((c) => renderControl(c, controlCtx))
+    .filter(Boolean);
   const hasTopInteractiveControls = topRightControls.length > 0;
   const showNextEpisodesGroup =
     bottomLeftSlot.includes("next") || bottomLeftSlot.includes("episodes");
@@ -918,6 +921,12 @@ export function YTPlayer({
       {centerOverlayControls.length > 0 && (
         <div className={s.ytpCenterControls} data-layer="9">
           <ControlSlot slot="center-overlay">{centerOverlayControls}</ControlSlot>
+        </div>
+      )}
+
+      {edgeRightControls.length > 0 && (
+        <div className={s.ytpEdgeRight} data-layer="9">
+          <ControlSlot slot="edge-right">{edgeRightControls}</ControlSlot>
         </div>
       )}
 

@@ -135,7 +135,7 @@ function createDesktopDefaultSlots(hasEpisodes: boolean, hasNext: boolean) {
   } satisfies Record<ControlSlot, ControlId[]>;
 }
 
-function createTabletTouchSlots(hasEpisodes: boolean) {
+function createTabletTouchSlots(hasEpisodes: boolean, hasNext: boolean) {
   return {
     "top-left": ["title"],
     "top-right": [
@@ -148,23 +148,51 @@ function createTabletTouchSlots(hasEpisodes: boolean) {
     "bottom-right": ["fullscreen"],
     "center-overlay": [],
     "edge-left": [],
-    "edge-right": [],
+    "edge-right": hasNext ? (["next"] as ControlId[]) : [],
   } satisfies Record<ControlSlot, ControlId[]>;
 }
 
 function createPhoneTouchSlots(hasEpisodes: boolean, hasNext: boolean) {
   return {
     "top-left": ["title"],
-    "top-right": ["speed", "settings"],
+    "top-right": (["settings", "speed", "airplay", "pip"] as ControlId[]),
     "bottom-left": ["time"],
     "bottom-right": [
-      ...(hasNext ? (["next"] as ControlId[]) : []),
       ...(hasEpisodes ? (["episodes"] as ControlId[]) : []),
       "fullscreen",
     ],
     "center-overlay": ["play"],
     "edge-left": [],
+    "edge-right": hasNext ? (["next"] as ControlId[]) : [],
+  } satisfies Record<ControlSlot, ControlId[]>;
+}
+
+function createFullscreenPointerSlots(hasEpisodes: boolean, hasNext: boolean) {
+  const bottomLeft: ControlId[] = ["play"];
+  if (hasNext) bottomLeft.push("next");
+  if (hasEpisodes) bottomLeft.push("episodes");
+  bottomLeft.push("volume", "time", "chapter");
+
+  return {
+    "top-left": ["title"],
+    "top-right": (["airplay", "pip"] as ControlId[]),
+    "bottom-left": bottomLeft,
+    "bottom-right": (["subtitles", "speed", "settings", "fullscreen"] as ControlId[]),
+    "center-overlay": [],
+    "edge-left": [],
     "edge-right": [],
+  } satisfies Record<ControlSlot, ControlId[]>;
+}
+
+function createFullscreenTouchSlots(hasEpisodes: boolean, hasNext: boolean) {
+  return {
+    "top-left": ["title"],
+    "top-right": (["settings", "speed", "airplay", "pip"] as ControlId[]),
+    "bottom-left": hasEpisodes ? (["episodes"] as ControlId[]) : [],
+    "bottom-right": (["fullscreen"] as ControlId[]),
+    "center-overlay": (["play"] as ControlId[]),
+    "edge-left": [],
+    "edge-right": hasNext ? (["next"] as ControlId[]) : [],
   } satisfies Record<ControlSlot, ControlId[]>;
 }
 
@@ -351,13 +379,15 @@ export function useLayoutDecision({
     }
 
     const baseSlots =
-      interactionPolicy === "tablet-touch"
-        ? createTabletTouchSlots(hasEpisodes)
-        : interactionPolicy === "phone-touch"
-          ? createPhoneTouchSlots(hasEpisodes, hasNext)
-          : !isCoarsePointer && !isFullscreen
-        ? createDesktopDefaultSlots(hasEpisodes, hasNext)
-        : createPhoneTouchSlots(hasEpisodes, hasNext);
+      isFullscreen && !isCoarsePointer
+        ? createFullscreenPointerSlots(hasEpisodes, hasNext)
+        : isFullscreen && isCoarsePointer
+          ? createFullscreenTouchSlots(hasEpisodes, hasNext)
+          : interactionPolicy === "tablet-touch"
+            ? createTabletTouchSlots(hasEpisodes, hasNext)
+            : interactionPolicy === "phone-touch"
+              ? createPhoneTouchSlots(hasEpisodes, hasNext)
+              : createDesktopDefaultSlots(hasEpisodes, hasNext);
     const slots =
       !isCoarsePointer && !isFullscreen
         ? applyDesktopCollapsePolicy({
