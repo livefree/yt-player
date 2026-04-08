@@ -54,7 +54,7 @@ import { SettingsPanel } from "./components/SettingsPanel";
 import { SpeedPanel } from "./components/SpeedPanel";
 import { ProgressBar } from "./components/ProgressBar";
 import { ControlSlot } from "./components/ControlSlot";
-import { MuteIcon } from "./components/icons";
+import { MuteIcon, PlayIcon, PauseIcon, NextIcon } from "./components/icons";
 
 type LoadingState = "idle" | "initial" | "buffering";
 
@@ -615,6 +615,8 @@ export function YTPlayer({
   const edgeRightControls = layoutDecision.slots["edge-right"]
     .map((c) => renderControl(c, controlCtx))
     .filter(Boolean);
+  const showCenterTouchControls =
+    layoutDecision.interactionPolicy !== "desktop-pointer";
   const hasTopInteractiveControls = topRightControls.length > 0;
   const showNextEpisodesGroup =
     bottomLeftSlot.includes("next") || bottomLeftSlot.includes("episodes");
@@ -927,6 +929,28 @@ export function YTPlayer({
       {centerOverlayControls.length > 0 && (
         <div className={s.ytpCenterControls} data-layer="9">
           <ControlSlot slot="center-overlay">{centerOverlayControls}</ControlSlot>
+        </div>
+      )}
+
+      {/* ── Mobile: center play/next overlay (circular, no tooltip) ──── */}
+      {showCenterTouchControls && (
+        <div className={s.ytpCenterTouchArea} aria-hidden="true">
+          <button
+            className={`${s.ytpCenterTouchBtn} ${s.ytpCenterTouchPlay}`}
+            tabIndex={-1}
+            onClick={togglePlay}
+          >
+            {isPlaying ? <PauseIcon /> : <PlayIcon />}
+          </button>
+          {hasNext && (
+            <button
+              className={`${s.ytpCenterTouchBtn} ${s.ytpCenterTouchNext}`}
+              tabIndex={-1}
+              onClick={onNext}
+            >
+              <NextIcon />
+            </button>
+          )}
         </div>
       )}
 

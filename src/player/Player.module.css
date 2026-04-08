@@ -1036,6 +1036,52 @@
   pointer-events: auto;
 }
 
+/* ─── Mobile: center touch play/next overlay ────────────────────────────────── */
+
+.ytpCenterTouchArea {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8;
+  transition: opacity 0.25s ease;
+}
+
+.ytpCenterTouchBtn {
+  position: absolute;
+  top: 50%;
+  border: none;
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ytpCenterTouchBtn:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Play at exact player center */
+.ytpCenterTouchPlay {
+  width: 72px;
+  height: 72px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Next: left edge starts at (player center + play radius + gap) */
+.ytpCenterTouchNext {
+  width: 52px;
+  height: 52px;
+  /* 36px = play radius, 14px = gap, result = left edge 50px from center */
+  left: calc(50% + 50px);
+  transform: translateY(-50%);
+}
+
 /* ─── Progress bar container ────────────────────────────────────────────────── */
 
 .ytpProgressBarContainer {
@@ -1876,6 +1922,7 @@
 /* Controls fade when ytpAutohide class is present */
 .ytpAutohide .ytpChromeBottom,
 .ytpAutohide .ytpCenterControls,
+.ytpAutohide .ytpCenterTouchArea,
 .ytpAutohide .ytpChromeTop,
 .ytpAutohide .ytpGradientTop,
 .ytpAutohide .ytpGradientBottom {

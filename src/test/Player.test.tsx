@@ -538,7 +538,7 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(container.querySelector(".ytpChapterContainer")).not.toBeInTheDocument();
   });
 
-  it("switches to mobile layout on coarse pointers and promotes phone main controls into the center overlay", async () => {
+  it("switches to mobile layout on coarse pointers and places phone main controls in the bottom-left bar", async () => {
     coarsePointer = true;
 
     Object.defineProperty(window, "innerWidth", {
@@ -597,9 +597,6 @@ describe("YTPlayer — layout decision contracts", () => {
     const bottomRight = container.querySelector(
       '[data-control-slot="bottom-right"]',
     ) as HTMLDivElement;
-    const centerOverlay = container.querySelector(
-      '[data-control-slot="center-overlay"]',
-    ) as HTMLDivElement;
 
     expect(
       topRight.querySelector('[data-ytp-component="speed-btn"]'),
@@ -619,7 +616,7 @@ describe("YTPlayer — layout decision contracts", () => {
       container.querySelector(".ytpTimeAboveProgress")?.textContent,
     ).toContain("0:00");
     expect(
-      centerOverlay.querySelector('[data-ytp-component="play-btn"]'),
+      bottomLeft.querySelector('[data-ytp-component="play-btn"]'),
     ).toBeInTheDocument();
     expect(
       bottomRight.querySelector('[data-ytp-component="episodes-btn"]'),
@@ -699,7 +696,7 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(bottomLeft.textContent).toContain("0:00");
   });
 
-  it("keeps play centered and places next button adjacent to play in center overlay on phone-touch", async () => {
+  it("places play and next button in bottom-left bar on phone-touch", async () => {
     coarsePointer = true;
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
@@ -724,18 +721,18 @@ describe("YTPlayer — layout decision contracts", () => {
       );
     });
 
-    const centerOverlay = container.querySelector(
-      '[data-control-slot="center-overlay"]',
+    const bottomLeft = container.querySelector(
+      '[data-control-slot="bottom-left"]',
     ) as HTMLDivElement;
     const bottomRight = container.querySelector(
       '[data-control-slot="bottom-right"]',
     ) as HTMLDivElement;
 
     expect(
-      centerOverlay.querySelector('[data-ytp-component="play-btn"]'),
+      bottomLeft.querySelector('[data-ytp-component="play-btn"]'),
     ).toBeInTheDocument();
     expect(
-      centerOverlay.querySelector('[data-ytp-component="next-btn"]'),
+      bottomLeft.querySelector('[data-ytp-component="next-btn"]'),
     ).toBeInTheDocument();
     expect(
       bottomRight.querySelector('[data-ytp-component="next-btn"]'),
