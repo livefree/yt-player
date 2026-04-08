@@ -83,4 +83,4 @@ export interface PlayerProps {
 // ─── Internal types ───────────────────────────────────────────────────────────
 
 export type SeekDirection = "forward" | "back" | null;
-export type Panel = "settings" | "speed" | null;
+export type Panel = "settings" | "quality" | "subtitles" | "speed" | null;

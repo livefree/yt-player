@@ -108,6 +108,7 @@ export type LayoutDecision = {
     sizingMode: PanelSizingMode;
     speed: {
       showButtonIcon: boolean;
+      showHeader: boolean;
     };
   };
   slots: Record<ControlSlot, ControlId[]>;
@@ -410,6 +411,7 @@ export function useLayoutDecision({
       : "stable";
     const speedPolicy = {
       showButtonIcon: !compactPanelBands.includes(viewportBand),
+      showHeader: viewportBand === "wide",
     };
     const episodesCols =
       viewportBand === "phone-portrait" || viewportBand === "narrow"

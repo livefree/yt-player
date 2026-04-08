@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from "react";
-import type { CSSProperties, KeyboardEvent, PointerEvent, RefObject } from "react";
+import type { KeyboardEvent, PointerEvent, RefObject } from "react";
+import s from "../Player.module.css";
 import type {
   PanelPlacement,
   PanelSizingMode,
@@ -13,8 +14,6 @@ import {
   clamp,
   formatRateBadge,
 } from "../utils/format";
-import s from "../Player.module.css";
-import { ActionPanel } from "./ActionPanel";
 import { YtpButton } from "./Button";
 
 type SpeedPanelProps = {
@@ -23,6 +22,7 @@ type SpeedPanelProps = {
   placement: PanelPlacement;
   panelSizingMode: PanelSizingMode;
   playbackRate: number;
+  showHeader: boolean;
   viewportBand: ViewportBand;
   onPlaybackRateChange: (rate: number) => void;
   onRequestClose: () => void;
@@ -34,24 +34,24 @@ export function SpeedPanel({
   placement,
   panelSizingMode,
   playbackRate,
+  showHeader,
   viewportBand,
   onPlaybackRateChange,
   onRequestClose,
 }: SpeedPanelProps) {
   const speedPct = ((playbackRate - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) * 100;
-
   const nudgePlaybackRate = useCallback(
     (delta: number) => {
       onPlaybackRateChange(clamp(playbackRate + delta, SPEED_MIN, SPEED_MAX));
     },
     [onPlaybackRateChange, playbackRate],
   );
-
   const getFocusableItems = useCallback(
     () =>
       Array.from(
-        panelRef.current?.querySelectorAll<HTMLElement>("input, button:not([disabled])") ??
-          [],
+        panelRef.current?.querySelectorAll<HTMLElement>(
+          'input, button:not([disabled])',
+        ) ?? [],
       ),
     [panelRef],
   );
@@ -70,20 +70,18 @@ export function SpeedPanel({
   }, [focusItemAt]);
 
   return (
-    <ActionPanel
-      ariaLabel="Playback speed"
-      className={s.ytpSpeedPopup}
-      panelId={panelId}
-      panelRef={panelRef}
-      panelSizingMode={panelSizingMode}
-      placement={placement}
-      viewportBand={viewportBand}
-      style={
-        {
-          "--_action-panel-width": "248px",
-          "--_action-panel-max-height": "248px",
-        } as CSSProperties
-      }
+    <div
+      ref={panelRef}
+      id={panelId}
+      className={`${s.ytpSpeedPanel} ${s.ytpPanelSurface} ${s.ytpPopup}`}
+      data-layer="5"
+      data-panel-height="content-driven"
+      data-placement={placement}
+      data-panel-sizing={panelSizingMode}
+      data-viewport-band={viewportBand}
+      role="dialog"
+      aria-label="Playback speed"
+      aria-modal="false"
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
         const items = getFocusableItems();
@@ -119,64 +117,86 @@ export function SpeedPanel({
         }
       }}
     >
-      <div className={s.ytpSpeedPanelBody}>
-        <div className={s.ytpSpeedSliderRow}>
-          <YtpButton
-            tooltip="Slower ([)"
-            ariaLabel="Decrease playback speed"
-            className={s.ytpSpeedStepButton}
-            onClick={() => nudgePlaybackRate(-SPEED_STEP)}
-          >
-            <span className={s.ytpSpeedStepGlyph} aria-hidden="true">-</span>
-          </YtpButton>
-          <label className={s.ytpSpeedSliderBlock}>
-            <div className={s.ytpSpeedSlider}>
-              <div
-                className={s.ytpSpeedSliderFill}
-                style={{ width: `${speedPct}%` }}
-              />
-              <div
-                className={s.ytpSpeedSliderHandle}
-                style={{ left: `${speedPct}%` }}
-              />
+      <div
+        className={s.ytpFocusTrap}
+        tabIndex={0}
+        onFocus={() => focusItemAt(-1)}
+      />
+      <div className={s.ytpPanelScroller}>
+        <div className={s.ytpPanelMenu}>
+          {showHeader ? (
+            <div className={s.ytpSpeedPanelHeader}>
+              <span className={s.ytpSpeedPanelValue}>{formatRateBadge(playbackRate)}</span>
             </div>
-            <input
-              className={s.ytpSpeedRange}
-              type="range"
-              min={SPEED_MIN}
-              max={SPEED_MAX}
-              step={SPEED_STEP}
-              value={playbackRate}
-              aria-label="Playback speed"
-              onChange={(event) => onPlaybackRateChange(Number(event.currentTarget.value))}
-            />
-          </label>
-          <YtpButton
-            tooltip="Faster (])"
-            ariaLabel="Increase playback speed"
-            className={s.ytpSpeedStepButton}
-            onClick={() => nudgePlaybackRate(SPEED_STEP)}
+          ) : null}
+          <div
+            className={s.ytpSpeedPanelBody}
+            data-density={panelSizingMode}
           >
-            <span className={s.ytpSpeedStepGlyph} aria-hidden="true">+</span>
-          </YtpButton>
-        </div>
-        <div className={s.ytpSpeedPresets} role="group" aria-label="Speed presets">
-          {SPEED_PRESETS.map((rate) => {
-            const isActive = Math.abs(playbackRate - rate) < 0.01;
-            return (
-              <button
-                key={rate}
-                type="button"
-                className={`${s.ytpSpeedPreset} ${isActive ? s.ytpSpeedPresetActive : ""}`.trim()}
-                aria-pressed={isActive}
-                onClick={() => onPlaybackRateChange(rate)}
+            <div className={s.ytpSpeedSliderRow}>
+              <YtpButton
+                tooltip="Slower ([)"
+                ariaLabel="Decrease playback speed"
+                className={s.ytpSpeedStepButton}
+                onClick={() => nudgePlaybackRate(-SPEED_STEP)}
               >
-                {formatRateBadge(rate)}
-              </button>
-            );
-          })}
+                <span className={s.ytpSpeedStepGlyph} aria-hidden="true">-</span>
+              </YtpButton>
+              <label className={s.ytpSpeedSliderBlock}>
+                <div className={s.ytpSpeedSlider}>
+                  <div
+                    className={s.ytpSpeedSliderFill}
+                    style={{ width: `${speedPct}%` }}
+                  />
+                  <div
+                    className={s.ytpSpeedSliderHandle}
+                    style={{ left: `${speedPct}%` }}
+                  />
+                </div>
+                <input
+                  className={s.ytpSpeedRange}
+                  type="range"
+                  min={SPEED_MIN}
+                  max={SPEED_MAX}
+                  step={SPEED_STEP}
+                  value={playbackRate}
+                  aria-label="Playback speed"
+                  onChange={(event) => onPlaybackRateChange(Number(event.currentTarget.value))}
+                />
+              </label>
+              <YtpButton
+                tooltip="Faster (])"
+                ariaLabel="Increase playback speed"
+                className={s.ytpSpeedStepButton}
+                onClick={() => nudgePlaybackRate(SPEED_STEP)}
+              >
+                <span className={s.ytpSpeedStepGlyph} aria-hidden="true">+</span>
+              </YtpButton>
+            </div>
+            <div className={s.ytpSpeedPresets} role="group" aria-label="Speed presets">
+              {SPEED_PRESETS.map((rate) => {
+                const isActive = Math.abs(playbackRate - rate) < 0.01;
+                return (
+                  <button
+                    key={rate}
+                    type="button"
+                    className={`${s.ytpSpeedPreset} ${isActive ? s.ytpSpeedPresetActive : ""}`.trim()}
+                    aria-pressed={isActive}
+                    onClick={() => onPlaybackRateChange(rate)}
+                  >
+                    {formatRateBadge(rate)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
-    </ActionPanel>
+      <div
+        className={s.ytpFocusTrap}
+        tabIndex={0}
+        onFocus={() => focusItemAt(0)}
+      />
+    </div>
   );
 }

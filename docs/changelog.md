@@ -540,15 +540,3 @@
 
 - 完成 `SEQ-20260407-32 / PLAYER-63`
 - settings / speed / episodes 已统一切到 `content-driven` 高度契约：按内容自然长高，只有超过上限时才在内部 scroller 中滚动
-
-# 2026-04-07 17:55
-
-- 新增 `SEQ-20260407-34`
-- 本轮不再继续修补原有 speed/settings 弹窗，而是删除旧结构，基于 episodes 盒模型单独重建一个仅供 speed/settings 使用的通用弹窗
-
-# 2026-04-07 17:59
-
-- 完成 `SEQ-20260407-34 / PLAYER-64 / PLAYER-65 / PLAYER-66`
-- 新增 `ActionPanel`，仅供 speed/settings 使用；其根元素盒模型直接对齐 episodes 的定位、尺寸和内部滚动原则，`EpisodesPanel` 本身保持不变
-- `SpeedPanel` 和 `SettingsPanel` 已从头重写，不再依赖原有独立 popup 壳层与多级 submenu 结构
-- settings 现已改为 flat placeholder menu，speed 继续保留 slider + preset 功能
