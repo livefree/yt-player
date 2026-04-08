@@ -282,6 +282,10 @@ export function useLayoutDecision({
     if (typeof window === "undefined") return { width: 0, height: 0 };
     return { width: window.innerWidth, height: window.innerHeight };
   });
+  const [windowIsPortrait, setWindowIsPortrait] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth <= window.innerHeight;
+  });
 
   useEffect(() => {
     if (typeof window === "undefined" || !("matchMedia" in window)) return;
@@ -316,6 +320,9 @@ export function useLayoutDecision({
         if (current.width === width && current.height === height) return current;
         return { width, height };
       });
+
+      const portrait = window.innerWidth <= window.innerHeight;
+      setWindowIsPortrait((current) => (current === portrait ? current : portrait));
     };
 
     measureViewport();
@@ -345,7 +352,7 @@ export function useLayoutDecision({
             : "wide";
     const heightBand = viewport.height > 0 && viewport.height <= SHORT_HEIGHT ? "short" : "tall";
     const viewportBand: ViewportBand =
-      isCoarsePointer && viewport.width > 0 && viewport.width <= viewport.height
+      isCoarsePointer && windowIsPortrait && viewport.width > 0 && viewport.width <= DESKTOP_COLLAPSED_WIDTH
         ? "phone-portrait"
         : widthBand;
     const compactPanelBands: ViewportBand[] = ["compact", "narrow", "phone-portrait"];
@@ -358,17 +365,16 @@ export function useLayoutDecision({
     if (isFullscreen) {
       mode = "fullscreen-immersive";
     } else if (isCoarsePointer) {
-      mode =
-        viewport.width > 0 && viewport.width > viewport.height
-          ? "mobile-landscape"
-          : "mobile-portrait";
+      mode = windowIsPortrait ? "mobile-portrait" : "mobile-landscape";
     } else if (viewport.width > 0 && viewport.width <= DESKTOP_COMPACT_WIDTH) {
       mode = "desktop-compact";
     }
 
     if (isCoarsePointer) {
       interactionPolicy =
-        viewport.width > viewport.height ? "tablet-touch" : "phone-touch";
+        windowIsPortrait && viewport.width <= DESKTOP_COLLAPSED_WIDTH
+          ? "phone-touch"
+          : "tablet-touch";
       chromePolicy =
         interactionPolicy === "phone-touch"
           ? "touch-persistent-paused"
@@ -514,5 +520,6 @@ export function useLayoutDecision({
     isTheater,
     viewport.height,
     viewport.width,
+    windowIsPortrait,
   ]);
 }
