@@ -897,11 +897,11 @@
    - 完成时间：2026-04-07 23:30
    - 验收要点：`usePlayerActions` hook 提取所有 action 函数；`ControlRenderer.tsx` 提取 renderControl；Player.tsx 从 1391 行降至 ≤1050 行（JSX 骨架 ~390 行不可进一步压缩）；typecheck / lint / test 全部通过；行为无任何变化
 
-3. PLAYER-73 — 共享 HorizontalSlider 原语（状态：⬜）
+3. PLAYER-73 — 共享 HorizontalSlider 原语（状态：✅）
    - 创建时间：2026-04-07 22:00
    - 计划开始：PLAYER-72 之后
-   - 实际开始：
-   - 完成时间：
+   - 实际开始：2026-04-07 23:45
+   - 完成时间：2026-04-08 00:00
    - 验收要点：音量 slider 提取为 `HorizontalSlider` 组件；SpeedPanel 复用同一组件；视觉行为与现有音量 slider 完全一致
 
 4. PLAYER-71 — SpeedPanel 重建 + Speed 按钮格式统一（状态：⬜）
