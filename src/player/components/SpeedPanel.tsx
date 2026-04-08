@@ -23,7 +23,6 @@ type SpeedPanelProps = {
   placement: PanelPlacement;
   panelSizingMode: PanelSizingMode;
   playbackRate: number;
-  showHeader: boolean;
   viewportBand: ViewportBand;
   onPlaybackRateChange: (rate: number) => void;
   onRequestClose: () => void;
@@ -35,7 +34,6 @@ export function SpeedPanel({
   placement,
   panelSizingMode,
   playbackRate,
-  showHeader,
   viewportBand,
   onPlaybackRateChange,
   onRequestClose,
@@ -124,11 +122,6 @@ export function SpeedPanel({
       />
       <div className={s.ytpPanelScroller}>
         <div className={s.ytpPanelMenu}>
-          {showHeader ? (
-            <div className={s.ytpSpeedPanelHeader}>
-              <span className={s.ytpSpeedPanelValue}>{formatRateBadge(playbackRate)}</span>
-            </div>
-          ) : null}
           <div
             className={s.ytpSpeedPanelBody}
             data-density={panelSizingMode}

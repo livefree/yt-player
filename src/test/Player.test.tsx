@@ -1586,7 +1586,7 @@ describe("YTPlayer — speed control contracts", () => {
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
 
-    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toHaveTextContent("1.00x");
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
     expect(screen.queryByText("Adjust speed")).not.toBeInTheDocument();
     expect(screen.queryByText("0.25x")).not.toBeInTheDocument();
     expect(screen.queryByText("3.00x")).not.toBeInTheDocument();
@@ -1646,14 +1646,14 @@ describe("YTPlayer — speed control contracts", () => {
     expect(speedButton.querySelector("svg")).not.toBeInTheDocument();
   });
 
-  it("keeps the speed panel header on wide layouts", async () => {
+  it("renders the speed panel without header on wide layouts", async () => {
     render(<YTPlayer src={TEST_SRC} />);
 
     await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
     expect(speedDialog).toHaveAttribute("data-panel-sizing", "stable");
-    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toHaveTextContent("1.00x");
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
   });
 
   it("keeps the speed panel compact through medium desktop widths", async () => {

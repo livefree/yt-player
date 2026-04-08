@@ -910,7 +910,6 @@ export function YTPlayer({
           playbackRate={playbackRate}
           viewportBand={layoutDecision.viewportBand}
           panelSizingMode={layoutDecision.panels.sizingMode}
-          showHeader={layoutDecision.panels.speed.showHeader}
           onPlaybackRateChange={setPlaybackRate}
           onRequestClose={() => setOpenPanel(null)}
         />
