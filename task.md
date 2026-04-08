@@ -885,3 +885,21 @@
    - 实际开始：2026-04-07 17:55
    - 完成时间：2026-04-07 17:59
    - 验收要点：补 speed/settings 新通用弹窗测试；保留 episodes 原有契约不变；更新 DEVLOG/changelog/task
+
+## [SEQ-20260407-35] YTPlayer speed/settings 弹窗重建后清债
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 18:08
+- **最后更新时间**：2026-04-07 19:04
+- **目标**：移除 speed/settings 重建后已废弃的旧弹窗样式与图标，避免新结构继续背着历史包袱
+- **范围**：`src/player/`、`task.md`、`DEVLOG.md`、`docs/changelog.md`
+- **依赖**：基于 `SEQ-20260407-34` 已完成的新 ActionPanel 结构；不改 EpisodesPanel
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-67 — 删除旧 speed/settings 弹窗残留样式与图标（状态：✅）
+   - 创建时间：2026-04-07 18:08
+   - 计划开始：2026-04-07 18:08
+   - 实际开始：2026-04-07 18:08
+   - 完成时间：2026-04-07 19:04
+   - 验收要点：移除 `.ytpSettingsMenu` / 旧 `.ytpSpeedPanel` / focus trap / 旧 menu icon CSS 和未使用图标导出；不影响现有 speed/settings/episodes 契约
