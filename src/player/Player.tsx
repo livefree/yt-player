@@ -31,7 +31,6 @@ import {
   clamp,
   formatTime,
   qualityBadgeLabel,
-  qualityDescription,
   resolveQualityHeight,
   SEEK_STEP,
 } from "./utils/format";
@@ -1062,18 +1061,16 @@ export function YTPlayer({
             {bottomLeftControls}
           </ControlSlot>
 
-          <ControlSlot className={s.ytpRightControls} slot="bottom-right">
+          <div className={s.ytpChromeControlsRight}>
             {showQualityBadge && resolvedQualityHeight !== null && (
-              <div
-                className={s.ytpQualityBadge}
-                aria-hidden="true"
-                title={qualityDescription(resolvedQualityHeight)}
-              >
+              <div className={s.ytpQualityBadge} aria-hidden="true">
                 {qualityBadgeLabel(resolvedQualityHeight)}
               </div>
             )}
-            {bottomRightControls}
-          </ControlSlot>
+            <ControlSlot className={s.ytpRightControls} slot="bottom-right">
+              {bottomRightControls}
+            </ControlSlot>
+          </div>
         </div>
       </div>
     </div>
