@@ -717,7 +717,7 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
@@ -1000,6 +1000,7 @@
   inset: 50% auto auto 50%;
   transform: translate(-50%, -50%);
   opacity: 1;
+  pointer-events: auto;
   transition: opacity 0.25s ease;
 }
 
@@ -1555,7 +1556,9 @@
   position: absolute;
   bottom: calc(54px + var(--ytp-safe-bottom));
   left: var(--ytp-safe-left);
-  padding: 8px;
+  /* Right padding removed so the inner scrollbar hugs the panel border.
+     Content spacing on the right is provided by ytpEpisodesGrid padding-right. */
+  padding: 8px 0 8px 8px;
   width: min(
     calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right)),
     calc(var(--_ep-cols, 6) * 40px + (var(--_ep-cols, 6) - 1) * 4px + 16px)
@@ -1584,6 +1587,7 @@
   display: grid;
   grid-template-columns: repeat(var(--_ep-cols, 6), 1fr);
   gap: 4px;
+  padding-right: 8px; /* visual right margin; outer panel has no right padding */
 }
 
 .ytpEpisodeItem {
