@@ -63,8 +63,8 @@
 | top-right | `airplay + pip` | `settings + speed + airplay + pip` | `settings + speed + airplay + pip` with priority fallback | `airplay + pip` | `settings + speed + airplay + pip` with priority fallback |
 | bottom-left | `play + next-episodes-group + volume + time + chapter` | `episodes` | `episodes` | `play + next-episodes-group + volume + time + chapter` | `episodes` |
 | bottom-right | `subtitles + speed + settings + theater + fullscreen` | `fullscreen` | `fullscreen` | `subtitles + speed + settings + fullscreen` | `fullscreen` |
-| center-overlay | None | Large `play` | Large `play` | None | Large `play` |
-| edge-right | — | `next` when provided | `next` when provided | — | `next` when provided |
+| center-overlay | None | Large `play` | Large `play` + `next` (adjacent, right of play) | None | Large `play` + `next` (adjacent, right of play) |
+| edge-right | — | — | — | — | — |
 | Desktop compact / short top-right | `speed + settings + episodes` | N/A | N/A | N/A | N/A |
 | Desktop compact / short bottom-right | `subtitles + theater + airplay + pip + fullscreen` | N/A | N/A | N/A | N/A |
 | Next + Episodes adjacency | Must remain adjacent; relative order invariant | Episodes bottom-left only | Episodes bottom-left only | Must remain adjacent; relative order invariant | Episodes bottom-left only |
@@ -270,6 +270,7 @@ EpisodesPanel、SettingsPanel、SpeedPanel 必须在以下维度统一：
 | Episodes scroll ownership | inner scroller only（外层 `overflow: hidden`） |
 | Panel family | EpisodesPanel + SettingsPanel + SpeedPanel 统一视觉/行为契约 |
 | next-episodes-group | 底部 DOM 中 next + episodes 的相邻分组，桌面/fullscreen pointer 下保持不变 |
+| center-overlay-group | 触屏端 center-overlay 中 play + next 的相邻分组，next 始终在 play 右侧 |
 
 ---
 
@@ -278,23 +279,25 @@ EpisodesPanel、SettingsPanel、SpeedPanel 必须在以下维度统一：
 在本轮重建前，当前支线存在以下未对齐项（按优先级排列）：
 
 **P0 — 阻塞核心体验**
-- [ ] Speed 在 Phone Touch / Tablet Touch 当前仍在 top-right 渲染为独立按钮，但按钮格式和 SpeedPanel 结构尚未按新 contract 重建
-- [ ] SettingsPanel 当前未含 Speed 入口（已对齐），但 Quality / Subtitles 导航是否完整待验证
-- [ ] Fullscreen 模式没有独立建模（槽位 / 面板放置当前 fallback 到其他模式）
+- [x] Speed 在 Phone Touch / Tablet Touch 渲染为独立 top-right 按钮，格式 `1.00x`，SpeedPanel 无标题（PLAYER-71/73）
+- [x] SettingsPanel 不含 Speed 入口，Quality / Subtitles 导航完整（已验证）
+- [x] Fullscreen pointer / touch 独立建模（PLAYER-74）
+- [x] 移动端首帧即用正确布局（同步初始化 isCoarsePointer + viewport）
 
 **P1 — 布局正确性**
-- [ ] Next 按钮在 Tablet / Phone Touch 下应在 `edge-right`，当前在 `bottom-right`
-- [ ] Time display 在 Tablet / Phone Touch 下应移至进度条左端上方，当前仍在底部 controls 行
-- [ ] AirPlay / PiP 固定右上的动态退化逻辑（基于可用空间）尚未实现
-- [ ] Desktop compact 模式下 speed + settings + episodes 提升到 top-right 已部分实现，待验证一致性
+- [x] Next 按钮在 Phone / Fullscreen Touch 下在 center-overlay（play 右侧），Tablet Touch 在 edge-right（未实现，待定）
+- [x] Time display 在 Phone Touch 下移至进度条左端上方，字号缩小（PLAYER-75）
+- [ ] AirPlay / PiP 动态退化逻辑（基于 top-right 可用空间）尚未实现
+- [x] Desktop compact 模式 speed + settings + episodes 提升到 top-right（applyDesktopCollapsePolicy）
 
 **P2 — Panel family 统一**
-- [ ] SpeedPanel 结构重建（无标题、slider 复用音量轨道、4 个固定预设）
-- [ ] EpisodesPanel 补充滚动条（内层 scroller，外层 overflow: hidden）
-- [ ] 三类 panel 统一 outside-click close / aria contract / focus return
+- [x] SpeedPanel 重建：无标题、HorizontalSlider、4 个预设（PLAYER-71/73）
+- [x] 面板滚动修复：ytpPanelSurface flex 列，scroller flex:1/min-height:0（今日修复）
+- [x] EpisodesPanel 滚动条：scrollbar-width thin + scrollbar-color（PLAYER-75）
+- [ ] 三类 panel 统一 outside-click close / aria contract / focus return（待实现）
 
 **P3 — 视觉细节**
-- [ ] Speed 按钮格式统一为两位小数（`1.00x`）
+- [x] Speed 按钮格式统一为两位小数（`formatRateBadge` 已对齐）
 - [ ] Speed preset 命中高亮（对齐 episodes 选中态色值）
 - [ ] Subtitles 在触屏端从直接按钮改为 panel 入口
 
