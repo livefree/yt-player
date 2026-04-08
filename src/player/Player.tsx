@@ -188,7 +188,13 @@ export function YTPlayer({
 
   const hasEpisodes = (episodes?.length ?? 0) > 0;
   const hasNext = !!onNext;
-  const hasSettingsContent = qualities.length > 0 || subtitles.length > 0;
+  const hasSettingsContent =
+    qualities.length > 0 ||
+    subtitles.length > 0 ||
+    resolveQualityHeight(
+      qualities.find((q) => q.id === activeQualityId)?.label ?? null,
+      videoHeight,
+    ) !== null;
   const layoutDecision = useLayoutDecision({
     playerRef,
     isFullscreen,
