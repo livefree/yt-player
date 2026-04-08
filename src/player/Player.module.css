@@ -646,6 +646,8 @@
   box-shadow: var(--ytp-panel-shadow);
   color: var(--ytp-panel-text-primary);
   backdrop-filter: blur(18px);
+  display: flex;
+  flex-direction: column;
 }
 
 .ytpSettingsMenu {
@@ -711,10 +713,11 @@
 }
 
 .ytpPanelScroller {
-  max-height: inherit;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: auto;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }

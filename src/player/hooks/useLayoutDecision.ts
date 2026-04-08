@@ -161,9 +161,11 @@ function createPhoneTouchSlots(hasEpisodes: boolean, hasNext: boolean) {
       ...(hasEpisodes ? (["episodes"] as ControlId[]) : []),
       "fullscreen",
     ],
-    "center-overlay": ["play"],
+    "center-overlay": hasNext
+      ? (["play", "next"] as ControlId[])
+      : (["play"] as ControlId[]),
     "edge-left": [],
-    "edge-right": hasNext ? (["next"] as ControlId[]) : [],
+    "edge-right": [],
   } satisfies Record<ControlSlot, ControlId[]>;
 }
 
@@ -190,9 +192,11 @@ function createFullscreenTouchSlots(hasEpisodes: boolean, hasNext: boolean) {
     "top-right": (["settings", "speed", "airplay", "pip"] as ControlId[]),
     "bottom-left": hasEpisodes ? (["episodes"] as ControlId[]) : [],
     "bottom-right": (["fullscreen"] as ControlId[]),
-    "center-overlay": (["play"] as ControlId[]),
+    "center-overlay": hasNext
+      ? (["play", "next"] as ControlId[])
+      : (["play"] as ControlId[]),
     "edge-left": [],
-    "edge-right": hasNext ? (["next"] as ControlId[]) : [],
+    "edge-right": [],
   } satisfies Record<ControlSlot, ControlId[]>;
 }
 
@@ -270,8 +274,14 @@ export function useLayoutDecision({
   isTheater,
   playerRef,
 }: UseLayoutDecisionParams): LayoutDecision {
-  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
-  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [isCoarsePointer, setIsCoarsePointer] = useState<boolean>(() => {
+    if (typeof window === "undefined" || !("matchMedia" in window)) return false;
+    return window.matchMedia("(pointer: coarse)").matches;
+  });
+  const [viewport, setViewport] = useState<{ width: number; height: number }>(() => {
+    if (typeof window === "undefined") return { width: 0, height: 0 };
+    return { width: window.innerWidth, height: window.innerHeight };
+  });
 
   useEffect(() => {
     if (typeof window === "undefined" || !("matchMedia" in window)) return;

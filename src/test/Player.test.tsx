@@ -699,7 +699,7 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(bottomLeft.textContent).toContain("0:00");
   });
 
-  it("keeps play centered and moves next into edge-right on phone-touch when next is available", async () => {
+  it("keeps play centered and places next button adjacent to play in center overlay on phone-touch", async () => {
     coarsePointer = true;
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
@@ -730,22 +730,16 @@ describe("YTPlayer — layout decision contracts", () => {
     const bottomRight = container.querySelector(
       '[data-control-slot="bottom-right"]',
     ) as HTMLDivElement;
-    const edgeRight = container.querySelector(
-      '[data-control-slot="edge-right"]',
-    ) as HTMLDivElement;
 
     expect(
       centerOverlay.querySelector('[data-ytp-component="play-btn"]'),
     ).toBeInTheDocument();
     expect(
       centerOverlay.querySelector('[data-ytp-component="next-btn"]'),
-    ).not.toBeInTheDocument();
+    ).toBeInTheDocument();
     expect(
       bottomRight.querySelector('[data-ytp-component="next-btn"]'),
     ).not.toBeInTheDocument();
-    expect(
-      edgeRight.querySelector('[data-ytp-component="next-btn"]'),
-    ).toBeInTheDocument();
   });
 });
 
