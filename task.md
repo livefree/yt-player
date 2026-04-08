@@ -1,35 +1,926 @@
-# Task: Mobile UX Enhancements (①②③④)
+# 统一规则（必须遵守）
 
-**Status**: done
-**Branch**: feat/mobile-ux-enhancements
+1. 任务序列命名
 
-## Description
+- 序列 ID 格式：`SEQ-YYYYMMDD-XX`（例：`SEQ-20260319-01`）
+- `XX` 从 `01` 递增，不复用、不回填
+- 一个序列包含一组有依赖关系的任务（可跨多个模块）
 
-Implement four mobile UX enhancements:
+2. 任务编号命名（沿用现有规范）
 
-1. **① Progress bar touch scrubbing** — touch drag on progress rail to seek
-2. **② Media Session API** — lock screen controls (play/pause/seek/next)
-3. **③ Screen Wake Lock** — keep screen on while playing
-4. **④ AirPlay support** — AirPlay button for iOS Safari
+- 任务 ID 格式：`<PREFIX>-NN`
+- `PREFIX` 必须使用既有前缀：`INFRA` / `AUTH` / `VIDEO` / `SEARCH` / `PLAYER` / `CRAWLER` / `ADMIN` / `USER` / `SOCIAL` / `LIST` / `CONTRIB` / `CHG` / `CHORE` / `DEC` / `UX`
+  - `DEC`：前后台解耦架构任务（来自 frontend_backend_decoupling_plan_20260401.md，2026-04-02 新增）
+  - `UX`：后台交互改造任务（来自 admin_console_decoupling_and_ux_plan_20260402.md，2026-04-02 新增）
+- `NN` 为两位数字，按同前缀内最大编号递增（例如当前最大 `CHG-335`，下一个必须是 `CHG-336`）
+- 禁止跳号占坑、禁止复用已存在编号
 
-## Acceptance Criteria
+3. 时间戳要求
 
-- [x] ① Touch scrub on progress bar: drag updates position, commits seek on touch end
-- [x] ① Progress bar visually expands (scrubbing state) during touch drag
-- [x] ② `navigator.mediaSession.metadata` set with title/artist/artwork from props
-- [x] ② Play/pause/seekforward/seekbackward/seekto action handlers registered
-- [x] ② `setPositionState` updated on timeupdate
-- [x] ③ `wakeLock.request("screen")` acquired when playing, released when paused/unmounted
-- [x] ③ Wake lock re-acquired on `visibilitychange` when playing
-- [x] ④ AirPlay button shown only on Safari with `webkitShowPlaybackTargetPicker` support
-- [x] ④ `x-webkit-airplay="allow"` attribute on video element
-- [x] All: `npm run typecheck` passes (0 errors)
-- [x] All: `npm run lint` passes (0 warnings)
-- [x] All: `npm test` passes
-- [x] All: `npm run build` succeeds
+- 每个序列必须包含：`创建时间`、`最后更新时间`
+- 每个任务必须包含：`创建时间`（必填），`计划开始时间`（建议），`实际开始时间`（启动后填），`完成时间`（完成后填）
+- 时间格式统一：`YYYY-MM-DD HH:mm`（本地时区）
 
-## Constraints
+4. 记录位置（统一，禁止混用）
 
-- No new runtime dependencies
-- CSS Modules only; no inline styles for static values
-- All new CSS variables follow `--ytp-*` prefix
+- 本文件：新序列与新任务一律**追加到文件尾部**
+- `docs/tasks.md`：新任务块一律**追加到文件尾部**；同一任务只更新其状态与时间字段
+- `docs/changelog.md`：新完成记录一律**追加到文件尾部**
+- 禁止“有时头插、有时尾插”
+
+5. 执行约束
+
+- `docs/tasks.md` 是单任务工作台：同时只允许 1 个任务为 `🔄 进行中`；任务完成后立即从 tasks.md 删除该卡片（历史存于 changelog.md）
+- 任务进入执行前，必须已在本文件序列中定义（除紧急 hotfix）
+- 每完成一个任务，立即更新本文件对应任务状态与时间戳，并更新所属序列的 `最后更新时间`
+- BLOCKER 和 PHASE COMPLETE 通知写入本文件尾部（不写入 tasks.md）
+
+---
+
+## 序列模板
+
+```markdown
+## [SEQ-YYYYMMDD-XX] 序列标题
+
+- **状态**：🟡 规划中 / 🔄 执行中 / ✅ 已完成 / ⛔ 已取消
+- **创建时间**：YYYY-MM-DD HH:mm
+- **最后更新时间**：YYYY-MM-DD HH:mm
+- **目标**：一句话描述目标
+- **范围**：涉及模块与边界
+- **依赖**：上游任务或环境前置
+
+### 任务列表（按执行顺序）
+
+1. TASK-ID — 标题（状态：⬜/🔄/✅/❌）
+   - 创建时间：YYYY-MM-DD HH:mm
+   - 计划开始：YYYY-MM-DD HH:mm
+   - 实际开始：YYYY-MM-DD HH:mm（未开始可留空）
+   - 完成时间：YYYY-MM-DD HH:mm（未完成可留空）
+   - 验收要点：...
+```
+
+---
+
+## [SEQ-20260406-01] YTPlayer 高移植治理与移动端稳定性修复
+
+- **状态**：🔄 执行中
+- **创建时间**：2026-04-06 15:45
+- **最后更新时间**：2026-04-06 02:33
+- **目标**：在保持即插即用和高移植性的前提下，建立播放器回归保护网，并逐步拆出高风险副作用与移动端交互逻辑
+- **范围**：`src/player/`、`src/test/`、`README.md`、`DEVLOG.md`
+- **依赖**：现有 `YTPlayer` 公开 API 保持不变；HLS/IIFE 能力保持可用；不引入新的宿主依赖
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-01 — 建立播放器治理基线文档（状态：✅）
+   - 创建时间：2026-04-06 15:20
+   - 计划开始：2026-04-06 15:20
+   - 实际开始：2026-04-06 15:20
+   - 完成时间：2026-04-06 15:35
+   - 验收要点：完成可移植优先的治理计划文档；明确阶段划分、边界、非目标和完成标准
+
+2. PLAYER-02 — 补齐关键用户流回归测试（状态：✅）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 16:00
+   - 实际开始：2026-04-06 01:38
+   - 完成时间：2026-04-06 01:44
+   - 验收要点：覆盖 source loading、HLS fallback、autoplay fallback、progress scrub、gesture、panel toggle、cleanup 等关键用户流
+
+3. PLAYER-03 — 抽离 source loading 与 HLS 生命周期（状态：✅）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 17:00
+   - 实际开始：2026-04-06 01:45
+   - 完成时间：2026-04-06 01:48
+   - 验收要点：新增独立 hook 管理普通源/HLS/autoplay/retry/cleanup；`Player.tsx` 不再直接持有 HLS 初始化和销毁细节
+
+4. PLAYER-04 — 抽离 progress 与移动端 gesture 输入层（状态：✅）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 18:00
+   - 实际开始：2026-04-06 01:54
+   - 完成时间：2026-04-06 02:03
+   - 验收要点：将 hover、pointer scrub、touch scrub、双击 seek、触摸音量等状态机从主组件中分离，形成可单独验证的输入层边界
+
+5. PLAYER-05 — 抽离系统集成与可移植适配层（状态：✅）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 19:00
+   - 实际开始：2026-04-06 02:05
+   - 完成时间：2026-04-06 02:12
+   - 验收要点：集中收口 Fullscreen、Media Session、Wake Lock、AirPlay、keyboard shortcut、chrome visibility；所有平台能力保持 capability detection 和优雅降级
+
+6. PLAYER-06 — 完成薄组装层与移植性验收（状态：✅）
+   - 创建时间：2026-04-06 15:45
+   - 计划开始：2026-04-06 20:00
+   - 实际开始：2026-04-06 02:15
+   - 完成时间：2026-04-06 02:33
+   - 验收要点：`Player.tsx` 主要负责 props 解析、hook 组合和 JSX 组装；补充 README 集成说明；确认 `src/player/` 可整体复制到其他 React 18 项目使用
+
+## [SEQ-20260406-02] YTPlayer 提示层与加载状态稳定性修复
+
+- **状态**：🔄 执行中
+- **创建时间**：2026-04-06 14:54
+- **最后更新时间**：2026-04-06 15:16
+- **目标**：修复静音提示、切集静音、loading/error 误判等现网行为问题，并补齐对应回归测试
+- **范围**：`src/player/`、`src/test/`、`DEVLOG.md`
+- **依赖**：延续 `SEQ-20260406-01` 的薄组装层结构；公开 API 保持不变
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-07 — 修复静音提示与加载状态回归（状态：✅）
+   - 创建时间：2026-04-06 14:54
+   - 计划开始：2026-04-06 14:54
+   - 实际开始：2026-04-06 14:54
+   - 完成时间：2026-04-06 14:59
+   - 验收要点：修复 `showUnmute` 与真实音频状态不同步、提示层命中失败、切集误静音、loading/error 层误切换；补对应回归测试
+
+2. PLAYER-08 — 制定播放器自适应布局与命中系统重构计划（状态：✅）
+   - 创建时间：2026-04-06 14:54
+   - 计划开始：PLAYER-07 完成后
+   - 实际开始：2026-04-06 15:16
+   - 完成时间：2026-04-06 15:16
+   - 验收要点：输出布局层 / 输入路由层 / overlay 管理层的重构方案，明确分阶段落地顺序和回归保护要求
+
+## [SEQ-20260406-03] YTPlayer 本地测试样本环境修复
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 15:16
+- **最后更新时间**：2026-04-06 16:05
+- **目标**：为开发预览页和样式调试页准备可稳定播放的本地样本媒体，消除对外部测试视频源的依赖
+- **范围**：`public/`、`dev/`、`src/example.tsx`、`DEVLOG.md`
+- **依赖**：不改变公开 API；worktree 内独立完成；优先使用本地静态资源而非外网样本
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-09 — 修复开发测试页样本媒体环境（状态：✅）
+   - 创建时间：2026-04-06 15:16
+   - 计划开始：2026-04-06 15:16
+   - 实际开始：2026-04-06 15:16
+   - 完成时间：2026-04-06 15:49
+   - 验收要点：生成本地 MP4/HLS/封面/缩略图样本；预览页与调试页默认使用本地资源；本地 `npm run dev` / `npm run build` 下样本链接可解析
+
+2. PLAYER-10 — 扩展预览样本为本地 + 在线公共资源（状态：✅）
+   - 创建时间：2026-04-06 15:54
+   - 计划开始：2026-04-06 15:54
+   - 实际开始：2026-04-06 15:54
+   - 完成时间：2026-04-06 15:57
+   - 验收要点：预览 playlist 增加在线公共视频资源；保留本地样本作为兜底；开发预览不再依赖 thumbnails 才能工作
+
+3. PLAYER-11 — 替换预览公共样本源为指定媒体列表（状态：✅）
+   - 创建时间：2026-04-06 16:01
+   - 计划开始：2026-04-06 16:01
+   - 实际开始：2026-04-06 16:01
+   - 完成时间：2026-04-06 16:05
+   - 验收要点：`src/example.tsx` 中公共样本源替换为指定 `mediaJSON` 列表中的资源；保留本地样本兜底；不重新引入 thumbnails 依赖
+
+## [SEQ-20260406-04] YTPlayer 自适应布局与命中系统重构开发
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 16:10
+- **最后更新时间**：2026-04-06 16:49
+- **目标**：按照 `docs/player-adaptive-layout-and-hit-testing-plan.md` 逐步建立布局决策层、overlay 管理层和输入路由层，抹平当前播放器与 YouTube 级交互架构的核心差距
+- **范围**：`src/player/`、`src/test/`、`docs/`、`DEVLOG.md`
+- **依赖**：延续现有薄组装层；保持公开 API 不变；禁止以局部 z-index / pointer-events / 布尔补丁替代架构层治理
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-12 — 引入布局决策层与布局契约测试（状态：✅）
+   - 创建时间：2026-04-06 16:10
+   - 计划开始：2026-04-06 16:10
+   - 实际开始：2026-04-06 16:10
+   - 完成时间：2026-04-06 16:22
+   - 验收要点：新增 `useLayoutDecision` 收敛布局模式、控件可见性和 slot 决策；`Player.tsx` 开始消费布局决策而不是散落条件；补充对应回归测试
+
+2. PLAYER-13 — 引入 overlay 管理层与命中优先级契约（状态：✅）
+   - 创建时间：2026-04-06 16:10
+   - 计划开始：PLAYER-12 完成后
+   - 实际开始：2026-04-06 16:24
+   - 完成时间：2026-04-06 16:31
+   - 验收要点：新增 `useOverlayManager`，统一 spinner/error/prompt/panel 的优先级、交互性和 gesture 阻断规则
+
+3. PLAYER-14 — 引入输入路由层并收回整屏手势捕获（状态：✅）
+   - 创建时间：2026-04-06 16:10
+   - 计划开始：PLAYER-13 完成后
+   - 实际开始：2026-04-06 16:35
+   - 完成时间：2026-04-06 16:35
+   - 验收要点：新增 `useInputRouter`，让 gesture capture、控件区、popup 区与 progress scrub 区进入统一命中路由
+
+4. PLAYER-15 — 以 slot 为中心重组视图层（状态：✅）
+   - 创建时间：2026-04-06 16:10
+   - 计划开始：PLAYER-14 完成后
+   - 实际开始：2026-04-06 16:39
+   - 完成时间：2026-04-06 16:49
+   - 验收要点：视图层围绕 slot 渲染控件，支持 compact/mobile/fullscreen 下的控件迁移而不破坏命中
+
+## [SEQ-20260406-05] YTPlayer 重构后验收修复
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 16:55
+- **最后更新时间**：2026-04-06 17:06
+- **目标**：修复重构后验收阶段暴露的关键交互问题，确保迁移控件可点击且面板开关语义稳定
+- **范围**：`src/player/`、`src/test/`、`DEVLOG.md`
+- **依赖**：延续 `SEQ-20260406-04` 的 layout / overlay / input / slot 架构；禁止回退到补丁式全局 z-index 或散装布尔修复
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-16 — 修复顶部迁移控件命中与 settings 切换契约（状态：✅）
+   - 创建时间：2026-04-06 16:55
+   - 计划开始：2026-04-06 16:55
+   - 实际开始：2026-04-06 16:55
+   - 完成时间：2026-04-06 17:06
+   - 验收要点：compact/mobile 下顶部 slot 控件可点击；settings 按钮再次点击可稳定关闭；控制栏选集按钮交互恢复；补充真实命中回归测试
+
+## [SEQ-20260406-06] YTPlayer 控件顺序与边缘提示修复
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 17:09
+- **最后更新时间**：2026-04-06 17:10
+- **目标**：修复底部播放/下一集控件顺序错误，并恢复边缘控件 tooltip 的完整显示
+- **范围**：`src/player/`、`src/test/`、`DEVLOG.md`
+- **依赖**：延续 `SEQ-20260406-04` 与 `SEQ-20260406-05` 的 slot 视图层和命中契约；禁止通过局部硬编码破坏 slot 布局语义
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-17 — 修复底部控件顺序与 tooltip 边缘裁切（状态：✅）
+   - 创建时间：2026-04-06 17:09
+   - 计划开始：2026-04-06 17:09
+   - 实际开始：2026-04-06 17:09
+   - 完成时间：2026-04-06 17:10
+   - 验收要点：bottom-left 顺序恢复为 play 在前、next/episodes 在后；边缘控件 tooltip 不再被播放器边界裁切；补对应回归测试
+
+## [SEQ-20260406-07] YTPlayer 重构后差距审计与下一阶段决策
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 17:12
+- **最后更新时间**：2026-04-06 17:14
+- **目标**：基于现有重构结果，系统审计播放器与 YouTube 级桌面/移动交互的剩余差距，并明确哪些问题适合 targeted bugfix，哪些必须进入下一阶段架构调整
+- **范围**：`docs/`、`task.md`、`DEVLOG.md`
+- **依赖**：以 `docs/player-adaptive-layout-and-hit-testing-plan.md` 为基线；不得把已完成的重构问题重新混入差距清单
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-18 — 输出重构后差距清单与决策矩阵（状态：✅）
+   - 创建时间：2026-04-06 17:12
+   - 计划开始：2026-04-06 17:12
+   - 实际开始：2026-04-06 17:12
+   - 完成时间：2026-04-06 17:14
+   - 验收要点：形成桌面/移动交互差距清单；按 targeted bugfix / 下一阶段架构调整分类；明确优先级、原因和建议执行顺序
+
+## [SEQ-20260406-08] YTPlayer 终端交互策略定义
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 17:16
+- **最后更新时间**：2026-04-06 17:18
+- **目标**：定义桌面、大尺寸平板和小尺寸手机三类终端的播放器交互目标、控件优先级、布局策略与 `episodes` 导航地位，为下一阶段开发提供产品与工程基线
+- **范围**：`docs/`、`task.md`、`DEVLOG.md`
+- **依赖**：承接 `docs/player-post-refactor-gap-audit.md`；不得重复差距清单内容；不得把策略文档写成实现细节清单
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-19 — 输出多终端播放器交互策略草案（状态：✅）
+   - 创建时间：2026-04-06 17:16
+   - 计划开始：2026-04-06 17:16
+   - 实际开始：2026-04-06 17:16
+   - 完成时间：2026-04-06 17:18
+   - 验收要点：明确桌面/平板/手机的输入模型、控件优先级、折叠策略、`episodes` 终端定位与建议执行顺序
+
+## [SEQ-20260406-09] YTPlayer Focused Hardening Strategy Alignment
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 17:23
+- **最后更新时间**：2026-04-06 19:32
+- **目标**：把现有播放器先拉回已确认的多终端策略方向，优先修正手机端 `episodes` 入口、portrait 双击 seek 和移动端伪音量手势
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：以 `docs/player-post-refactor-gap-audit.md` 和 `docs/player-device-interaction-strategy.md` 为基线；仅做 focused hardening，不开启新一轮大架构改造
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-20 — 对齐手机端入口与手势策略（状态：✅）
+   - 创建时间：2026-04-06 17:23
+   - 计划开始：2026-04-06 17:23
+   - 实际开始：2026-04-06 17:23
+   - 完成时间：2026-04-06 17:32
+   - 验收要点：手机端显式提供 `episodes` 入口；portrait 恢复左右双击 seek；移动端禁用伪音量手势；补对应回归测试
+
+2. PLAYER-21 — 收口移动端 safe-area 与 panel/chrome 兼容（状态：✅）
+   - 创建时间：2026-04-06 17:36
+   - 计划开始：2026-04-06 17:36
+   - 实际开始：2026-04-06 17:36
+   - 完成时间：2026-04-06 17:35
+   - 验收要点：top/bottom chrome 接入安全区避让；top-right panel 在异形屏与 fullscreen 下不顶到边；移动端 panel 高度与边距更加稳定；验证不引入回归
+
+3. PLAYER-22 — 补强 panel keyboard focus 与可访问性语义（状态：✅）
+   - 创建时间：2026-04-06 17:40
+   - 计划开始：2026-04-06 17:40
+   - 实际开始：2026-04-06 17:40
+   - 完成时间：2026-04-06 17:49
+   - 验收要点：settings / episodes 打开后焦点进入面板；Escape 可稳定关闭；关闭后焦点回到触发按钮；补对应回归测试
+
+4. PLAYER-23 — 细化 loading / buffering / fatal error 状态（状态：✅）
+   - 创建时间：2026-04-06 17:58
+   - 计划开始：2026-04-06 17:58
+   - 实际开始：2026-04-06 17:58
+   - 完成时间：2026-04-06 19:09
+   - 验收要点：播放器从二元 loading 状态收敛为 `initial / buffering / idle`；切源和等待态有明确区分；fatal error 不再和过渡态混淆；补对应回归测试
+
+5. PLAYER-24 — 补齐 controls / panel 语义与 focus-visible 反馈（状态：✅）
+   - 创建时间：2026-04-06 19:16
+   - 计划开始：2026-04-06 19:16
+   - 实际开始：2026-04-06 19:16
+   - 完成时间：2026-04-06 19:16
+   - 验收要点：settings / episodes 等触发器补齐 `aria-haspopup/expanded/controls`；panel 内可聚焦项与关键按钮具备清晰 `focus-visible` 反馈；补对应回归测试
+
+6. PLAYER-25 — 补全 panel 内 keyboard traversal 与 roving focus（状态：✅）
+   - 创建时间：2026-04-06 19:24
+   - 计划开始：2026-04-06 19:24
+   - 实际开始：2026-04-06 19:24
+   - 完成时间：2026-04-06 19:32
+   - 验收要点：settings 菜单支持 Arrow/Home/End/Tab 导航；episodes 面板支持 Home/End/Tab 和本地选择；panel 内键盘流转不再依赖全局 shortcut 兜底
+
+## [SEQ-20260406-10] YTPlayer 系统集成支持矩阵与降级契约
+
+- **状态**：✅ 已完成
+- **创建时间**：2026-04-06 19:41
+- **最后更新时间**：2026-04-06 19:47
+- **目标**：输出播放器系统集成支持矩阵，明确浏览器能力边界、探测方式和降级契约，为移植和 QA 提供统一依据
+- **范围**：`docs/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于当前 `useSystemIntegrations`、`useSourceLoader` 与 `Player.tsx` 的实际实现，不做夸大支持面表述
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-26 — 输出系统集成支持矩阵与降级契约（状态：✅）
+   - 创建时间：2026-04-06 19:41
+   - 计划开始：2026-04-06 19:41
+   - 实际开始：2026-04-06 19:41
+   - 完成时间：2026-04-06 19:47
+   - 验收要点：形成 Fullscreen / PiP / Media Session / Wake Lock / AirPlay / HLS 的支持矩阵；明确 capability detection、宿主前提和降级行为；避免对外形成不准确的“全平台支持”表述
+
+## [SEQ-20260406-11] YTPlayer 连续布局策略与控件优先级收口
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 19:42
+- **最后更新时间**：2026-04-06 19:46
+- **目标**：把当前离散 `layout mode` 决策推进为尺寸驱动的连续布局策略，并为后续 collapse policy 建立第一层控件优先级收口
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于现有 `useLayoutDecision` / slot 视图层；本轮不进入 input intent routing 和 overlay orchestration
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-27 — 为布局决策引入约束驱动和基础 collapse policy（状态：✅）
+   - 创建时间：2026-04-06 19:42
+   - 计划开始：2026-04-06 19:42
+   - 实际开始：2026-04-06 19:42
+   - 完成时间：2026-04-06 19:46
+   - 验收要点：`useLayoutDecision` 能表达宽度/高度约束和基础控件折叠；不再只靠离散模式切换；补布局契约测试
+
+## [SEQ-20260406-12] YTPlayer 控件优先级与尺寸特化收口
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 19:49
+- **最后更新时间**：2026-04-06 20:09
+- **目标**：把桌面端控件收口从单一 `density` 升级为宽度/高度分化的优先级策略，建立可持续扩展的 control priority / collapse policy
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于现有 `useLayoutDecision` 约束输出；本轮不进入竖视频内容比例适配
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-28 — 扩展桌面端 control priority / collapse policy（状态：✅）
+   - 创建时间：2026-04-06 19:49
+   - 计划开始：2026-04-06 19:49
+   - 实际开始：2026-04-06 19:49
+   - 完成时间：2026-04-06 20:09
+   - 验收要点：桌面端宽度受限与高度受限不再共享同一组折叠结果；`useLayoutDecision` 输出明确布局 profile；补 medium-width / short-height 差异契约测试
+
+## [SEQ-20260406-13] YTPlayer 输入意图路由第一阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 20:13
+- **最后更新时间**：2026-04-06 20:19
+- **目标**：将 `useInputRouter` 从纯 zone 生成器升级为可表达 gesture intent 的输入路由层，为后续 intent graph 打基础
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `layout / overlay / slot` 架构；本轮不改 keyboard 和 progress scrub 路由
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-29 — 为 gesture surface 引入显式 input intent（状态：✅）
+   - 创建时间：2026-04-06 20:13
+   - 计划开始：2026-04-06 20:13
+   - 实际开始：2026-04-06 20:13
+   - 完成时间：2026-04-06 20:19
+   - 验收要点：`useInputRouter` 产出显式 `intent` 与 `devicePolicy`；手势处理不再只根据 zone 推断行为；补对应契约测试
+
+## [SEQ-20260406-14] YTPlayer 移动端交互策略第一阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 20:23
+- **最后更新时间**：2026-04-06 21:36
+- **目标**：将移动端 touch-first 交互策略落成显式 policy，并先收口 chrome visibility 的手机端行为
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `layout / input intent` 架构；本轮不进入竖视频适配和面板重排
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-30 — 引入 mobile-first interaction / chrome policy（状态：✅）
+   - 创建时间：2026-04-06 20:23
+   - 计划开始：2026-04-06 20:23
+   - 实际开始：2026-04-06 20:23
+   - 完成时间：2026-04-06 21:36
+   - 验收要点：`useLayoutDecision` 输出显式 interaction/chrome policy；手机端暂停态 chrome 保持可见；补对应契约测试
+
+## [SEQ-20260406-15] YTPlayer touch slots 分化
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 21:40
+- **最后更新时间**：2026-04-06 21:45
+- **目标**：让 `tablet-touch` 与 `phone-touch` 不再共享同一组控件入口，先落地 touch-first 的可见控制策略
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于已存在的 `interactionPolicy`；本轮不引入新的次级面板或 sheet
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-31 — 分化 tablet / phone 的 touch 控件入口（状态：✅）
+   - 创建时间：2026-04-06 21:40
+   - 计划开始：2026-04-06 21:40
+   - 实际开始：2026-04-06 21:40
+   - 完成时间：2026-04-06 21:45
+   - 验收要点：平板端显式保留 `time/subtitles`；手机端保留 `episodes/settings` 主入口并收缩字幕按钮；补对应契约测试
+
+## [SEQ-20260406-16] YTPlayer 手机端 Episodes 主入口强化
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-06 21:49
+- **最后更新时间**：2026-04-06 23:44
+- **目标**：让 `phone-touch` 下的 `episodes` 成为更接近主控制区的入口，而不是继续与 `settings` 并列为顶部动作
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续 `phone-touch / tablet-touch` 分化；本轮不引入新的 sheet 或抽屉样式
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-32 — 提升 phone-touch 的 episodes 到底部主控区（状态：✅）
+   - 创建时间：2026-04-06 21:49
+   - 计划开始：2026-04-06 21:49
+   - 实际开始：2026-04-06 21:49
+   - 完成时间：2026-04-06 23:44
+   - 验收要点：手机端 `episodes` 从顶部次级入口提升到底部主控区；episodes panel 锚点与之同步；补对应契约测试
+
+## [SEQ-20260406-17] YTPlayer mode-aware chrome visibility 第二阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:02
+- **最后更新时间**：2026-04-07 00:06
+- **目标**：让 `tablet-touch` 与 `phone-touch` 在 chrome visibility 上采用不同策略，推进 mode-aware policy
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于现有 `interactionPolicy/chromePolicy`；本轮不改 progress scrub 或 panel 逻辑
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-33 — 分化 tablet / phone 的 chrome visibility policy（状态：✅）
+   - 创建时间：2026-04-07 00:02
+   - 计划开始：2026-04-07 00:02
+   - 实际开始：2026-04-07 00:02
+   - 完成时间：2026-04-07 00:06
+   - 验收要点：phone-touch 暂停态持续显示 chrome；tablet-touch 暂停态允许自动隐藏；补对应策略契约测试
+
+## [SEQ-20260406-18] YTPlayer 触摸自动隐藏节奏分化
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:10
+- **最后更新时间**：2026-04-07 00:23
+- **目标**：为 `tablet-touch` 引入独立于桌面的 chrome 自动隐藏节奏，让 mode-aware visibility 从开关分化推进到时序分化
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `touch-autohide / touch-persistent-paused` 策略；本轮不改面板和输入路由
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-34 — 为 tablet-touch 引入更长的 autohide delay（状态：✅）
+   - 创建时间：2026-04-07 00:10
+   - 计划开始：2026-04-07 00:10
+   - 实际开始：2026-04-07 00:10
+   - 完成时间：2026-04-07 00:23
+   - 验收要点：tablet-touch 的 controls 在 2.5s 后仍可见、在更长延迟后隐藏；desktop 仍保持原有 2s 行为；补对应契约测试
+
+## [SEQ-20260407-19] YTPlayer chrome visibility policy engine 第一阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:24
+- **最后更新时间**：2026-04-07 00:31
+- **目标**：将 `useChromeVisibility` 从字符串分支升级为显式 policy engine，为后续继续细分 desktop/tablet/phone/immersive 行为提供稳定边界
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `interactionPolicy / chromePolicy` 输出；本轮不新增 UI 控件，不调整公开 API
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-35 — 显式化 chrome visibility policy 对象（状态：✅）
+   - 创建时间：2026-04-07 00:24
+   - 计划开始：2026-04-07 00:24
+   - 实际开始：2026-04-07 00:24
+   - 完成时间：2026-04-07 00:31
+   - 验收要点：布局层产出显式 `chromeVisibilityPolicy`；可见性 hook 不再自己推导 pause/hide delay；补 desktop/tablet/phone/immersive 契约测试
+
+## [SEQ-20260407-20] YTPlayer overlay orchestration 第一阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:33
+- **最后更新时间**：2026-04-07 00:39
+- **目标**：将 overlay manager 从单纯优先级排序推进到第一层 orchestration，先收口 captions 空间避让与 transient overlay 抑制规则
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于现有 `layoutDecision` placement 与 `useOverlayManager`；本轮不引入新的 panel 组件或 drawer 形态
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-36 — 引入 caption placement 与 transient suppression 规则（状态：✅）
+   - 创建时间：2026-04-07 00:33
+   - 计划开始：2026-04-07 00:33
+   - 实际开始：2026-04-07 00:33
+   - 完成时间：2026-04-07 00:39
+   - 验收要点：overlay 层输出 caption placement；底部 panel 会抬高 captions；fatal error 抑制 spinner；panel 打开时抑制 bezel/seek/touch-seek；补对应契约测试
+
+## [SEQ-20260407-21] YTPlayer overlay orchestration 第二阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 00:47
+- **最后更新时间**：2026-04-07 00:56
+- **目标**：继续将 overlay 编排从局部抬高推进到 placement policy，先收口 unmute prompt 与 top chrome / top panel 的空间关系
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续 `overlay orchestration` 第一阶段；本轮不改 prompt 文案、不新增动画
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-37 — 为 unmute prompt 引入 placement policy（状态：✅）
+   - 创建时间：2026-04-07 00:47
+   - 计划开始：2026-04-07 00:47
+   - 实际开始：2026-04-07 00:47
+   - 完成时间：2026-04-07 00:56
+   - 验收要点：overlay 层输出 prompt placement；phone-touch / top chrome 场景下 prompt 下移；desktop 无 top chrome 时保持贴顶；补对应契约测试
+
+## [SEQ-20260407-22] YTPlayer overlay orchestration 第三阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 01:02
+- **最后更新时间**：2026-04-07 01:10
+- **目标**：让 top overlays 进入横向编排，先解决 unmute prompt 与 top-right panel 的同侧冲突
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `promptPlacement` policy；本轮不新增新的 overlay 类型
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-38 — 为 top-right panel 冲突引入 prompt 横向避让（状态：✅）
+   - 创建时间：2026-04-07 01:02
+   - 计划开始：2026-04-07 01:02
+   - 实际开始：2026-04-07 01:02
+   - 完成时间：2026-04-07 01:10
+   - 验收要点：top-right panel 打开时 prompt 切到左侧；默认状态仍保持右侧；补对应 orchestration 契约测试
+
+## [SEQ-20260407-23] YTPlayer overlay orchestration 第四阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 01:14
+- **最后更新时间**：2026-04-07 01:25
+- **目标**：把 overlay 组合关系收口成更稳定的 stack contract，先明确 panel / prompt / loading / error 的栈级语义
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `captionPlacement / promptPlacement`；本轮不新增视觉组件
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-39 — 引入 overlay stack mode 并抑制 panel 内 prompt（状态：✅）
+   - 创建时间：2026-04-07 01:14
+   - 计划开始：2026-04-07 01:14
+   - 实际开始：2026-04-07 01:14
+   - 完成时间：2026-04-07 01:25
+   - 验收要点：overlay 层输出显式 `stackMode`；panel 打开时 prompt 被抑制；loading stack 抑制反馈类 overlay；补对应契约测试
+
+## [SEQ-20260407-24] YTPlayer overlay orchestration 第五阶段
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 01:39
+- **最后更新时间**：2026-04-07 01:51
+- **目标**：将 overlay 编排字段收口成统一 layout contract，减少 manager 向视图层输出的平行状态
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：延续现有 `captionPlacement / promptPlacement / stackMode`；本轮不改视觉规则，仅收口契约形状
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-40 — 引入统一 overlay layout contract（状态：✅）
+   - 创建时间：2026-04-07 01:39
+   - 计划开始：2026-04-07 01:39
+   - 实际开始：2026-04-07 01:39
+   - 完成时间：2026-04-07 01:51
+   - 验收要点：manager 输出统一 `overlayLayout`；视图层只消费 layout contract；根节点补充统一 `data-overlay-layout` 观察点；补对应契约测试
+
+## [SEQ-20260407-25] YTPlayer 重构汇总与验证矩阵
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 01:53
+- **最后更新时间**：2026-04-07 01:53
+- **目标**：输出当前支线的阶段性重构汇总报告与跨终端功能矩阵，为 GitHub / Vercel 验证提供统一说明
+- **范围**：`docs/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于当前支线已完成的重构与策略实现；本轮不改源代码逻辑
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-41 — 生成重构状态报告与功能矩阵（状态：✅）
+   - 创建时间：2026-04-07 01:53
+   - 计划开始：2026-04-07 01:53
+   - 实际开始：2026-04-07 01:53
+   - 完成时间：2026-04-07 01:53
+   - 验收要点：新增一份重构汇总报告；新增一份跨终端功能矩阵；文档能直接用于远端部署后的设备验证说明
+
+## [SEQ-20260407-26] YTPlayer 连续响应式收口与设置面板规划
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 02:02
+- **最后更新时间**：2026-04-07 13:22
+- **目标**：基于最新实机反馈，按连续宽度谱而非离散设备名收口播放器布局；同时单独规划设置面板下一版信息架构
+- **范围**：`src/player/`、`src/test/`、`docs/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于当前 `layout decision / input routing / overlay orchestration`；短视频/竖视频比例适配暂缓，不纳入本轮
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-42 — 建立连续响应式适配规则与宽度带（状态：✅）
+   - 创建时间：2026-04-07 02:02
+   - 计划开始：PLAYER-41 之后
+   - 实际开始：2026-04-07 04:26
+   - 完成时间：2026-04-07 04:32
+   - 验收要点：将手机竖屏最窄场景与桌面过渡宽度统一纳入 `wide / medium / compact / narrow / phone-portrait` 一类连续宽度谱；避免后续再按离散终端补丁式实现
+
+2. PLAYER-43 — 顶部控件贴顶与 tooltip 自适应方向（状态：✅）
+   - 创建时间：2026-04-07 02:02
+   - 计划开始：PLAYER-42 之后
+   - 实际开始：2026-04-07 04:33
+   - 完成时间：2026-04-07 04:40
+   - 验收要点：顶部按钮在小窗口和过渡宽度下贴顶；tooltip 能根据可用空间自动切换到下方显示；补桌面与小窗口契约测试
+
+3. PLAYER-44 — Episodes 面板尺寸与滚动策略统一（状态：✅）
+   - 创建时间：2026-04-07 02:02
+   - 计划开始：PLAYER-42 之后
+   - 实际开始：2026-04-07 04:41
+   - 完成时间：2026-04-07 04:43
+   - 验收要点：episodes panel 在小窗口、手机竖屏、桌面过渡宽度下不会被控制栏遮挡；尺寸按约束带调整；必要时转为滚动窗口
+
+4. PLAYER-45 — 倍速按钮外提为一级控制（状态：✅）
+   - 创建时间：2026-04-07 02:02
+   - 计划开始：PLAYER-43 与 PLAYER-44 之后
+   - 实际开始：2026-04-07 13:08
+   - 完成时间：2026-04-07 13:13
+   - 验收要点：倍速按钮在桌面与移动端均为单独入口；按钮显示当前倍速；桌面端采用水平 slider + 预设倍速；保留快捷键契约
+
+5. PLAYER-46 — Panel 视觉 token 统一（状态：✅）
+   - 创建时间：2026-04-07 02:02
+   - 计划开始：PLAYER-44 与 PLAYER-45 之后
+   - 实际开始：2026-04-07 13:14
+   - 完成时间：2026-04-07 13:16
+   - 验收要点：episodes / speed / settings 面板共用一致的圆角、不透明度、字体色、阴影等 token；不再各自硬编码
+
+6. PLAYER-47 — 手机竖屏主控重排（状态：✅）
+   - 创建时间：2026-04-07 02:02
+   - 计划开始：PLAYER-45 之后
+   - 实际开始：2026-04-07 13:17
+   - 完成时间：2026-04-07 13:19
+   - 验收要点：在手机竖屏最窄场景下，主播放按钮提升为更强主控；评估并实现 `next` 的可见位置策略，同时兼顾桌面到手机的过渡宽度
+
+7. PLAYER-48 — 设置面板信息架构规划（状态：✅）
+   - 创建时间：2026-04-07 02:02
+   - 计划开始：与 PLAYER-42 并行可做
+   - 实际开始：2026-04-07 13:20
+   - 完成时间：2026-04-07 13:22
+   - 验收要点：输出设置面板下一版功能规划文档，明确倍速移出后 settings 承载的功能边界，例如循环播放、自动播放、sleep timer、字幕样式等；本任务先规划不实现
+
+## [SEQ-20260407-27] YTPlayer 交互收口第二轮
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 13:30
+- **最后更新时间**：2026-04-07 13:55
+- **目标**：基于最新设备验证反馈，收口 speed control、统一弹窗约束、顶部控件间距与 phone-touch 主控布局
+- **范围**：`src/player/`、`src/test/`、`docs/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于 `SEQ-20260407-26` 已完成的 speed / panel / phone-touch 改造；短视频比例适配继续后置
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-49 — 倍速按钮稳定宽度与固定数值格式（状态：✅）
+   - 创建时间：2026-04-07 13:30
+   - 计划开始：2026-04-07 13:30
+   - 实际开始：2026-04-07 13:30
+   - 完成时间：2026-04-07 13:49
+   - 验收要点：speed 按钮宽度稳定；数值固定两位小数；hover/highlight 不再因文案长度变化错位
+
+2. PLAYER-50 — SpeedPanel 紧凑化与 slider 视觉统一（状态：✅）
+   - 创建时间：2026-04-07 13:30
+   - 计划开始：PLAYER-49 之后
+   - 实际开始：2026-04-07 13:49
+   - 完成时间：2026-04-07 13:50
+   - 验收要点：speed panel 去除冗余说明文案；当前倍速置顶居中；slider 视觉与音量滑条统一；快捷键提示以更紧凑的 hover 形式出现
+
+3. PLAYER-51 — 统一弹窗尺寸/滚动约束与遮挡修复（状态：✅）
+   - 创建时间：2026-04-07 13:30
+   - 计划开始：PLAYER-50 之后
+   - 实际开始：2026-04-07 13:50
+   - 完成时间：2026-04-07 13:53
+   - 验收要点：speed / settings / episodes 统一走小窗口弹窗约束；需要时稳定转为滚动窗口；滚动条不破坏圆角外观；不再被控制栏遮挡
+
+4. PLAYER-52 — 顶部控件间距与 tooltip 空间收口（状态：✅）
+   - 创建时间：2026-04-07 13:30
+   - 计划开始：PLAYER-51 之后
+   - 实际开始：2026-04-07 13:53
+   - 完成时间：2026-04-07 13:55
+   - 验收要点：顶部控件不会出现互相覆盖的命中区域；小窗口下 tooltip 仍能稳定朝下展开
+
+5. PLAYER-53 — Phone-touch 中央播放 + 右侧 next 布局修正（状态：✅）
+   - 创建时间：2026-04-07 13:30
+   - 计划开始：PLAYER-52 之后
+   - 实际开始：2026-04-07 13:53
+   - 完成时间：2026-04-07 13:55
+   - 验收要点：移动端中央保留放大播放键；`next` 迁移到右侧，不再和播放键并排占据中央主控区
+
+## [SEQ-20260407-28] YTPlayer 弹窗与倍速交互第三轮修正
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 14:05
+- **最后更新时间**：2026-04-07 14:13
+- **目标**：基于最新实机反馈，继续收口 speed panel 居中与紧凑性、统一弹窗滚动壳层、避免控制栏误触，并优化小屏 speed 按钮表达
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于 `SEQ-20260407-27` 已完成的 speed / popup / phone-touch 改造；继续禁止用局部补丁破坏统一 panel contract
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-54 — 收口 SpeedPanel 居中与紧凑布局（状态：✅）
+   - 创建时间：2026-04-07 14:05
+   - 计划开始：2026-04-07 14:05
+   - 实际开始：2026-04-07 14:05
+   - 完成时间：2026-04-07 14:13
+   - 验收要点：speed panel 主值与 slider 视觉居中；去掉导致遮挡的旧 help 气泡；小尺寸屏幕下 preset 区下部留白进一步收紧
+
+2. PLAYER-55 — 统一弹窗滚动壳层与底部安全间隔（状态：✅）
+   - 创建时间：2026-04-07 14:05
+   - 计划开始：PLAYER-54 之后
+   - 实际开始：2026-04-07 14:05
+   - 完成时间：2026-04-07 14:13
+   - 验收要点：episodes / speed / settings 使用统一 shell + inner scroll contract；滚动条不破坏圆角；小窗口下弹窗底边与进度条/控制栏保持明确间隔
+
+3. PLAYER-56 — 将倍速快捷键提示改为 slider 两侧 step 按钮（状态：✅）
+   - 创建时间：2026-04-07 14:05
+   - 计划开始：PLAYER-55 之后
+   - 实际开始：2026-04-07 14:05
+   - 完成时间：2026-04-07 14:13
+   - 验收要点：speed panel 在 slider 左右新增 `-` / `+` step 按钮；tooltip 仅在 hover 对应按钮时显示快捷键；复用既有 tooltip 策略
+
+4. PLAYER-57 — 小屏 speed 按钮图标收敛（状态：✅）
+   - 创建时间：2026-04-07 14:05
+   - 计划开始：PLAYER-56 之后
+   - 实际开始：2026-04-07 14:05
+   - 完成时间：2026-04-07 14:13
+   - 验收要点：compact / narrow / phone-portrait 下 speed 按钮仅显示数字倍速；桌面宽屏继续保留图标 + 数值
+
+## [SEQ-20260407-29] YTPlayer 倍速弹窗紧凑模式与尺寸策略修正
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 14:22
+- **最后更新时间**：2026-04-07 14:19
+- **目标**：继续收口 speed panel 在小屏幕下的紧凑模式，并避免 PC 过渡尺寸下出现无必要的尺寸膨胀
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于 `SEQ-20260407-28` 已完成的 speed panel step buttons 与 shared panel scroller；保持 panel 统一视觉契约
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-58 — 小屏 speed panel 去除主值标题（状态：✅）
+   - 创建时间：2026-04-07 14:22
+   - 计划开始：2026-04-07 14:22
+   - 实际开始：2026-04-07 14:22
+   - 完成时间：2026-04-07 14:19
+   - 验收要点：在 `compact / narrow / phone-portrait` 下 speed panel 隐藏当前倍速标题，仅保留 slider 与 preset；当前倍速继续由一级 speed button 实时承担
+
+2. PLAYER-59 — Speed panel 自适应尺寸防抖（状态：✅）
+   - 创建时间：2026-04-07 14:22
+   - 计划开始：PLAYER-58 之后
+   - 实际开始：2026-04-07 14:22
+   - 完成时间：2026-04-07 14:19
+   - 验收要点：speed panel 优先保持稳定宽度，仅在空间不足时收缩；PC 浏览器尺寸过渡中不再因为容器变宽出现明显空白膨胀
+
+## [SEQ-20260407-30] YTPlayer 架构清债：布局决策与面板契约收口
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 14:32
+- **最后更新时间**：2026-04-07 14:33
+- **目标**：收回最近几轮散落到视图层的 band 判断，并把 panel 的尺寸表达继续提升为显式契约，避免后续策略扩展时出现规则复制
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于 `SEQ-20260407-28` 与 `SEQ-20260407-29` 的 speed / panel 改动；不引入新功能
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-60 — 将 speed 展示策略并回 layout decision（状态：✅）
+   - 创建时间：2026-04-07 14:32
+   - 计划开始：2026-04-07 14:32
+   - 实际开始：2026-04-07 14:32
+   - 完成时间：2026-04-07 14:33
+   - 验收要点：`speed` 图标显隐、panel 标题显隐等紧凑策略由 `useLayoutDecision` 输出；`Player.tsx` / `SpeedPanel.tsx` 不再直接枚举 viewport bands
+
+2. PLAYER-61 — 将 panel 尺寸模式提升为显式契约（状态：✅）
+   - 创建时间：2026-04-07 14:32
+   - 计划开始：PLAYER-60 之后
+   - 实际开始：2026-04-07 14:32
+   - 完成时间：2026-04-07 14:33
+   - 验收要点：speed/settings/episodes 至少共享可观察的 panel sizing mode；speed panel 的稳定宽度策略不再只体现在局部 CSS 常量
+
+## [SEQ-20260407-31] YTPlayer speed panel 桌面过渡稳定性修复
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 14:40
+- **最后更新时间**：2026-04-07 14:38
+- **目标**：消除 PC 浏览器尺寸过渡时 speed panel 的无必要形态放大，保证过渡宽度下内容密度稳定
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于 `SEQ-20260407-30` 的 panel policy contract；仅修复 speed panel 的桌面过渡稳定性，不扩展新功能
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-62 — 收紧 speed panel header 显示策略（状态：✅）
+   - 创建时间：2026-04-07 14:40
+   - 计划开始：2026-04-07 14:40
+   - 实际开始：2026-04-07 14:40
+   - 完成时间：2026-04-07 14:38
+   - 验收要点：speed panel 的 header 仅在真正需要的宽松布局显示；PC 桌面过渡宽度中不再因 band 切换引入明显空白和形态膨胀
+
+## [SEQ-20260407-32] YTPlayer 面板内容驱动高度统一
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 14:48
+- **最后更新时间**：2026-04-07 14:52
+- **目标**：将浏览器内所有面板统一到 episodes 的内容驱动高度策略，避免 speed / settings 继续出现空白填充
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于现有 `data-panel-sizing` 契约；本轮不改视觉主题，只统一高度行为
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-63 — 统一 panel content-driven height 契约（状态：✅）
+   - 创建时间：2026-04-07 14:48
+   - 计划开始：2026-04-07 14:48
+   - 实际开始：2026-04-07 14:48
+   - 完成时间：2026-04-07 14:52
+   - 验收要点：settings / speed / episodes 全部切到内容驱动高度；只有超过上限时才转滚动；补统一可观察契约测试
+
+## [SEQ-20260407-37] YTPlayer 空 settings 入口禁用
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 19:32
+- **最后更新时间**：2026-04-07 19:36
+- **目标**：保留 settings 按钮入口，但在没有任何实际设置项时灰化禁用并阻止空弹窗出现，避免大屏窄条和小窗大空盒两种错误形态继续出现
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`、`docs/changelog.md`
+- **依赖**：基于当前回滚后的旧 settings 结构；本轮不尝试重建 settings，只移除空 settings 交互路径
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-69 — 禁用空 settings 按钮与弹窗（状态：✅）
+   - 创建时间：2026-04-07 19:32
+   - 计划开始：2026-04-07 19:32
+   - 实际开始：2026-04-07 19:32
+   - 完成时间：2026-04-07 19:36
+   - 验收要点：qualities/subtitles 都为空时继续渲染 settings 按钮，但按钮灰化且不可点击；不允许打开空 settings 弹窗；settings 真有内容时 overlay 行为保持可用；补回归测试
+
+## [SEQ-20260407-38] YTPlayer 播放器全面重建
+
+- **状态**：🔄 执行中
+- **创建时间**：2026-04-07 20:05
+- **最后更新时间**：2026-04-07 22:00
+- **目标**：按新 feature matrix contract 完成 Player.tsx 解构、共享 slider 原语、SpeedPanel 重建、布局系统重建、time display 与 episodes 滚动条
+- **范围**：`docs/`、`src/player/`、`src/test/`、`task.md`
+- **依赖**：基于 `SEQ-20260407-37` 当前状态；PLAYER-70 matrix 已冻结
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-70 — 校准 feature matrix 与布局 contract（状态：✅）
+   - 创建时间：2026-04-07 20:05
+   - 计划开始：2026-04-07 20:05
+   - 实际开始：2026-04-07 20:05
+   - 完成时间：2026-04-07 22:00
+   - 验收要点：完成 `player-feature-matrix` 全面重写；补 fullscreen pointer/touch 双列；冻结 Speed 一级按钮、SpeedPanel 结构、SettingsPanel 职责、Panel family contract、Volume 三行拆分、Time display touch 端上移、Phone top-right 优先级退化
+
+2. PLAYER-72 — Player.tsx 解构：提取 actions 与 ControlRenderer（状态：✅）
+   - 创建时间：2026-04-07 22:00
+   - 计划开始：2026-04-07 22:00
+   - 实际开始：2026-04-07 22:00
+   - 完成时间：2026-04-07 23:30
+   - 验收要点：`usePlayerActions` hook 提取所有 action 函数；`ControlRenderer.tsx` 提取 renderControl；Player.tsx 从 1391 行降至 ≤1050 行（JSX 骨架 ~390 行不可进一步压缩）；typecheck / lint / test 全部通过；行为无任何变化
+
+3. PLAYER-73 — 共享 HorizontalSlider 原语（状态：✅）
+   - 创建时间：2026-04-07 22:00
+   - 计划开始：PLAYER-72 之后
+   - 实际开始：2026-04-07 23:45
+   - 完成时间：2026-04-08 00:00
+   - 验收要点：音量 slider 提取为 `HorizontalSlider` 组件；SpeedPanel 复用同一组件；视觉行为与现有音量 slider 完全一致
+
+4. PLAYER-71 — SpeedPanel 重建 + Speed 按钮格式统一（状态：✅）
+   - 创建时间：2026-04-07 20:18
+   - 计划开始：PLAYER-73 之后
+   - 实际开始：2026-04-08 00:00
+   - 完成时间：2026-04-08 00:05
+   - 验收要点：SpeedPanel 按新 contract 重建（无文案标题、HorizontalSlider、4 预设、命中高亮）；Speed 按钮格式固定为两位小数；SettingsPanel 移除 Speed 入口；panel family contract 统一；typecheck / lint / test 通过
+
+5. PLAYER-74 — 布局系统重建（状态：✅）
+   - 创建时间：2026-04-07 22:00
+   - 计划开始：PLAYER-72 之后（可与 PLAYER-71 并行）
+   - 实际开始：2026-04-08 00:05
+   - 完成时间：2026-04-08 00:15
+   - 验收要点：useLayoutDecision 新增 fullscreen pointer/touch 独立分叉；next 归位 edge-right（touch）；Player.tsx JSX 新增 edge-right 渲染区；Phone top-right 按 viewportBand 静态退化；typecheck / lint / test 通过
+
+6. PLAYER-75 — Time display touch 端上移 + EpisodesPanel 滚动条（状态：✅）
+   - 创建时间：2026-04-07 22:00
+   - 计划开始：PLAYER-72 之后（可与 PLAYER-71 并行）
+   - 实际开始：2026-04-08 00:15
+   - 完成时间：2026-04-08 00:25
+   - 验收要点：touch 端 time display 条件渲染到进度条左端上方；字号缩小一档；EpisodesPanel 内层 scroller 补细滚动条，外层保持 overflow:hidden；不破坏 panel 圆角

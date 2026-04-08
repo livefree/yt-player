@@ -17,17 +17,21 @@ import type { Chapter } from "./player/types";
 export function MinimalExample() {
   return (
     <YTPlayer
-      src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-      poster="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/320px-Camponotus_flavomarginatus_ant.jpg"
-      title="Big Buck Bunny"
-      author="Blender Foundation"
+      src="/samples/local-demo.mp4"
+      poster="/samples/local-demo-poster.jpg"
+      title="Local Demo MP4"
+      author="YTPlayer Local Sample"
     />
   );
 }
 
 // ─── Playlist ─────────────────────────────────────────────────────────────────
 
-const BASE = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample";
+const LOCAL_MP4 = "/samples/local-demo.mp4";
+const LOCAL_HLS = "/samples/hls/local-demo.m3u8";
+const LOCAL_POSTER = "/samples/local-demo-poster.jpg";
+const PUBLIC_SAMPLE_BASE =
+  "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample";
 
 interface VideoItem {
   src: string;
@@ -35,17 +39,48 @@ interface VideoItem {
   author: string;
   poster?: string;
   chapters?: Chapter[];
-  /** WebVTT thumbnail track for progress bar preview */
-  thumbnailTrack?: string;
 }
 
 const PLAYLIST: VideoItem[] = [
   {
-    src: `${BASE}/BigBuckBunny.mp4`,
+    src: LOCAL_MP4,
+    title: "Local Demo MP4",
+    author: "YTPlayer Local Sample",
+    poster: LOCAL_POSTER,
+    chapters: [
+      { title: "Opening Grid", startTime: 0 },
+      { title: "Middle Motion", startTime: 6 },
+      { title: "Audio Sync", startTime: 12 },
+      { title: "Ending Bars", startTime: 18 },
+    ],
+  },
+  {
+    src: LOCAL_HLS,
+    title: "Local Demo HLS",
+    author: "YTPlayer Local Sample",
+    poster: LOCAL_POSTER,
+    chapters: [
+      { title: "Manifest Start", startTime: 0 },
+      { title: "Segment Two", startTime: 8 },
+      { title: "Segment Three", startTime: 16 },
+    ],
+  },
+  {
+    src: LOCAL_MP4,
+    title: "Big Buck Bunny (Local Fallback)",
+    author: "YTPlayer Local Sample",
+    poster: LOCAL_POSTER,
+    chapters: [
+      { title: "Episode Intro", startTime: 0 },
+      { title: "Gesture Test", startTime: 7 },
+      { title: "Chrome Check", startTime: 14 },
+      { title: "Wrap Up", startTime: 20 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/BigBuckBunny.mp4`,
     title: "Big Buck Bunny",
     author: "Blender Foundation",
-    poster: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
-    thumbnailTrack: "/thumbnails.vtt",
     chapters: [
       { title: "Opening", startTime: 0 },
       { title: "Forest Chase", startTime: 180 },
@@ -54,10 +89,9 @@ const PLAYLIST: VideoItem[] = [
     ],
   },
   {
-    src: `${BASE}/ElephantsDream.mp4`,
-    title: "Elephants Dream",
+    src: `${PUBLIC_SAMPLE_BASE}/ElephantsDream.mp4`,
+    title: "Elephant Dream",
     author: "Blender Foundation",
-    poster: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Elephants_Dream_s5_both.jpg/320px-Elephants_Dream_s5_both.jpg",
     chapters: [
       { title: "Awakening", startTime: 0 },
       { title: "The Machine", startTime: 120 },
@@ -65,10 +99,59 @@ const PLAYLIST: VideoItem[] = [
     ],
   },
   {
-    src: `${BASE}/Sintel.mp4`,
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerBlazes.mp4`,
+    title: "For Bigger Blazes",
+    author: "Google",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Showcase", startTime: 10 },
+      { title: "Closing", startTime: 20 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerEscapes.mp4`,
+    title: "For Bigger Escape",
+    author: "Google",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Escapes", startTime: 10 },
+      { title: "End Card", startTime: 20 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerFun.mp4`,
+    title: "For Bigger Fun",
+    author: "Google",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Main Segment", startTime: 10 },
+      { title: "End Card", startTime: 20 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerJoyrides.mp4`,
+    title: "For Bigger Joyrides",
+    author: "Google",
+    chapters: [
+      { title: "City Run", startTime: 0 },
+      { title: "Wide Shot", startTime: 15 },
+      { title: "Wrap", startTime: 30 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/ForBiggerMeltdowns.mp4`,
+    title: "For Bigger Meltdowns",
+    author: "Google",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Meltdown", startTime: 10 },
+      { title: "End Card", startTime: 20 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/Sintel.mp4`,
     title: "Sintel",
     author: "Blender Foundation",
-    poster: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Sintel_Movie_Poster.jpg/220px-Sintel_Movie_Poster.jpg",
     chapters: [
       { title: "Prologue", startTime: 0 },
       { title: "Journey", startTime: 150 },
@@ -77,7 +160,17 @@ const PLAYLIST: VideoItem[] = [
     ],
   },
   {
-    src: `${BASE}/TearsOfSteel.mp4`,
+    src: `${PUBLIC_SAMPLE_BASE}/SubaruOutbackOnStreetAndDirt.mp4`,
+    title: "Subaru Outback On Street And Dirt",
+    author: "Garage419",
+    chapters: [
+      { title: "Street", startTime: 0 },
+      { title: "Off-road", startTime: 20 },
+      { title: "Wrap", startTime: 40 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/TearsOfSteel.mp4`,
     title: "Tears of Steel",
     author: "Blender Foundation",
     chapters: [
@@ -87,34 +180,34 @@ const PLAYLIST: VideoItem[] = [
     ],
   },
   {
-    src: `${BASE}/ForBiggerBlazes.mp4`,
-    title: "For Bigger Blazes",
-    author: "Google",
-  },
-  {
-    src: `${BASE}/ForBiggerEscapes.mp4`,
-    title: "For Bigger Escapes",
-    author: "Google",
-  },
-  {
-    src: `${BASE}/ForBiggerFun.mp4`,
-    title: "For Bigger Fun",
-    author: "Google",
-  },
-  {
-    src: `${BASE}/ForBiggerJoyrides.mp4`,
-    title: "For Bigger Joyrides",
-    author: "Google",
-  },
-  {
-    src: `${BASE}/SubaruOutbackOnStreetAndDirt.mp4`,
-    title: "Subaru Outback On Street And Dirt",
-    author: "Subaru",
-  },
-  {
-    src: `${BASE}/VolkswagenGTIReview.mp4`,
+    src: `${PUBLIC_SAMPLE_BASE}/VolkswagenGTIReview.mp4`,
     title: "Volkswagen GTI Review",
-    author: "Volkswagen",
+    author: "Garage419",
+    chapters: [
+      { title: "Intro", startTime: 0 },
+      { title: "Track Run", startTime: 40 },
+      { title: "Verdict", startTime: 80 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/WeAreGoingOnBullrun.mp4`,
+    title: "We Are Going On Bullrun",
+    author: "Garage419",
+    chapters: [
+      { title: "Road Start", startTime: 0 },
+      { title: "Rally Update", startTime: 30 },
+      { title: "Wrap", startTime: 60 },
+    ],
+  },
+  {
+    src: `${PUBLIC_SAMPLE_BASE}/WhatCarCanYouGetForAGrand.mp4`,
+    title: "What care can you get for a grand?",
+    author: "Garage419",
+    chapters: [
+      { title: "Challenge", startTime: 0 },
+      { title: "Car Search", startTime: 30 },
+      { title: "Verdict", startTime: 60 },
+    ],
   },
 ];
 
@@ -299,7 +392,6 @@ export function FullExample() {
           episodes={PLAYLIST.map((item) => ({ title: item.title }))}
           activeEpisodeIndex={index}
           onEpisodeChange={goTo}
-          thumbnailTrack={video.thumbnailTrack}
         />
       </div>
 

@@ -478,6 +478,39 @@ export type {
 
 ## 集成到其他项目
 
+### 可移植性契约
+
+这个播放器模块的目标不是“只能在本仓库里维护”，而是可以直接带到别的项目继续使用。当前集成边界约束如下：
+
+- `src/player/` 内部自闭合，不依赖路由、全局 store、Provider、设计系统或宿主业务模块
+- 公开入口保持为 [`src/index.ts`](./src/index.ts)：只导出 `YTPlayer`、`PlayerProps`、`SubtitleTrack`、`QualityLevel`、`Chapter`
+- 宿主项目只需要 React 18+、TypeScript 和 CSS Modules 支持即可运行
+- 浏览器能力均采用 capability detection：Fullscreen、PiP、Media Session、Wake Lock、AirPlay 不可用时自动降级，不阻塞主播放链路
+- HLS 兼容通过运行时 `hls.js` 处理，普通视频源不依赖额外宿主配置
+- 非 React 宿主可通过 [`src/iife-entry.ts`](./src/iife-entry.ts) 的 IIFE 构建直接挂载 `React`、`ReactDOM`、`YTPlayer`
+
+如果你要把播放器直接复制到另一个 React 项目，最小复制清单是：
+
+- `src/player/`
+- `src/index.ts`
+- `src/iife-entry.ts`（仅在需要 IIFE 嵌入时）
+
+宿主项目需要满足的条件只有：
+
+- 使用 React 18+
+- 构建链支持 `.module.css`
+- 允许加载视频源、字幕轨道和可选的 WebVTT thumbnails
+
+不需要额外接入：
+
+- 全局状态管理
+- UI 组件库
+- Tailwind / CSS-in-JS
+- Next.js 专属运行时
+- 项目级播放器上下文
+
+---
+
 ### 四种方式对比
 
 | 方式 | 适用场景 | 改动管理 | 上游同步 |
