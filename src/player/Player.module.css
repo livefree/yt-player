@@ -716,6 +716,7 @@
   overflow-x: hidden;
   scrollbar-gutter: auto;
   scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 .ytpSettingsMenu[data-panel-sizing="compact"],
@@ -1199,6 +1200,22 @@
 }
 
 /* ─── Controls bar ──────────────────────────────────────────────────────────── */
+
+.ytpTimeAboveProgress {
+  display: flex;
+  align-items: center;
+  padding: 0 2px 2px;
+}
+
+.ytpTimeAboveProgress .ytpTimeDisplay {
+  font-size: 11px;
+  height: auto;
+  padding: 0 6px;
+}
+
+.ytpTimeAboveProgress .ytpTimeDisplay::before {
+  display: none;
+}
 
 .ytpChromeControls {
   display: flex;

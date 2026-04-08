@@ -613,7 +613,11 @@ describe("YTPlayer — layout decision contracts", () => {
     expect(
       topRight.querySelector('[data-ytp-component="episodes-btn"]'),
     ).not.toBeInTheDocument();
-    expect(bottomLeft.textContent).toContain("0:00");
+    expect(bottomLeft.textContent).not.toContain("0:00");
+    expect(container.querySelector(".ytpTimeAboveProgress")).toBeInTheDocument();
+    expect(
+      container.querySelector(".ytpTimeAboveProgress")?.textContent,
+    ).toContain("0:00");
     expect(
       centerOverlay.querySelector('[data-ytp-component="play-btn"]'),
     ).toBeInTheDocument();

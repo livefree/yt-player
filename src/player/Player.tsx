@@ -593,10 +593,16 @@ export function YTPlayer({
   const playControl = bottomLeftSlot.includes("play")
     ? renderControl("play", controlCtx)
     : null;
+  const showTimeAboveProgress =
+    layoutDecision.interactionPolicy === "phone-touch" &&
+    bottomLeftSlot.includes("time");
   const bottomLeftControls = bottomLeftSlot
     .filter(
       (control) =>
-        control !== "play" && control !== "next" && control !== "episodes",
+        control !== "play" &&
+        control !== "next" &&
+        control !== "episodes" &&
+        !(showTimeAboveProgress && control === "time"),
     )
     .map((c) => renderControl(c, controlCtx))
     .filter(Boolean);
@@ -964,6 +970,12 @@ export function YTPlayer({
 
       {/* ── Layer 9: chrome bottom ────────────────────────────────────────── */}
       <div className={s.ytpChromeBottom} data-layer="9">
+        {/* ── Touch: time display above progress bar ───────────────────────── */}
+        {showTimeAboveProgress && (
+          <div className={s.ytpTimeAboveProgress}>
+            {renderControl("time", controlCtx)}
+          </div>
+        )}
         {/* ── Progress bar container ──────────────────────────────────────── */}
         <ProgressBar
           progressContainerRef={progressContainerRef}
