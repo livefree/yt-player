@@ -729,6 +729,7 @@
 .ytpSpeedPanel[data-placement="top-right"][data-panel-sizing="compact"],
 .ytpEpisodesPanel[data-placement="top-right"][data-panel-sizing="compact"] {
   top: calc(48px + var(--ytp-safe-top));
+  bottom: auto;
 }
 
 .ytpSettingsMenu[data-panel-sizing="compact"] {
