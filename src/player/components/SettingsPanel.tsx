@@ -7,6 +7,7 @@ import type {
   ViewportBand,
 } from "../hooks/useLayoutDecision";
 import type { Panel, QualityLevel, SubtitleTrack } from "../types";
+import { qualityDescription } from "../utils/format";
 import { MenuBackIcon, MenuCheckIcon, MenuChevronIcon } from "./icons";
 
 type SettingsPanelProps = {
@@ -24,6 +25,7 @@ type SettingsPanelProps = {
   viewportBand: ViewportBand;
   qualities: QualityLevel[];
   subtitles: SubtitleTrack[];
+  resolvedQualityHeight?: number | null;
 };
 
 type MenuItemProps = {
@@ -105,6 +107,7 @@ export function SettingsPanel({
   viewportBand,
   qualities,
   subtitles,
+  resolvedQualityHeight,
 }: SettingsPanelProps) {
   const activeQualityLabel =
     qualities.find((quality) => quality.id === activeQualityId)?.label ?? "Auto";
@@ -222,6 +225,14 @@ export function SettingsPanel({
                   <span className={s.ytpMenuItemValue}>{activeSubtitleLabel}</span>
                   <MenuChevronIcon className={s.ytpMenuChevron} />
                 </MenuItem>
+              )}
+              {resolvedQualityHeight != null && (
+                <div className={s.ytpMenuInfoRow}>
+                  <span className={s.ytpMenuInfoLabel}>Resolution</span>
+                  <span className={s.ytpMenuInfoValue}>
+                    {qualityDescription(resolvedQualityHeight)}
+                  </span>
+                </div>
               )}
             </>
           )}

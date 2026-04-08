@@ -27,7 +27,14 @@ import {
 } from "react";
 import s from "./Player.module.css";
 import { type PlayerProps, type SeekDirection, type Panel } from "./types";
-import { clamp, formatTime, SEEK_STEP } from "./utils/format";
+import {
+  clamp,
+  formatTime,
+  qualityBadgeLabel,
+  qualityDescription,
+  resolveQualityHeight,
+  SEEK_STEP,
+} from "./utils/format";
 import { useThumbnails } from "./hooks/useThumbnails";
 import { useSourceLoader } from "./hooks/useSourceLoader";
 import { useProgressInteractions } from "./hooks/useProgressInteractions";
@@ -137,6 +144,9 @@ export function YTPlayer({
 
   // ── Muted-autoplay state ───────────────────────────────────────────────────
   const [showUnmute, setShowUnmute] = useState(false);
+
+  // ── Video intrinsic size (for auto/adaptive quality display) ──────────────
+  const [videoHeight, setVideoHeight] = useState(0);
 
   const progressRailRef = useRef<HTMLDivElement>(null);
   const progressContainerRef = useRef<HTMLDivElement>(null);
@@ -351,6 +361,13 @@ export function YTPlayer({
 
   // ─── Computed values ───────────────────────────────────────────────────────
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const activeQualityLabel =
+    qualities.find((q) => q.id === activeQualityId)?.label ?? null;
+  const resolvedQualityHeight = resolveQualityHeight(activeQualityLabel, videoHeight);
+  const showQualityBadge =
+    qualities.length > 0 &&
+    resolvedQualityHeight !== null &&
+    layoutDecision.panels.sizingMode === "stable";
   const bufferedPct = duration > 0 ? (buffered / duration) * 100 : 0;
   const activeChapter = useMemo(() => {
     if (!chapters.length) return null;
@@ -706,8 +723,10 @@ export function YTPlayer({
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
             setDuration(v.duration);
+            setVideoHeight(v.videoHeight);
             if (startTime) v.currentTime = startTime;
           }}
+          onResize={(e) => setVideoHeight(e.currentTarget.videoHeight)}
           onTimeUpdate={(e) => {
             const v = e.currentTarget;
             setCurrentTime(v.currentTime);
@@ -911,6 +930,7 @@ export function YTPlayer({
         onSubtitleChange={setActiveSubId}
         onOpenPanel={setOpenPanel}
         onRequestClose={() => setOpenPanel(null)}
+        resolvedQualityHeight={resolvedQualityHeight}
       />
 
       {openPanel === "speed" && (
@@ -1044,6 +1064,15 @@ export function YTPlayer({
           </ControlSlot>
 
           <ControlSlot className={s.ytpRightControls} slot="bottom-right">
+            {showQualityBadge && resolvedQualityHeight !== null && (
+              <div
+                className={s.ytpQualityBadge}
+                aria-hidden="true"
+                title={qualityDescription(resolvedQualityHeight)}
+              >
+                {qualityBadgeLabel(resolvedQualityHeight)}
+              </div>
+            )}
             {bottomRightControls}
           </ControlSlot>
         </div>

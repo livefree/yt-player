@@ -47,3 +47,48 @@ export function formatRate(rate: number): string {
 export function formatRateBadge(rate: number): string {
   return `${rate.toFixed(2)}x`;
 }
+
+// ─── Quality label helpers ─────────────────────────────────────────────────────
+
+/** Parse numeric pixel height from a quality label string.
+ *  "1080p" → 1080 | "4K" → 2160 | "720p HDR" → 720 | "Auto" → null */
+function parseResolutionHeight(label: string): number | null {
+  const lower = label.trim().toLowerCase();
+  if (lower === "8k") return 4320;
+  if (lower === "4k") return 2160;
+  if (lower === "2k") return 1440;
+  const match = label.match(/^(\d+)p/i);
+  if (match?.[1]) return parseInt(match[1], 10);
+  return null;
+}
+
+/** Resolve the display height from the active quality label, falling back to
+ *  the video element's intrinsic height (useful for auto/adaptive streams). */
+export function resolveQualityHeight(
+  activeLabel: string | null | undefined,
+  videoHeight: number,
+): number | null {
+  if (activeLabel) {
+    const parsed = parseResolutionHeight(activeLabel);
+    if (parsed !== null) return parsed;
+  }
+  return videoHeight > 0 ? videoHeight : null;
+}
+
+/** Short badge label shown in the control bar: "4K", "1080p", "720p" … */
+export function qualityBadgeLabel(height: number): string {
+  if (height >= 4320) return "8K";
+  if (height >= 2160) return "4K";
+  return `${height}p`;
+}
+
+/** Descriptive label for tooltips and the settings info row. */
+export function qualityDescription(height: number): string {
+  if (height >= 4320) return "4320p · 8K Ultra HD";
+  if (height >= 2160) return "2160p · 4K UHD";
+  if (height >= 1440) return "1440p · QHD";
+  if (height >= 1080) return "1080p · Full HD";
+  if (height >= 720) return "720p · HD";
+  if (height >= 480) return "480p · SD";
+  return `${height}p`;
+}
