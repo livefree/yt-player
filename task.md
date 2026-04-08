@@ -890,11 +890,11 @@
    - 完成时间：2026-04-07 22:00
    - 验收要点：完成 `player-feature-matrix` 全面重写；补 fullscreen pointer/touch 双列；冻结 Speed 一级按钮、SpeedPanel 结构、SettingsPanel 职责、Panel family contract、Volume 三行拆分、Time display touch 端上移、Phone top-right 优先级退化
 
-2. PLAYER-72 — Player.tsx 解构：提取 actions 与 ControlRenderer（状态：🔄）
+2. PLAYER-72 — Player.tsx 解构：提取 actions 与 ControlRenderer（状态：✅）
    - 创建时间：2026-04-07 22:00
    - 计划开始：2026-04-07 22:00
    - 实际开始：2026-04-07 22:00
-   - 完成时间：
+   - 完成时间：2026-04-07 23:30
    - 验收要点：`usePlayerActions` hook 提取所有 action 函数；`ControlRenderer.tsx` 提取 renderControl；Player.tsx 从 1391 行降至 ≤1050 行（JSX 骨架 ~390 行不可进一步压缩）；typecheck / lint / test 全部通过；行为无任何变化
 
 3. PLAYER-73 — 共享 HorizontalSlider 原语（状态：⬜）
