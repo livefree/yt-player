@@ -1651,6 +1651,40 @@
   pointer-events: none;
 }
 
+/* ─── Shared horizontal slider primitives (HorizontalSlider component) ─────── */
+/* trackClassName is provided by the caller (ytpVolumeSlider / ytpSpeedSlider). */
+
+.ytpHSliderFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--ytp-vol-fill-color);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.ytpHSliderHandle {
+  position: absolute;
+  top: 50%;
+  width: var(--ytp-vol-handle-size);
+  height: var(--ytp-vol-handle-size);
+  background: var(--ytp-vol-fill-color);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.ytpHSliderInput {
+  position: absolute;
+  inset: -8px 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+  margin: 0;
+}
+
 /* ─── Time display ──────────────────────────────────────────────────────────── */
 
 /* Time display — three-layer model matching volume area approach:

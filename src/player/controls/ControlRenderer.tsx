@@ -1,5 +1,6 @@
 import type { Dispatch, MouseEvent as ReactMouseEvent, ReactNode, RefObject, SetStateAction } from "react";
 import s from "../Player.module.css";
+import { HorizontalSlider } from "../components/HorizontalSlider";
 import type { Panel, SubtitleTrack } from "../types";
 import type { ControlId, ControlSlot } from "../hooks/useLayoutDecision";
 import { formatRateBadge, formatTime } from "../utils/format";
@@ -189,27 +190,16 @@ export function renderControl(
             aria-valuetext={`${Math.round(ctx.effectiveVolume * 100)}% volume`}
             onMouseEnter={ctx.revealVolumeSlider}
           >
-            <div className={s.ytpVolumeSlider}>
-              <input
-                id={ctx.sliderId}
-                type="range"
-                min={0}
-                max={1}
-                step={0.01}
-                value={ctx.effectiveVolume}
-                className={s.ytpVolumeInput}
-                onChange={(e) => ctx.changeVolume(Number(e.currentTarget.value))}
-                aria-label="Volume"
-              />
-              <div
-                className={s.ytpVolumeSliderFill}
-                style={{ width: `${ctx.effectiveVolume * 100}%` }}
-              />
-              <div
-                className={s.ytpVolumeSliderHandle}
-                style={{ left: `${ctx.effectiveVolume * 100}%` }}
-              />
-            </div>
+            <HorizontalSlider
+              trackClassName={s.ytpVolumeSlider ?? ""}
+              id={ctx.sliderId}
+              min={0}
+              max={1}
+              step={0.01}
+              value={ctx.effectiveVolume}
+              ariaLabel="Volume"
+              onChange={ctx.changeVolume}
+            />
           </div>
         </span>
       );

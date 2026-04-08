@@ -14,6 +14,7 @@ import {
   clamp,
   formatRateBadge,
 } from "../utils/format";
+import { HorizontalSlider } from "./HorizontalSlider";
 import { YtpButton } from "./Button";
 
 type SpeedPanelProps = {
@@ -39,7 +40,6 @@ export function SpeedPanel({
   onPlaybackRateChange,
   onRequestClose,
 }: SpeedPanelProps) {
-  const speedPct = ((playbackRate - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) * 100;
   const nudgePlaybackRate = useCallback(
     (delta: number) => {
       onPlaybackRateChange(clamp(playbackRate + delta, SPEED_MIN, SPEED_MAX));
@@ -142,28 +142,17 @@ export function SpeedPanel({
               >
                 <span className={s.ytpSpeedStepGlyph} aria-hidden="true">-</span>
               </YtpButton>
-              <label className={s.ytpSpeedSliderBlock}>
-                <div className={s.ytpSpeedSlider}>
-                  <div
-                    className={s.ytpSpeedSliderFill}
-                    style={{ width: `${speedPct}%` }}
-                  />
-                  <div
-                    className={s.ytpSpeedSliderHandle}
-                    style={{ left: `${speedPct}%` }}
-                  />
-                </div>
-                <input
-                  className={s.ytpSpeedRange}
-                  type="range"
+              <div className={s.ytpSpeedSliderBlock}>
+                <HorizontalSlider
+                  trackClassName={s.ytpSpeedSlider ?? ""}
                   min={SPEED_MIN}
                   max={SPEED_MAX}
                   step={SPEED_STEP}
                   value={playbackRate}
-                  aria-label="Playback speed"
-                  onChange={(event) => onPlaybackRateChange(Number(event.currentTarget.value))}
+                  ariaLabel="Playback speed"
+                  onChange={onPlaybackRateChange}
                 />
-              </label>
+              </div>
               <YtpButton
                 tooltip="Faster (])"
                 ariaLabel="Increase playback speed"
