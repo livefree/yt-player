@@ -1543,7 +1543,7 @@ describe("YTPlayer — speed control contracts", () => {
     ).toBeInTheDocument();
   });
 
-  it("supports slider and keyboard speed changes up to 3x", async () => {
+  it("supports slider and keyboard speed changes up to 2x max", async () => {
     render(<YTPlayer src={TEST_SRC} />);
 
     const speedButton = screen.getByRole("button", { name: /playback speed/i });
@@ -1552,15 +1552,16 @@ describe("YTPlayer — speed control contracts", () => {
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
     const speedSlider = screen.getByRole("slider", { name: "Playback speed" });
 
-    fireEvent.change(speedSlider, { target: { value: "2.5" } });
-    expect(speedButton).toHaveTextContent("2.50x");
+    fireEvent.change(speedSlider, { target: { value: "1.5" } });
+    expect(speedButton).toHaveTextContent("1.50x");
 
     fireEvent.keyDown(window, { key: "]" });
-    expect(speedButton).toHaveTextContent("2.55x");
+    expect(speedButton).toHaveTextContent("1.55x");
 
-    fireEvent.change(speedSlider, { target: { value: "3" } });
+    // Attempt to exceed max: clamped at 2.00x
+    fireEvent.change(speedSlider, { target: { value: "2" } });
     fireEvent.keyDown(window, { key: "]" });
-    expect(speedButton).toHaveTextContent("3.00x");
+    expect(speedButton).toHaveTextContent("2.00x");
 
     fireEvent.keyDown(speedDialog, { key: "Escape" });
     await waitFor(() => {
@@ -1580,14 +1581,14 @@ describe("YTPlayer — speed control contracts", () => {
     expect(speedValue).toHaveClass("ytpSpeedButtonValue");
   });
 
-  it("uses the compact speed panel layout without redundant helper copy", async () => {
+  it("shows the current speed centered in the panel and omits redundant helper copy", async () => {
     render(<YTPlayer src={TEST_SRC} />);
 
     await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
 
-    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toBeInTheDocument();
     expect(screen.queryByText("Adjust speed")).not.toBeInTheDocument();
     expect(screen.queryByText("0.25x")).not.toBeInTheDocument();
     expect(screen.queryByText("3.00x")).not.toBeInTheDocument();
@@ -1647,17 +1648,17 @@ describe("YTPlayer — speed control contracts", () => {
     expect(speedButton.querySelector("svg")).not.toBeInTheDocument();
   });
 
-  it("renders the speed panel without header on wide layouts", async () => {
+  it("renders the current speed centered in the panel on wide layouts", async () => {
     render(<YTPlayer src={TEST_SRC} />);
 
     await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
     expect(speedDialog).toHaveAttribute("data-panel-sizing", "stable");
-    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toBeInTheDocument();
   });
 
-  it("keeps the speed panel compact through medium desktop widths", async () => {
+  it("renders the current speed centered in the panel on medium desktop widths", async () => {
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
       writable: true,
@@ -1676,7 +1677,7 @@ describe("YTPlayer — speed control contracts", () => {
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
     expect(speedDialog).toHaveAttribute("data-viewport-band", "medium");
-    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toBeInTheDocument();
   });
 });
 

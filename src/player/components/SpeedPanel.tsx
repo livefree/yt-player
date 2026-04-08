@@ -122,6 +122,13 @@ export function SpeedPanel({
       />
       <div className={s.ytpPanelScroller}>
         <div className={s.ytpPanelMenu}>
+          {panelSizingMode === "stable" && (
+            <div className={s.ytpSpeedPanelHeader}>
+              <span className={s.ytpSpeedPanelValue}>
+                {formatRateBadge(playbackRate)}
+              </span>
+            </div>
+          )}
           <div
             className={s.ytpSpeedPanelBody}
             data-density={panelSizingMode}

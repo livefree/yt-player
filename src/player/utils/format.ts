@@ -3,7 +3,7 @@
 export const SEEK_STEP = 10; // seconds — keyboard and mobile double-tap
 export const VOLUME_STEP = 0.05;
 export const SPEED_MIN = 0.25;
-export const SPEED_MAX = 3;
+export const SPEED_MAX = 2;
 export const SPEED_STEP = 0.05;
 export const SPEED_PRESETS = [0.5, 1, 1.5, 2];
 export const CHROME_HIDE_DELAY = 2000; // ms
