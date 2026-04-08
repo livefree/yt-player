@@ -1,123 +1,43 @@
 import { useCallback, useEffect } from "react";
-import type { KeyboardEvent, PointerEvent, ReactNode, RefObject } from "react";
-import s from "../Player.module.css";
+import type { CSSProperties, KeyboardEvent, PointerEvent, RefObject } from "react";
 import type {
   PanelPlacement,
   PanelSizingMode,
   ViewportBand,
 } from "../hooks/useLayoutDecision";
-import type { Panel, QualityLevel, SubtitleTrack } from "../types";
-import { MenuBackIcon, MenuCheckIcon, MenuChevronIcon } from "./icons";
+import s from "../Player.module.css";
+import { ActionPanel } from "./ActionPanel";
+
+const SETTINGS_ITEMS = [
+  { label: "Loop playback", value: "Coming soon" },
+  { label: "Autoplay next", value: "Coming soon" },
+  { label: "Sleep timer", value: "Coming soon" },
+  { label: "Caption style", value: "Coming soon" },
+] as const;
 
 type SettingsPanelProps = {
-  activeQualityId?: string;
-  activeSubId: string | null;
+  isOpen: boolean;
   panelId: string;
-  onOpenPanel: (panel: Panel) => void;
-  onRequestClose: () => void;
-  onQualityChange?: (id: string) => void;
-  onSubtitleChange: (subtitleId: string | null) => void;
-  openPanel: Panel;
   panelRef: RefObject<HTMLDivElement>;
   panelSizingMode: PanelSizingMode;
   placement: PanelPlacement;
   viewportBand: ViewportBand;
-  qualities: QualityLevel[];
-  subtitles: SubtitleTrack[];
+  onRequestClose: () => void;
 };
-
-type MenuItemProps = {
-  children: ReactNode;
-  className?: string;
-  onActivate: () => void;
-  role?: string;
-  tabIndex?: number;
-  ariaChecked?: boolean;
-};
-
-function MenuItem({
-  ariaChecked,
-  children,
-  className = "",
-  onActivate,
-  role = "menuitem",
-  tabIndex = 0,
-}: MenuItemProps) {
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      onActivate();
-    }
-  };
-
-  return (
-    <div
-      className={`${s.ytpMenuItem} ${className}`.trim()}
-      role={role}
-      tabIndex={tabIndex}
-      aria-checked={ariaChecked}
-      onClick={onActivate}
-      onKeyDown={handleKeyDown}
-    >
-      {children}
-    </div>
-  );
-}
-
-function MenuHeader({
-  label,
-  onBack,
-}: {
-  label: string;
-  onBack: () => void;
-}) {
-  return (
-    <div
-      className={s.ytpMenuHeader}
-      role="menuitem"
-      tabIndex={0}
-      onClick={onBack}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onBack();
-        }
-      }}
-    >
-      <MenuBackIcon className={s.ytpMenuBack} />
-      <span>{label}</span>
-    </div>
-  );
-}
 
 export function SettingsPanel({
-  activeQualityId,
-  activeSubId,
+  isOpen,
   panelId,
-  onOpenPanel,
-  onRequestClose,
-  onQualityChange,
-  onSubtitleChange,
-  openPanel,
   panelRef,
   panelSizingMode,
   placement,
   viewportBand,
-  qualities,
-  subtitles,
+  onRequestClose,
 }: SettingsPanelProps) {
-  const activeQualityLabel =
-    qualities.find((quality) => quality.id === activeQualityId)?.label ?? "Auto";
-  const activeSubtitleLabel = activeSubId
-    ? (subtitles.find((subtitle) => subtitle.id === activeSubId)?.label ?? "Off")
-    : "Off";
-
   const getFocusableItems = useCallback(
     () =>
       Array.from(
-        panelRef.current?.querySelectorAll<HTMLElement>(
-          '[role="menuitem"], [role="menuitemradio"]',
-        ) ?? [],
+        panelRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
       ),
     [panelRef],
   );
@@ -132,27 +52,29 @@ export function SettingsPanel({
   );
 
   useEffect(() => {
-    if (!openPanel) return;
+    if (!isOpen) return;
     focusItemAt(0);
-  }, [focusItemAt, openPanel]);
+  }, [focusItemAt, isOpen]);
 
-  if (!openPanel || openPanel === "speed") return null;
+  if (!isOpen) return null;
 
   return (
-    <div
-      ref={panelRef}
-      id={panelId}
-      className={`${s.ytpSettingsMenu} ${s.ytpPanelSurface} ${s.ytpPopup}`}
-      data-layer="5"
-      data-panel-height="content-driven"
-      data-panel-sizing={panelSizingMode}
-      data-placement={placement}
-      data-viewport-band={viewportBand}
-      role="dialog"
-      aria-label="Settings"
-      aria-modal="false"
+    <ActionPanel
+      ariaLabel="Settings"
+      className={s.ytpSettingsPopup}
+      panelId={panelId}
+      panelRef={panelRef}
+      panelSizingMode={panelSizingMode}
+      placement={placement}
+      viewportBand={viewportBand}
+      style={
+        {
+          "--_action-panel-width": "296px",
+          "--_action-panel-max-height": "260px",
+        } as CSSProperties
+      }
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => event.stopPropagation()}
-      onKeyDown={(event) => {
+      onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
         const items = getFocusableItems();
         const currentIndex = items.findIndex((item) => item === document.activeElement);
 
@@ -165,14 +87,7 @@ export function SettingsPanel({
 
         if (!items.length) return;
 
-        if (event.key === "Tab") {
-          event.preventDefault();
-          event.stopPropagation();
-          focusItemAt(currentIndex + (event.shiftKey ? -1 : 1));
-          return;
-        }
-
-        if (event.key === "ArrowDown") {
+        if (event.key === "Tab" || event.key === "ArrowDown") {
           event.preventDefault();
           event.stopPropagation();
           focusItemAt(currentIndex + 1);
@@ -200,100 +115,19 @@ export function SettingsPanel({
         }
       }}
     >
-      <div
-        className={s.ytpFocusTrap}
-        tabIndex={0}
-        onFocus={() => focusItemAt(-1)}
-      />
-      <div className={s.ytpPanelScroller}>
-        <div className={s.ytpPanelMenu} role="menu">
-          {openPanel === "settings" && (
-            <>
-              {qualities.length > 0 && (
-                <MenuItem onActivate={() => onOpenPanel("quality")}>
-                  <span className={s.ytpMenuItemLabel}>Quality</span>
-                  <span className={s.ytpMenuItemValue}>{activeQualityLabel}</span>
-                  <MenuChevronIcon className={s.ytpMenuChevron} />
-                </MenuItem>
-              )}
-              {subtitles.length > 0 && (
-                <MenuItem onActivate={() => onOpenPanel("subtitles")}>
-                  <span className={s.ytpMenuItemLabel}>Subtitles/CC</span>
-                  <span className={s.ytpMenuItemValue}>{activeSubtitleLabel}</span>
-                  <MenuChevronIcon className={s.ytpMenuChevron} />
-                </MenuItem>
-              )}
-            </>
-          )}
-
-          {openPanel === "quality" && (
-            <>
-              <MenuHeader label="Quality" onBack={() => onOpenPanel("settings")} />
-              {qualities.map((quality) => (
-                <MenuItem
-                  key={quality.id}
-                  className={
-                    quality.id === activeQualityId ? s.ytpMenuItemActive : ""
-                  }
-                  role="menuitemradio"
-                  ariaChecked={quality.id === activeQualityId}
-                  onActivate={() => {
-                    onQualityChange?.(quality.id);
-                    onOpenPanel("settings");
-                  }}
-                >
-                  {quality.id === activeQualityId && (
-                    <MenuCheckIcon className={s.ytpMenuCheck} />
-                  )}
-                  <span className={s.ytpMenuItemLabel}>{quality.label}</span>
-                </MenuItem>
-              ))}
-            </>
-          )}
-
-          {openPanel === "subtitles" && (
-            <>
-              <MenuHeader label="Subtitles/CC" onBack={() => onOpenPanel("settings")} />
-              <MenuItem
-                className={!activeSubId ? s.ytpMenuItemActive : ""}
-                role="menuitemradio"
-                ariaChecked={!activeSubId}
-                onActivate={() => {
-                  onSubtitleChange(null);
-                  onOpenPanel("settings");
-                }}
-              >
-                {!activeSubId && <MenuCheckIcon className={s.ytpMenuCheck} />}
-                <span className={s.ytpMenuItemLabel}>Off</span>
-              </MenuItem>
-              {subtitles.map((subtitle) => (
-                <MenuItem
-                  key={subtitle.id}
-                  className={
-                    subtitle.id === activeSubId ? s.ytpMenuItemActive : ""
-                  }
-                  role="menuitemradio"
-                  ariaChecked={subtitle.id === activeSubId}
-                  onActivate={() => {
-                    onSubtitleChange(subtitle.id);
-                    onOpenPanel("settings");
-                  }}
-                >
-                  {subtitle.id === activeSubId && (
-                    <MenuCheckIcon className={s.ytpMenuCheck} />
-                  )}
-                  <span className={s.ytpMenuItemLabel}>{subtitle.label}</span>
-                </MenuItem>
-              ))}
-            </>
-          )}
-        </div>
+      <div className={s.ytpPanelMenu} role="menu">
+        {SETTINGS_ITEMS.map((item) => (
+          <div
+            key={item.label}
+            className={`${s.ytpMenuItem} ${s.ytpMenuItemPlaceholder}`}
+            role="menuitem"
+            tabIndex={0}
+          >
+            <span className={s.ytpMenuItemLabel}>{item.label}</span>
+            <span className={s.ytpMenuItemValue}>{item.value}</span>
+          </div>
+        ))}
       </div>
-      <div
-        className={s.ytpFocusTrap}
-        tabIndex={0}
-        onFocus={() => focusItemAt(0)}
-      />
-    </div>
+    </ActionPanel>
   );
 }

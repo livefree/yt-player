@@ -82,9 +82,6 @@ type LoadingState = "idle" | "initial" | "buffering";
 
 export function YTPlayer({
   src,
-  qualities = [],
-  activeQualityId,
-  onQualityChange,
   subtitles = [],
   poster,
   title,
@@ -1254,17 +1251,10 @@ export function YTPlayer({
       <SettingsPanel
         panelRef={settingsPanelRef}
         panelId={settingsPanelId}
-        openPanel={openPanel}
+        isOpen={openPanel === "settings"}
         placement={layoutDecision.placements.settingsPanel}
         viewportBand={layoutDecision.viewportBand}
         panelSizingMode={layoutDecision.panels.sizingMode}
-        qualities={qualities}
-        activeQualityId={activeQualityId}
-        onQualityChange={onQualityChange}
-        subtitles={subtitles}
-        activeSubId={activeSubId}
-        onSubtitleChange={setActiveSubId}
-        onOpenPanel={setOpenPanel}
         onRequestClose={() => setOpenPanel(null)}
       />
 
@@ -1276,7 +1266,6 @@ export function YTPlayer({
           playbackRate={playbackRate}
           viewportBand={layoutDecision.viewportBand}
           panelSizingMode={layoutDecision.panels.sizingMode}
-          showHeader={layoutDecision.panels.speed.showHeader}
           onPlaybackRateChange={setPlaybackRate}
           onRequestClose={() => setOpenPanel(null)}
         />

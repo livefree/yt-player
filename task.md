@@ -853,3 +853,35 @@
    - 实际开始：2026-04-07 14:48
    - 完成时间：2026-04-07 14:52
    - 验收要点：settings / speed / episodes 全部切到内容驱动高度；只有超过上限时才转滚动；补统一可观察契约测试
+
+## [SEQ-20260407-34] YTPlayer speed/settings 通用弹窗重建
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 17:55
+- **最后更新时间**：2026-04-07 17:59
+- **目标**：删除有问题的 speed/settings 旧弹窗组件，基于 episodes 的盒模型单独构建一个通用弹窗，仅供 speed 和 settings 使用
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`、`docs/changelog.md`
+- **依赖**：`EpisodesPanel` 本身保持不改；禁止再把 episodes 拉进新的共享壳层；settings 先使用占位菜单
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-64 — 新建仅供 speed/settings 使用的通用弹窗（状态：✅）
+   - 创建时间：2026-04-07 17:55
+   - 计划开始：2026-04-07 17:55
+   - 实际开始：2026-04-07 17:55
+   - 完成时间：2026-04-07 17:59
+   - 验收要点：新增 action popup 基类，根元素直接复用 episodes 的定位/尺寸/滚动原则；不改 EpisodesPanel
+
+2. PLAYER-65 — 重建 SpeedPanel 与 SettingsPanel（状态：✅）
+   - 创建时间：2026-04-07 17:55
+   - 计划开始：PLAYER-64 完成后
+   - 实际开始：2026-04-07 17:55
+   - 完成时间：2026-04-07 17:59
+   - 验收要点：删除旧 speed/settings 结构；speed 使用新通用弹窗承载 slider/preset；settings 改为平铺占位菜单
+
+3. PLAYER-66 — 更新弹窗契约测试与记录（状态：✅）
+   - 创建时间：2026-04-07 17:55
+   - 计划开始：PLAYER-65 完成后
+   - 实际开始：2026-04-07 17:55
+   - 完成时间：2026-04-07 17:59
+   - 验收要点：补 speed/settings 新通用弹窗测试；保留 episodes 原有契约不变；更新 DEVLOG/changelog/task
