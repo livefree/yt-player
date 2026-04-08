@@ -904,11 +904,11 @@
    - 完成时间：2026-04-08 00:00
    - 验收要点：音量 slider 提取为 `HorizontalSlider` 组件；SpeedPanel 复用同一组件；视觉行为与现有音量 slider 完全一致
 
-4. PLAYER-71 — SpeedPanel 重建 + Speed 按钮格式统一（状态：⬜）
+4. PLAYER-71 — SpeedPanel 重建 + Speed 按钮格式统一（状态：✅）
    - 创建时间：2026-04-07 20:18
    - 计划开始：PLAYER-73 之后
-   - 实际开始：
-   - 完成时间：
+   - 实际开始：2026-04-08 00:00
+   - 完成时间：2026-04-08 00:05
    - 验收要点：SpeedPanel 按新 contract 重建（无文案标题、HorizontalSlider、4 预设、命中高亮）；Speed 按钮格式固定为两位小数；SettingsPanel 移除 Speed 入口；panel family contract 统一；typecheck / lint / test 通过
 
 5. PLAYER-74 — 布局系统重建（状态：⬜）
