@@ -237,3 +237,54 @@ export function NextIcon() {
     </svg>
   );
 }
+
+export function MenuChevronIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M9.71 18.71l-1.42-1.42 5.3-5.29-5.3-5.29 1.42-1.42 6.7 6.71z"
+        fill="white"
+      />
+    </svg>
+  );
+}
+
+export function MenuBackIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M14.29 5.29L12.88 3.88 5.76 11l7.12 7.12 1.41-1.41L8.58 11z"
+        fill="white"
+      />
+    </svg>
+  );
+}
+
+export function MenuCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+        fill="white"
+      />
+    </svg>
+  );
+}
