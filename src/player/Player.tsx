@@ -365,7 +365,6 @@ export function YTPlayer({
     qualities.find((q) => q.id === activeQualityId)?.label ?? null;
   const resolvedQualityHeight = resolveQualityHeight(activeQualityLabel, videoHeight);
   const showQualityBadge =
-    qualities.length > 0 &&
     resolvedQualityHeight !== null &&
     layoutDecision.panels.sizingMode === "stable";
   const bufferedPct = duration > 0 ? (buffered / duration) * 100 : 0;
