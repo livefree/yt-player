@@ -871,3 +871,28 @@
    - 实际开始：2026-04-07 19:32
    - 完成时间：2026-04-07 19:36
    - 验收要点：qualities/subtitles 都为空时继续渲染 settings 按钮，但按钮灰化且不可点击；不允许打开空 settings 弹窗；settings 真有内容时 overlay 行为保持可用；补回归测试
+
+## [SEQ-20260407-38] YTPlayer settings / speed 重建前置规划
+
+- **状态**：🔄 执行中
+- **创建时间**：2026-04-07 20:05
+- **最后更新时间**：2026-04-07 20:18
+- **目标**：先完成 feature matrix 校准、按钮布局收口和 panel 重建方案冻结，再进入 settings / speed 面板重建
+- **范围**：`docs/`、`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
+- **依赖**：基于 `SEQ-20260407-37` 当前状态；本阶段先冻结 contract，再实施面板和滚动条重建
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-70 — 校准 feature matrix 与布局 contract（状态：🔄）
+   - 创建时间：2026-04-07 20:05
+   - 计划开始：2026-04-07 20:05
+   - 实际开始：2026-04-07 20:05
+   - 完成时间：
+   - 验收要点：完成 `player-feature-matrix` 与现状差异核对；补 fullscreen 维度；冻结 `AirPlay / PiP`、`next + episodes`、tablet/phone touch 核心布局、音量行为与时间显示策略
+
+2. PLAYER-71 — 重建 settings / speed / episodes panel 契约（状态：⬜）
+   - 创建时间：2026-04-07 20:18
+   - 计划开始：PLAYER-70 之后
+   - 实际开始：
+   - 完成时间：
+   - 验收要点：按冻结后的布局重建 `SettingsPanel` / `SpeedPanel`；episodes 面板补滚动条且不破坏圆角视觉；回归测试覆盖 desktop / touch / fullscreen
