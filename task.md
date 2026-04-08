@@ -872,27 +872,55 @@
    - 完成时间：2026-04-07 19:36
    - 验收要点：qualities/subtitles 都为空时继续渲染 settings 按钮，但按钮灰化且不可点击；不允许打开空 settings 弹窗；settings 真有内容时 overlay 行为保持可用；补回归测试
 
-## [SEQ-20260407-38] YTPlayer settings / speed 重建前置规划
+## [SEQ-20260407-38] YTPlayer 播放器全面重建
 
 - **状态**：🔄 执行中
 - **创建时间**：2026-04-07 20:05
-- **最后更新时间**：2026-04-07 20:18
-- **目标**：先完成 feature matrix 校准、按钮布局收口和 panel 重建方案冻结，再进入 settings / speed 面板重建
-- **范围**：`docs/`、`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`
-- **依赖**：基于 `SEQ-20260407-37` 当前状态；本阶段先冻结 contract，再实施面板和滚动条重建
+- **最后更新时间**：2026-04-07 22:00
+- **目标**：按新 feature matrix contract 完成 Player.tsx 解构、共享 slider 原语、SpeedPanel 重建、布局系统重建、time display 与 episodes 滚动条
+- **范围**：`docs/`、`src/player/`、`src/test/`、`task.md`
+- **依赖**：基于 `SEQ-20260407-37` 当前状态；PLAYER-70 matrix 已冻结
 
 ### 任务列表（按执行顺序）
 
-1. PLAYER-70 — 校准 feature matrix 与布局 contract（状态：🔄）
+1. PLAYER-70 — 校准 feature matrix 与布局 contract（状态：✅）
    - 创建时间：2026-04-07 20:05
    - 计划开始：2026-04-07 20:05
    - 实际开始：2026-04-07 20:05
-   - 完成时间：
-   - 验收要点：完成 `player-feature-matrix` 与现状差异核对；补 fullscreen 维度；冻结 `AirPlay / PiP`、`next + episodes`、tablet/phone touch 核心布局、音量行为与时间显示策略
+   - 完成时间：2026-04-07 22:00
+   - 验收要点：完成 `player-feature-matrix` 全面重写；补 fullscreen pointer/touch 双列；冻结 Speed 一级按钮、SpeedPanel 结构、SettingsPanel 职责、Panel family contract、Volume 三行拆分、Time display touch 端上移、Phone top-right 优先级退化
 
-2. PLAYER-71 — 重建 settings / speed / episodes panel 契约（状态：⬜）
-   - 创建时间：2026-04-07 20:18
-   - 计划开始：PLAYER-70 之后
+2. PLAYER-72 — Player.tsx 解构：提取 actions 与 ControlRenderer（状态：🔄）
+   - 创建时间：2026-04-07 22:00
+   - 计划开始：2026-04-07 22:00
+   - 实际开始：2026-04-07 22:00
+   - 完成时间：
+   - 验收要点：`usePlayerActions` hook 提取所有 action 函数；`ControlRenderer.tsx` 提取 renderControl；Player.tsx 从 1391 行降至 ≤1050 行（JSX 骨架 ~390 行不可进一步压缩）；typecheck / lint / test 全部通过；行为无任何变化
+
+3. PLAYER-73 — 共享 HorizontalSlider 原语（状态：⬜）
+   - 创建时间：2026-04-07 22:00
+   - 计划开始：PLAYER-72 之后
    - 实际开始：
    - 完成时间：
-   - 验收要点：按冻结后的布局重建 `SettingsPanel` / `SpeedPanel`；episodes 面板补滚动条且不破坏圆角视觉；回归测试覆盖 desktop / touch / fullscreen
+   - 验收要点：音量 slider 提取为 `HorizontalSlider` 组件；SpeedPanel 复用同一组件；视觉行为与现有音量 slider 完全一致
+
+4. PLAYER-71 — SpeedPanel 重建 + Speed 按钮格式统一（状态：⬜）
+   - 创建时间：2026-04-07 20:18
+   - 计划开始：PLAYER-73 之后
+   - 实际开始：
+   - 完成时间：
+   - 验收要点：SpeedPanel 按新 contract 重建（无文案标题、HorizontalSlider、4 预设、命中高亮）；Speed 按钮格式固定为两位小数；SettingsPanel 移除 Speed 入口；panel family contract 统一；typecheck / lint / test 通过
+
+5. PLAYER-74 — 布局系统重建（状态：⬜）
+   - 创建时间：2026-04-07 22:00
+   - 计划开始：PLAYER-72 之后（可与 PLAYER-71 并行）
+   - 实际开始：
+   - 完成时间：
+   - 验收要点：useLayoutDecision 新增 fullscreen pointer/touch 独立分叉；next 归位 edge-right（touch）；Player.tsx JSX 新增 edge-right 渲染区；Phone top-right 按 viewportBand 静态退化；typecheck / lint / test 通过
+
+6. PLAYER-75 — Time display touch 端上移 + EpisodesPanel 滚动条（状态：⬜）
+   - 创建时间：2026-04-07 22:00
+   - 计划开始：PLAYER-72 之后（可与 PLAYER-71 并行）
+   - 实际开始：
+   - 完成时间：
+   - 验收要点：touch 端 time display 条件渲染到进度条左端上方；字号缩小一档；EpisodesPanel 内层 scroller 补细滚动条，外层保持 overflow:hidden；不破坏 panel 圆角
