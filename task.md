@@ -911,16 +911,16 @@
    - 完成时间：2026-04-08 00:05
    - 验收要点：SpeedPanel 按新 contract 重建（无文案标题、HorizontalSlider、4 预设、命中高亮）；Speed 按钮格式固定为两位小数；SettingsPanel 移除 Speed 入口；panel family contract 统一；typecheck / lint / test 通过
 
-5. PLAYER-74 — 布局系统重建（状态：⬜）
+5. PLAYER-74 — 布局系统重建（状态：✅）
    - 创建时间：2026-04-07 22:00
    - 计划开始：PLAYER-72 之后（可与 PLAYER-71 并行）
-   - 实际开始：
-   - 完成时间：
+   - 实际开始：2026-04-08 00:05
+   - 完成时间：2026-04-08 00:15
    - 验收要点：useLayoutDecision 新增 fullscreen pointer/touch 独立分叉；next 归位 edge-right（touch）；Player.tsx JSX 新增 edge-right 渲染区；Phone top-right 按 viewportBand 静态退化；typecheck / lint / test 通过
 
-6. PLAYER-75 — Time display touch 端上移 + EpisodesPanel 滚动条（状态：⬜）
+6. PLAYER-75 — Time display touch 端上移 + EpisodesPanel 滚动条（状态：✅）
    - 创建时间：2026-04-07 22:00
    - 计划开始：PLAYER-72 之后（可与 PLAYER-71 并行）
-   - 实际开始：
-   - 完成时间：
+   - 实际开始：2026-04-08 00:15
+   - 完成时间：2026-04-08 00:25
    - 验收要点：touch 端 time display 条件渲染到进度条左端上方；字号缩小一档；EpisodesPanel 内层 scroller 补细滚动条，外层保持 overflow:hidden；不破坏 panel 圆角
