@@ -45,6 +45,7 @@ export function ActionPanel({
       id={panelId}
       className={`${s.ytpActionPanel} ${className} ${s.ytpPanelSurface}`.trim()}
       data-layer="5"
+      data-panel-family="action"
       data-panel-height="content-driven"
       data-panel-sizing={panelSizingMode}
       data-placement={placement}

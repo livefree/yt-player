@@ -903,3 +903,21 @@
    - 实际开始：2026-04-07 18:08
    - 完成时间：2026-04-07 19:04
    - 验收要点：移除 `.ytpSettingsMenu` / 旧 `.ytpSpeedPanel` / focus trap / 旧 menu icon CSS 和未使用图标导出；不影响现有 speed/settings/episodes 契约
+
+## [SEQ-20260407-36] YTPlayer 弹窗跨终端契约验收
+
+- **状态**：✅ 完成
+- **创建时间**：2026-04-07 19:10
+- **最后更新时间**：2026-04-07 19:13
+- **目标**：把 speed/settings/episodes 三类弹窗的家族边界和跨终端 placement 行为固化成可观察契约，减少后续再靠视觉猜测
+- **范围**：`src/player/`、`src/test/`、`task.md`、`DEVLOG.md`、`docs/changelog.md`
+- **依赖**：基于 `SEQ-20260407-34` 和 `SEQ-20260407-35`；不引入新功能；不改 EpisodesPanel 盒模型
+
+### 任务列表（按执行顺序）
+
+1. PLAYER-68 — 增加弹窗 family 契约与跨终端测试覆盖（状态：✅）
+   - 创建时间：2026-04-07 19:10
+   - 计划开始：2026-04-07 19:10
+   - 实际开始：2026-04-07 19:10
+   - 完成时间：2026-04-07 19:13
+   - 验收要点：ActionPanel 和 EpisodesPanel 暴露不同 family 标识；补 desktop default / compact / phone-portrait 下的 placement 与 panel family 回归测试
