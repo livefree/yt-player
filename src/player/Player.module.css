@@ -1298,6 +1298,24 @@
   outline-offset: 2px;
 }
 
+.ytpButton:disabled,
+.ytpButtonDisabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.ytpButton:disabled::before,
+.ytpButton:disabled::after,
+.ytpButtonDisabled::before,
+.ytpButtonDisabled::after {
+  opacity: 0;
+}
+
+.ytpButton:disabled .ytpTooltip,
+.ytpButtonDisabled .ytpTooltip {
+  display: none;
+}
+
 /* ── Tooltip — React <span> child, shown on button hover ────────────────── */
 /* bottom aligns tooltip's lower edge with the panel bottom (54px from player bottom).
    Calculation: panel-bottom(54) − button-offset-from-player-bottom(8) = 46px */

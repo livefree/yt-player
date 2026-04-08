@@ -192,6 +192,7 @@ export function YTPlayer({
 
   const hasEpisodes = (episodes?.length ?? 0) > 0;
   const hasNext = !!onNext;
+  const hasSettingsContent = qualities.length > 0 || subtitles.length > 0;
   const layoutDecision = useLayoutDecision({
     playerRef,
     isFullscreen,
@@ -336,6 +337,12 @@ export function YTPlayer({
     window.addEventListener("mousedown", onDown);
     return () => window.removeEventListener("mousedown", onDown);
   }, [openPanel]);
+
+  useEffect(() => {
+    if (!hasSettingsContent && openPanel === "settings") {
+      setOpenPanel(null);
+    }
+  }, [hasSettingsContent, openPanel]);
 
   // ─── Outside-click to close episodes panel ─────────────────────────────────
   useEffect(() => {
@@ -873,18 +880,27 @@ export function YTPlayer({
         return (
           <YtpButton
             key="settings"
-            tooltip="Settings"
+            tooltip={hasSettingsContent ? "Settings" : "Settings unavailable"}
             tooltipPlacement={getTooltipPlacement("settings")}
             onClick={() =>
-              setOpenPanel((panel) => (panel === "settings" ? null : "settings"))
+              hasSettingsContent
+                ? setOpenPanel((panel) => (panel === "settings" ? null : "settings"))
+                : undefined
             }
             ariaPressed={openPanel === "settings"}
-            className={openPanel === "settings" ? s.ytpSettingsButtonActive : ""}
+            className={[
+              openPanel === "settings" ? s.ytpSettingsButtonActive : "",
+              !hasSettingsContent ? s.ytpButtonDisabled : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             data-ytp-component="settings-btn"
             ref={settingsButtonRef}
             aria-haspopup="dialog"
             aria-expanded={openPanel === "settings"}
             aria-controls={settingsPanelId}
+            disabled={!hasSettingsContent}
+            aria-disabled={!hasSettingsContent}
           >
             <SettingsIcon />
           </YtpButton>

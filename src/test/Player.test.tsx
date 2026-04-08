@@ -882,7 +882,12 @@ describe("YTPlayer — overlay manager contracts", () => {
   it("marks settings as the top blocking overlay and disables gesture capture", async () => {
     vi.useFakeTimers();
     try {
-      const { container } = render(<YTPlayer src={TEST_SRC} />);
+      const { container } = render(
+        <YTPlayer
+          src={TEST_SRC}
+          subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+        />,
+      );
 
       fireEvent.click(screen.getByRole("button", { name: /settings/i }));
 
@@ -976,7 +981,13 @@ describe("YTPlayer — overlay manager contracts", () => {
       .mockRejectedValueOnce(new Error("blocked"))
       .mockResolvedValueOnce(undefined);
 
-    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+    const { container } = render(
+      <YTPlayer
+        src={TEST_SRC}
+        autoplay
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+      />,
+    );
     fireEvent(window, new Event("resize"));
 
     await screen.findByRole("button", { name: /^unmute$/i });
@@ -994,7 +1005,13 @@ describe("YTPlayer — overlay manager contracts", () => {
       .mockRejectedValueOnce(new Error("blocked"))
       .mockResolvedValueOnce(undefined);
 
-    const { container } = render(<YTPlayer src={TEST_SRC} autoplay />);
+    const { container } = render(
+      <YTPlayer
+        src={TEST_SRC}
+        autoplay
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+      />,
+    );
 
     await screen.findByRole("button", { name: /^unmute$/i });
     await userEvent.click(screen.getByRole("button", { name: /settings/i }));
@@ -1374,8 +1391,21 @@ describe("YTPlayer — slot composition contracts", () => {
 });
 
 describe("YTPlayer — panel toggle contracts", () => {
-  it("closes settings when the settings button is clicked again", async () => {
+  it("keeps the settings button visible but disabled when no settings items exist", () => {
     render(<YTPlayer src={TEST_SRC} />);
+
+    const settingsButton = screen.getByRole("button", { name: "Settings unavailable" });
+    expect(settingsButton).toBeDisabled();
+    expect(settingsButton).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("closes settings when the settings button is clicked again", async () => {
+    render(
+      <YTPlayer
+        src={TEST_SRC}
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+      />,
+    );
 
     const settingsButton = screen.getByRole("button", { name: "Settings" });
 
@@ -1396,7 +1426,12 @@ describe("YTPlayer — panel toggle contracts", () => {
   });
 
   it("links the settings trigger and panel with dialog aria attributes", async () => {
-    render(<YTPlayer src={TEST_SRC} />);
+    render(
+      <YTPlayer
+        src={TEST_SRC}
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+      />,
+    );
 
     const settingsButton = screen.getByRole("button", { name: "Settings" });
     expect(settingsButton).toHaveAttribute("aria-haspopup", "dialog");
@@ -1646,7 +1681,13 @@ describe("YTPlayer — speed control contracts", () => {
 
 describe("YTPlayer — panel surface contracts", () => {
   it("applies the shared panel surface class to settings, speed, and episodes dialogs", async () => {
-    render(<YTPlayer src={TEST_SRC} episodes={EPISODES_3} />);
+    render(
+      <YTPlayer
+        src={TEST_SRC}
+        episodes={EPISODES_3}
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+      />,
+    );
 
     await userEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass("ytpPanelSurface");
@@ -1688,7 +1729,12 @@ describe("YTPlayer — panel surface contracts", () => {
       value: 844,
     });
 
-    render(<YTPlayer src={TEST_SRC} />);
+    render(
+      <YTPlayer
+        src={TEST_SRC}
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+      />,
+    );
     fireEvent(window, new Event("resize"));
 
     await userEvent.click(screen.getByRole("button", { name: "Settings" }));
