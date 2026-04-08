@@ -540,16 +540,3 @@
 
 - 完成 `SEQ-20260407-32 / PLAYER-63`
 - settings / speed / episodes 已统一切到 `content-driven` 高度契约：按内容自然长高，只有超过上限时才在内部 scroller 中滚动
-
-# 2026-04-07 15:05
-
-- 新增 `SEQ-20260407-33`
-- 本轮停止继续修补 speed / settings 旧弹窗，改为直接回退到 episodes 面板模型统一重建
-
-# 2026-04-07 17:46
-
-- 完成 `SEQ-20260407-33 / PLAYER-64 / PLAYER-65 / PLAYER-66`
-- 新增共享 `PanelShell`，speed / settings / episodes 现在真正复用同一层 `panel shell + scroller + content-driven` 契约
-- speed panel 已删除旧的独立 popup 壳层与 header 逻辑，改为共享面板壳层承载 slider + preset 内容
-- settings panel 已删除旧的 quality / subtitles 多级菜单，改为 flat placeholder menu，作为下一轮 settings 信息架构落地前的过渡实现
-- `Panel` 内部状态已收口为 `settings / speed / null`，相关旧测试断言已同步移除并替换为统一面板结构覆盖

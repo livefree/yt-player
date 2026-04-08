@@ -1412,30 +1412,39 @@ describe("YTPlayer — panel toggle contracts", () => {
     );
   });
 
-  it("supports arrow and tab traversal inside the rebuilt settings panel", async () => {
-    render(<YTPlayer src={TEST_SRC} />);
+  it("supports arrow and tab traversal inside the settings panel", async () => {
+    render(
+      <YTPlayer
+        src={TEST_SRC}
+        qualities={[
+          { id: "auto", label: "Auto", src: `${TEST_SRC}?quality=auto` },
+          { id: "1080p", label: "1080p", src: `${TEST_SRC}?quality=1080` },
+        ]}
+        subtitles={[{ id: "en", label: "English", srclang: "en", src: "/captions.vtt" }]}
+      />,
+    );
 
     await userEvent.click(screen.getByRole("button", { name: "Settings" }));
 
     const settingsDialog = screen.getByRole("dialog", { name: "Settings" });
 
     await waitFor(() => {
-      expect(document.activeElement).toHaveTextContent("Loop playback");
+      expect(document.activeElement).toHaveTextContent("Quality");
     });
 
     fireEvent.keyDown(settingsDialog, { key: "ArrowDown" });
     await waitFor(() => {
-      expect(document.activeElement).toHaveTextContent("Autoplay next");
+      expect(document.activeElement).toHaveTextContent("Subtitles/CC");
     });
 
     fireEvent.keyDown(settingsDialog, { key: "End" });
     await waitFor(() => {
-      expect(document.activeElement).toHaveTextContent("Caption style");
+      expect(document.activeElement).toHaveTextContent("Subtitles/CC");
     });
 
     fireEvent.keyDown(settingsDialog, { key: "Tab" });
     await waitFor(() => {
-      expect(document.activeElement).toHaveTextContent("Loop playback");
+      expect(document.activeElement).toHaveTextContent("Quality");
     });
   });
 });
@@ -1535,16 +1544,19 @@ describe("YTPlayer — speed control contracts", () => {
     expect(speedValue).toHaveClass("ytpSpeedButtonValue");
   });
 
-  it("renders the rebuilt speed panel on the shared popup shell", async () => {
+  it("uses the compact speed panel layout without redundant helper copy", async () => {
     render(<YTPlayer src={TEST_SRC} />);
 
     await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
 
-    expect(speedDialog).toHaveClass("ytpPanelPopup");
-    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toHaveTextContent("1.00x");
+    expect(screen.queryByText("Adjust speed")).not.toBeInTheDocument();
+    expect(screen.queryByText("0.25x")).not.toBeInTheDocument();
+    expect(screen.queryByText("3.00x")).not.toBeInTheDocument();
     expect(speedDialog.querySelector(".ytpSpeedSlider")).toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedHelp")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /decrease playback speed/i }),
     ).toBeInTheDocument();
@@ -1599,7 +1611,17 @@ describe("YTPlayer — speed control contracts", () => {
     expect(speedButton.querySelector("svg")).not.toBeInTheDocument();
   });
 
-  it("keeps the rebuilt speed panel content-driven through medium desktop widths", async () => {
+  it("keeps the speed panel header on wide layouts", async () => {
+    render(<YTPlayer src={TEST_SRC} />);
+
+    await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
+
+    const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
+    expect(speedDialog).toHaveAttribute("data-panel-sizing", "stable");
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).toHaveTextContent("1.00x");
+  });
+
+  it("keeps the speed panel compact through medium desktop widths", async () => {
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
       writable: true,
@@ -1618,7 +1640,7 @@ describe("YTPlayer — speed control contracts", () => {
 
     const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
     expect(speedDialog).toHaveAttribute("data-viewport-band", "medium");
-    expect(speedDialog.querySelector(".ytpSpeedSlider")).toBeInTheDocument();
+    expect(speedDialog.querySelector(".ytpSpeedPanelValue")).not.toBeInTheDocument();
   });
 });
 
@@ -1628,7 +1650,6 @@ describe("YTPlayer — panel surface contracts", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass("ytpPanelSurface");
-    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass("ytpPanelPopup");
     expect(screen.getByRole("dialog", { name: "Settings" })).toHaveAttribute(
       "data-panel-sizing",
       "stable",
@@ -1641,7 +1662,6 @@ describe("YTPlayer — panel surface contracts", () => {
     await userEvent.click(screen.getByRole("button", { name: "Settings" }));
     await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
     expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveClass("ytpPanelSurface");
-    expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveClass("ytpPanelPopup");
     expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveAttribute(
       "data-panel-height",
       "content-driven",
@@ -1649,7 +1669,6 @@ describe("YTPlayer — panel surface contracts", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
     expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveClass("ytpPanelSurface");
-    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveClass("ytpPanelPopup");
     expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveAttribute(
       "data-panel-height",
       "content-driven",
@@ -1846,17 +1865,6 @@ describe("YTPlayer — panel regressions", () => {
       expect(screen.queryByRole("dialog", { name: /settings/i })).not.toBeInTheDocument();
       expect(document.activeElement).toBe(settingsButton);
     });
-  });
-
-  it("renders placeholder rows in the rebuilt settings panel", async () => {
-    render(<YTPlayer src={TEST_SRC} />);
-
-    await userEvent.click(screen.getByRole("button", { name: /settings/i }));
-
-    expect(screen.getByText("Loop playback")).toBeInTheDocument();
-    expect(screen.getByText("Autoplay next")).toBeInTheDocument();
-    expect(screen.getByText("Sleep timer")).toBeInTheDocument();
-    expect(screen.getByText("Caption style")).toBeInTheDocument();
   });
 });
 

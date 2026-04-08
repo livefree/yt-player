@@ -648,24 +648,43 @@
   backdrop-filter: blur(18px);
 }
 
-.ytpPanelPopup {
-  position: absolute;
+.ytpSettingsMenu {
   bottom: calc(54px + var(--ytp-safe-bottom));
   right: calc(12px + var(--ytp-safe-right));
+  min-width: 220px;
+  max-width: 300px;
   max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
   overflow: hidden;
   animation: ytpPanelIn 0.12s ease;
 }
 
-.ytpPanelPopup[data-placement="top-right"] {
+.ytpSpeedPanel {
+  bottom: calc(54px + var(--ytp-safe-bottom));
+  right: calc(12px + var(--ytp-safe-right));
+  width: min(
+    248px,
+    calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right))
+  );
+  min-width: 0;
+  max-width: min(
+    248px,
+    calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right))
+  );
+  max-height: calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
+  overflow: hidden;
+  animation: ytpPanelIn 0.12s ease;
+}
+
+.ytpSettingsMenu[data-placement="top-right"] {
   top: calc(52px + var(--ytp-safe-top));
   right: calc(12px + var(--ytp-safe-right));
   bottom: auto;
 }
 
-.ytpPanelPopup[data-placement="bottom-right"] {
+.ytpSpeedPanel[data-placement="top-right"] {
+  top: calc(52px + var(--ytp-safe-top));
   right: calc(12px + var(--ytp-safe-right));
-  left: auto;
+  bottom: auto;
 }
 
 @keyframes ytpPanelIn {
@@ -699,17 +718,20 @@
   scrollbar-width: thin;
 }
 
-.ytpPanelPopup[data-panel-sizing="compact"] {
+.ytpSettingsMenu[data-panel-sizing="compact"],
+.ytpSpeedPanel[data-panel-sizing="compact"],
+.ytpEpisodesPanel[data-panel-sizing="compact"] {
   bottom: calc(84px + var(--ytp-safe-bottom));
   max-height: calc(100% - 112px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
 }
 
-.ytpPanelPopup[data-placement="top-right"][data-panel-sizing="compact"] {
+.ytpSettingsMenu[data-placement="top-right"][data-panel-sizing="compact"],
+.ytpSpeedPanel[data-placement="top-right"][data-panel-sizing="compact"],
+.ytpEpisodesPanel[data-placement="top-right"][data-panel-sizing="compact"] {
   top: calc(48px + var(--ytp-safe-top));
 }
 
-.ytpSettingsPanel {
-  min-width: 220px;
+.ytpSettingsMenu[data-panel-sizing="compact"] {
   width: min(
     calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right)),
     296px
@@ -720,12 +742,31 @@
   );
 }
 
-.ytpSpeedPanel {
-  width: min(
-    248px,
-    calc(100% - 24px - var(--ytp-safe-left) - var(--ytp-safe-right))
-  );
-  min-width: 0;
+.ytpMenuHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  color: var(--ytp-panel-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 1px solid var(--ytp-panel-border);
+  margin-bottom: 4px;
+}
+
+.ytpMenuHeader:hover {
+  background: var(--ytp-panel-hover-bg);
+}
+
+.ytpMenuHeader:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ytpMenuBack {
+  opacity: 0.8;
 }
 
 .ytpMenuItem {
@@ -755,14 +796,6 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-.ytpMenuItemPlaceholder {
-  cursor: default;
-}
-
-.ytpMenuItemPlaceholder:hover {
-  background: transparent;
-}
-
 .ytpMenuItemLabel {
   flex: 1;
   color: var(--ytp-panel-text-primary);
@@ -774,12 +807,43 @@
   margin-right: 4px;
 }
 
+.ytpMenuChevron {
+  opacity: 0.6;
+}
+
+.ytpMenuCheck {
+  margin-right: 8px;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.ytpSpeedPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px 6px;
+}
+
+.ytpSpeedPanelValue {
+  color: var(--ytp-panel-text-primary);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .ytpSpeedPanelBody {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
+  padding: 0 12px 10px;
   align-items: stretch;
+}
+
+.ytpSpeedPanelBody[data-density="compact"] {
+  gap: 7px;
+  padding-top: 10px;
+  padding-bottom: 8px;
 }
 
 .ytpSpeedSliderBlock {
@@ -1435,6 +1499,8 @@
 /* ─── Episodes panel ─────────────────────────────────────────────────────────── */
 
 .ytpEpisodesPanel {
+  position: absolute;
+  bottom: calc(54px + var(--ytp-safe-bottom));
   left: var(--ytp-safe-left);
   padding: 8px;
   width: min(
@@ -1445,6 +1511,20 @@
     var(--_ep-max-height, 260px),
     calc(100% - 76px - var(--ytp-safe-top) - var(--ytp-safe-bottom))
   );
+  overflow: hidden;
+  animation: ytpPanelIn 0.12s ease; /* reuse existing panel-in animation */
+}
+
+.ytpEpisodesPanel[data-placement="top-right"] {
+  top: calc(52px + var(--ytp-safe-top));
+  right: calc(12px + var(--ytp-safe-right));
+  bottom: auto;
+  left: auto;
+}
+
+.ytpEpisodesPanel[data-placement="bottom-right"] {
+  right: calc(12px + var(--ytp-safe-right));
+  left: auto;
 }
 
 .ytpEpisodesGrid {
@@ -1758,7 +1838,7 @@
 
 /* ─── Fullscreen / mobile panel fit ─────────────────────────────────────────── */
 
-.ytpFullscreen .ytpSettingsPanel,
+.ytpFullscreen .ytpSettingsMenu,
 .ytpFullscreen .ytpSpeedPanel,
 .ytpFullscreen .ytpEpisodesPanel {
   max-height: calc(100% - 88px - var(--ytp-safe-top) - var(--ytp-safe-bottom));
