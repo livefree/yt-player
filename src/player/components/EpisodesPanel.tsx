@@ -67,7 +67,6 @@ export function EpisodesPanel({
       id={panelId}
       className={`${s.ytpEpisodesPanel} ${s.ytpPanelSurface}`}
       data-layer="5"
-      data-panel-family="episodes"
       data-panel-height="content-driven"
       data-panel-sizing={panelSizingMode}
       data-placement={placement}

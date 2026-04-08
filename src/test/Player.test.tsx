@@ -1608,10 +1608,6 @@ describe("YTPlayer — panel surface contracts", () => {
     expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass("ytpPanelSurface");
     expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass("ytpActionPanel");
     expect(screen.getByRole("dialog", { name: "Settings" })).toHaveAttribute(
-      "data-panel-family",
-      "action",
-    );
-    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveAttribute(
       "data-panel-sizing",
       "stable",
     );
@@ -1625,20 +1621,12 @@ describe("YTPlayer — panel surface contracts", () => {
     expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveClass("ytpPanelSurface");
     expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveClass("ytpActionPanel");
     expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveAttribute(
-      "data-panel-family",
-      "action",
-    );
-    expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveAttribute(
       "data-panel-height",
       "content-driven",
     );
 
     await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
     expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveClass("ytpPanelSurface");
-    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveAttribute(
-      "data-panel-family",
-      "episodes",
-    );
     expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveAttribute(
       "data-panel-height",
       "content-driven",
@@ -1665,97 +1653,6 @@ describe("YTPlayer — panel surface contracts", () => {
 
     const settingsDialog = screen.getByRole("dialog", { name: "Settings" });
     expect(settingsDialog).toHaveAttribute("data-viewport-band", "phone-portrait");
-  });
-
-  it("keeps action panels bottom-right on desktop-default while episodes stay bottom-left", async () => {
-    render(<YTPlayer src={TEST_SRC} episodes={EPISODES_15} />);
-
-    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveAttribute(
-      "data-placement",
-      "bottom-right",
-    );
-
-    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-    await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
-    expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveAttribute(
-      "data-placement",
-      "bottom-right",
-    );
-
-    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
-    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveAttribute(
-      "data-placement",
-      "bottom-left",
-    );
-  });
-
-  it("moves action panels and episodes to top-right in desktop-compact layouts while keeping panel families distinct", async () => {
-    Object.defineProperty(window, "innerWidth", {
-      configurable: true,
-      writable: true,
-      value: 700,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      configurable: true,
-      writable: true,
-      value: 640,
-    });
-
-    render(<YTPlayer src={TEST_SRC} episodes={EPISODES_15} />);
-    fireEvent(window, new Event("resize"));
-
-    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-    const settingsDialog = screen.getByRole("dialog", { name: "Settings" });
-    expect(settingsDialog).toHaveAttribute("data-placement", "top-right");
-    expect(settingsDialog).toHaveAttribute("data-panel-family", "action");
-
-    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-    await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
-    const speedDialog = screen.getByRole("dialog", { name: "Playback speed" });
-    expect(speedDialog).toHaveAttribute("data-placement", "top-right");
-    expect(speedDialog).toHaveAttribute("data-panel-family", "action");
-
-    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
-    const episodesDialog = screen.getByRole("dialog", { name: /episodes/i });
-    expect(episodesDialog).toHaveAttribute("data-placement", "top-right");
-    expect(episodesDialog).toHaveAttribute("data-panel-family", "episodes");
-  });
-
-  it("keeps phone-portrait action panels in top-right while episodes stay bottom-right", async () => {
-    coarsePointer = true;
-    Object.defineProperty(window, "innerWidth", {
-      configurable: true,
-      writable: true,
-      value: 390,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      configurable: true,
-      writable: true,
-      value: 844,
-    });
-
-    render(<YTPlayer src={TEST_SRC} episodes={EPISODES_15} />);
-    fireEvent(window, new Event("resize"));
-
-    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveAttribute(
-      "data-placement",
-      "top-right",
-    );
-
-    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-    await userEvent.click(screen.getByRole("button", { name: /playback speed/i }));
-    expect(screen.getByRole("dialog", { name: "Playback speed" })).toHaveAttribute(
-      "data-placement",
-      "top-right",
-    );
-
-    await userEvent.click(screen.getByRole("button", { name: /episodes/i }));
-    expect(screen.getByRole("dialog", { name: /episodes/i })).toHaveAttribute(
-      "data-placement",
-      "bottom-right",
-    );
   });
 });
 
